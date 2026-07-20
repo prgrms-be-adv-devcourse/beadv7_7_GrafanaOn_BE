@@ -6,6 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
 import shop.deal.commerce.search.domain.SearchProduct;
+import shop.deal.common.audit.BaseEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class SearchProductJpaEntity {
+public class SearchProductJpaEntity extends BaseEntity {
 
     @Id // 이 id는 Product가 보낸 id다. 따라서 직접 id를 생성하지 않는다.
     @Column(name = "id")
@@ -47,8 +48,8 @@ public class SearchProductJpaEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "inserted_at", nullable = false)
-    private LocalDateTime insertedAt;
+    @Column(name = "product_inserted_at", nullable = false)
+    private LocalDateTime productInsertedAt;
 
     public static SearchProductJpaEntity from(SearchProduct product) {
         return SearchProductJpaEntity.builder()
@@ -61,7 +62,7 @@ public class SearchProductJpaEntity {
                 .saleType(product.getSaleType())
                 .viewCount(product.getViewCount())
                 .description(product.getDescription())
-                .insertedAt(product.getInsertedAt())
+                .productInsertedAt(product.getProductInsertedAt())
                 .build();
     }
 
@@ -76,7 +77,7 @@ public class SearchProductJpaEntity {
                 saleType,
                 viewCount,
                 description,
-                insertedAt
+                productInsertedAt
         );
     }
 }

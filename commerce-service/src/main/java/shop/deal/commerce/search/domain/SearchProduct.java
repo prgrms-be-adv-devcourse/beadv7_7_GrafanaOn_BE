@@ -21,5 +21,7 @@ public class SearchProduct {
     private final String saleType;
     private final Long viewCount;
     private final String description;
-    private final LocalDateTime insertedAt;
+    // 원본 Product가 등록된 시각.
+    // 검색 테이블이 만들어진 시각을 BaseEntity의 insertedAt으로.
+    private final LocalDateTime productInsertedAt;
 }
