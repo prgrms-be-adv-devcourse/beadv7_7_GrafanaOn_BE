@@ -25,6 +25,13 @@ public class CommonExceptionHandler {
     }
 
     @ExceptionHandler
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(final BusinessException e) {
+        log.warn("{} 발생! errorCode={}", e.getClass().getSimpleName(), e.getErrorCode().getValue(), e);
+        return ResponseEntity.badRequest()
+            .body(fail(e.getErrorCode()));
+    }
+
+    @ExceptionHandler
     public ResponseEntity<ApiResponse<Void>> handleException(final Exception e) {
         log.error("{} 발생!", e.getClass().getSimpleName(), e);
         return ResponseEntity.internalServerError()
