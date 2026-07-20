@@ -1,4 +1,4 @@
-package shop.deal.commerce.order.domain;
+package shop.deal.commerce.trade.offer.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,7 +10,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.deal.common.exception.BusinessException;
-import shop.deal.commerce.order.domain.exception.OrderErrorCode;
+import shop.deal.commerce.trade.offer.domain.exception.OfferErrorCode;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -71,7 +71,7 @@ public class OfferSnapshot {
 
     public void linkToOffer(final Long offerId) {
         if (this.offerId != null) {
-            throw new BusinessException(OrderErrorCode.OFFER_SNAPSHOT_ALREADY_LINKED);
+            throw new BusinessException(OfferErrorCode.OFFER_SNAPSHOT_ALREADY_LINKED);
         }
         this.offerId = offerId;
     }

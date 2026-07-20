@@ -1,4 +1,4 @@
-package shop.deal.commerce.order.domain;
+package shop.deal.commerce.trade.offer.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,7 +12,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.deal.common.exception.BusinessException;
-import shop.deal.commerce.order.domain.exception.OrderErrorCode;
+import shop.deal.commerce.trade.offer.domain.exception.OfferErrorCode;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -138,13 +138,13 @@ public class Offer {
 
     private void validateOfferStatus(final OfferStatus expected) {
         if (this.offerStatus != expected) {
-            throw new BusinessException(OrderErrorCode.INVALID_OFFER_STATUS_TRANSITION);
+            throw new BusinessException(OfferErrorCode.INVALID_OFFER_STATUS_TRANSITION);
         }
     }
 
     private void validatePaymentStatus(final PaymentStatus expected) {
         if (this.paymentStatus != expected) {
-            throw new BusinessException(OrderErrorCode.INVALID_OFFER_PAYMENT_STATUS_TRANSITION);
+            throw new BusinessException(OfferErrorCode.INVALID_OFFER_PAYMENT_STATUS_TRANSITION);
         }
     }
 }

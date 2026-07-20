@@ -1,4 +1,4 @@
-package shop.deal.commerce.order.domain;
+package shop.deal.commerce.trade.order.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,7 +12,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.deal.common.exception.BusinessException;
-import shop.deal.commerce.order.domain.exception.OrderErrorCode;
+import shop.deal.commerce.trade.order.domain.exception.OrderErrorCode;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

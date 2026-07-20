@@ -1,4 +1,4 @@
-package shop.deal.commerce.order.domain;
+package shop.deal.commerce.trade.offer.domain;
 
 public enum PaymentStatus {
     PAYMENT_PENDING,
