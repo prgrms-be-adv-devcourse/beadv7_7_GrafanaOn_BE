@@ -118,7 +118,7 @@ public class Offer {
         this.updatedAt = OffsetDateTime.now();
     }
 
-    public void markPaymentPending() {
+    public void requestPayment() {
         validateOfferStatus(OfferStatus.ACCEPTED);
         this.paymentStatus = PaymentStatus.PAYMENT_PENDING;
         this.updatedAt = OffsetDateTime.now();
