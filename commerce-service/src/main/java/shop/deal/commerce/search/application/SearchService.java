@@ -49,12 +49,12 @@ public class SearchService {
     private Sort toSort(SearchSort sort) {
         // 기본 값은 최신순으로 진행.
         if (sort == null) {
-            return Sort.by(Sort.Direction.DESC, "insertedAt");
+            return Sort.by(Sort.Direction.DESC, "productInsertedAt");
         }
 
         // 최신 순, 조회수 높은 순, 가격 낮은 순, 가격 높은 순
         return switch (sort) {
-            case LATEST -> Sort.by(Sort.Direction.DESC, "insertedAt");
+            case LATEST -> Sort.by(Sort.Direction.DESC, "productInsertedAt");
             case VIEW_COUNT -> Sort.by(Sort.Direction.DESC, "viewCount");
             case PRICE_ASC -> Sort.by(Sort.Direction.ASC, "productPrice");
             case PRICE_DESC -> Sort.by(Sort.Direction.DESC, "productPrice");
