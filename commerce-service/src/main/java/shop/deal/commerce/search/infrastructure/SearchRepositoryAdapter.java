@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import shop.deal.commerce.search.application.dto.SearchResult;
+import shop.deal.commerce.search.domain.SearchProduct;
 import shop.deal.commerce.search.domain.SearchRepository;
 
 // infrastructure에서 domain으로 참조. DIP 구현
@@ -14,23 +14,23 @@ import shop.deal.commerce.search.domain.SearchRepository;
 public class SearchRepositoryAdapter implements SearchRepository {
     private final SearchJpaRepository searchJpaRepository;
 
+
     @Override
-    public Page<SearchResult> searchByProductName(String keyword, Pageable pageable) {
-        return searchJpaRepository.findByNameContainingIgnoreCase(keyword, pageable)
-                .map(this::toSearchResult);
+    public void save(SearchProduct product) {
+        searchJpaRepository.save(
+                SearchProductJpaEntity.from(product)
+        );
     }
 
-    // Product에서 정한 변수를 따라가서 product getter해와야 한다.
-    private SearchResult toSearchResult(Product product) {
-        return new SearchResult(
-                product.getName(),
-                product.getModelNumber(),
-                product.getCategory(),
-                product.getReleaseDate(),
-                product.getPrice(),
-                product.getSaleType(),
-                product.getViewCount(),
-                product.getDescription()
-        );
+    @Override
+    public void deleteByProductId(Long productId) {
+        searchJpaRepository.deleteById(productId);
+    }
+
+    @Override
+    public Page<SearchProduct> searchByProductName(String keyword, Pageable pageable) {
+        return searchJpaRepository
+                .findByProductNameContainingIgnoreCase(keyword, pageable)
+                .map(SearchProductJpaEntity::toDomain);
     }
 }
