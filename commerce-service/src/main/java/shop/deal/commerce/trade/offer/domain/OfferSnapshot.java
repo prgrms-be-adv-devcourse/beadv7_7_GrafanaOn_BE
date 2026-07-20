@@ -9,11 +9,11 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import shop.deal.common.audit.BaseEntity;
 import shop.deal.common.exception.BusinessException;
 import shop.deal.commerce.trade.offer.domain.exception.OfferErrorCode;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 
 /**
  * 오퍼 작성 시작 시점의 상품 정보(모델 번호, 가격)를 보존하는 스냅샷 엔티티
@@ -23,7 +23,7 @@ import java.time.OffsetDateTime;
 @Table(name = "offer_snapshots")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class OfferSnapshot {
+public class OfferSnapshot extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,9 +44,6 @@ public class OfferSnapshot {
     @Column(name = "price_snapshot", nullable = false, precision = 15, scale = 2)
     private BigDecimal priceSnapshot;
 
-    @Column(name = "inserted_at", nullable = false)
-    private OffsetDateTime insertedAt;
-
     private OfferSnapshot(
         final Long writerId,
         final Long productId,
@@ -57,7 +54,6 @@ public class OfferSnapshot {
         this.productId = productId;
         this.modelSnapshot = modelSnapshot;
         this.priceSnapshot = priceSnapshot;
-        this.insertedAt = OffsetDateTime.now();
     }
 
     public static OfferSnapshot create(

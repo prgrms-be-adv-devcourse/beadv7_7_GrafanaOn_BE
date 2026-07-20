@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import shop.deal.common.audit.BaseEntity;
 import shop.deal.common.exception.BusinessException;
 import shop.deal.commerce.trade.offer.domain.exception.OfferErrorCode;
 
@@ -21,7 +22,7 @@ import java.time.OffsetDateTime;
 @Table(name = "offers")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Offer {
+public class Offer extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -59,12 +60,6 @@ public class Offer {
     @Column(name = "payment_status", length = 30)
     private PaymentStatus paymentStatus;
 
-    @Column(name = "inserted_at", nullable = false)
-    private OffsetDateTime insertedAt;
-
-    @Column(name = "updated_at")
-    private OffsetDateTime updatedAt;
-
     private Offer(
         final String number,
         final Long buyerId,
@@ -84,7 +79,6 @@ public class Offer {
         this.offerStory = offerStory;
         this.delivery = delivery;
         this.offerStatus = OfferStatus.PENDING;
-        this.insertedAt = OffsetDateTime.now();
     }
 
     public static Offer create(
@@ -103,37 +97,31 @@ public class Offer {
     public void accept() {
         validateOfferStatus(OfferStatus.PENDING);
         this.offerStatus = OfferStatus.ACCEPTED;
-        this.updatedAt = OffsetDateTime.now();
     }
 
     public void reject() {
         validateOfferStatus(OfferStatus.PENDING);
         this.offerStatus = OfferStatus.REJECTED;
-        this.updatedAt = OffsetDateTime.now();
     }
 
     public void cancel() {
         validateOfferStatus(OfferStatus.PENDING);
         this.offerStatus = OfferStatus.CANCELLED;
-        this.updatedAt = OffsetDateTime.now();
     }
 
     public void requestPayment() {
         validateOfferStatus(OfferStatus.ACCEPTED);
         this.paymentStatus = PaymentStatus.PAYMENT_PENDING;
-        this.updatedAt = OffsetDateTime.now();
     }
 
     public void markPaid() {
         validatePaymentStatus(PaymentStatus.PAYMENT_PENDING);
         this.paymentStatus = PaymentStatus.PAID;
-        this.updatedAt = OffsetDateTime.now();
     }
 
     public void markPaymentFailed() {
         validatePaymentStatus(PaymentStatus.PAYMENT_PENDING);
         this.paymentStatus = PaymentStatus.PAYMENT_FAILED;
-        this.updatedAt = OffsetDateTime.now();
     }
 
     private void validateOfferStatus(final OfferStatus expected) {
