@@ -17,7 +17,7 @@ import java.time.OffsetDateTime;
 
 /**
  * 오퍼 작성 시작 시점의 상품 정보(모델 번호, 가격)를 보존하는 스냅샷 엔티티
- * Offer의 자식 애그리거트가 아니라 오퍼 생성 전까지는 독립적으로 존재하다가 오퍼 제출 시점에 offerId로 연결됨
+ * 오퍼 생성 전까지는 독립적으로 존재하다가 오퍼 제출 시점에 offerId로 연결됨
  */
 @Entity
 @Table(name = "offer_snapshots")
