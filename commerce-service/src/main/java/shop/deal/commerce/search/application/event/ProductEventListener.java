@@ -19,7 +19,7 @@ public class ProductEventListener {
     // -> ProductEventListener 실행 -> 새로운 Tx: search_product 저장
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handle(ProductChangeEvent event) {
+    public void handle(ProductChangedEvent event) {
         SearchProduct product = new SearchProduct(
                 event.productId(),
                 event.productName(),
