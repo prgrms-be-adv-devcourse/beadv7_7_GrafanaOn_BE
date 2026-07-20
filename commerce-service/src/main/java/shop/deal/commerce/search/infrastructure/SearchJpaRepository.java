@@ -1,4 +1,4 @@
-package search.infrastructure;
+package shop.deal.commerce.search.infrastructure;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

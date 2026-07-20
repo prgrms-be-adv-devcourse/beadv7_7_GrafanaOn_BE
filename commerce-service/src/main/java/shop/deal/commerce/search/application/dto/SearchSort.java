@@ -1,4 +1,4 @@
-package search.application.dto;
+package shop.deal.commerce.search.application.dto;
 
 public enum SearchSort {
     LATEST,
