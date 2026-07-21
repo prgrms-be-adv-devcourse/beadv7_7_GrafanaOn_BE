@@ -9,6 +9,7 @@ public record RegisterRequest(
         String defaultShippingAddress,
         String phoneNumber
 ) {
+
     public RegisterCommand toCommand() {
         return new RegisterCommand(name, email, password, defaultShippingAddress, phoneNumber);
     }

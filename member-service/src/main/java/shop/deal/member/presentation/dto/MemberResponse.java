@@ -7,6 +7,7 @@ public record MemberResponse(
         String name,
         String email
 ) {
+
     public static MemberResponse from(MemberInfo info) {
         return new MemberResponse(info.id(), info.name(), info.email());
     }
