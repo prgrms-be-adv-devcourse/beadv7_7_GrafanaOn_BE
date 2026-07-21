@@ -19,7 +19,7 @@ public class Member extends BaseEntity {
     @Column(name = "name", length = 30, nullable = false)
     private String name;
 
-    @Column(name = "email", length = 150, nullable = false)
+    @Column(name = "email", length = 150, nullable = false, unique = true)
     private String email;
 
     @Column(name = "password", nullable = false)
@@ -31,7 +31,7 @@ public class Member extends BaseEntity {
     @Column(name = "phone_number", length = 20, nullable = false)
     private String phoneNumber;
 
-    @Column(name = "nickname", nullable = false)
+    @Column(name = "nickname", nullable = false, unique = true)
     private String nickname;
 
     private Member(
