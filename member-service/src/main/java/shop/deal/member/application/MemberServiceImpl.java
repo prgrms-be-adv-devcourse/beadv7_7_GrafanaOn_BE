@@ -28,7 +28,7 @@ public class MemberServiceImpl implements MemberService {
         }
 
         String nickname = createDefaultNickname();
-        String encodePassword = passwordEncoder.encode(command.password());
+        String encodePassword = passwordEncoder.encode(command.rawPassword());
 
         Member member = Member.create(
                 command.name(),

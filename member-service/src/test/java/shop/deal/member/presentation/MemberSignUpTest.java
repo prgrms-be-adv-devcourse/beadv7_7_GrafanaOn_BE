@@ -33,11 +33,11 @@ class MemberSignUpTest {
 
     private SignUpRequest validRequest() {
         return new SignUpRequest(
-                "테스트",
-                "test@example.com",
-                "abc12345!",
-                "서울시 강남구",
-                "010-1234-5678"
+            "테스트",
+            "test@example.com",
+            "abc12345!",
+            "서울시 강남구",
+            "010-1234-5678"
         );
     }
 
@@ -48,46 +48,46 @@ class MemberSignUpTest {
                 .willReturn(new MemberInfo(1L, "테스트", "test@example.com"));
 
         mockMvc.perform(post("/api/members/signup")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(validRequest())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value("success"))
-                .andExpect(jsonPath("$.data.id").value(1L))
-                .andExpect(jsonPath("$.data.name").value("테스트"))
-                .andExpect(jsonPath("$.data.email").value("test@example.com"));
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(validRequest())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value("success"))
+            .andExpect(jsonPath("$.data.id").value(1L))
+            .andExpect(jsonPath("$.data.name").value("테스트"))
+            .andExpect(jsonPath("$.data.email").value("test@example.com"));
     }
 
     @Test
     @DisplayName("이미 가입된 이메일이면 상태코드 400과 DUPLICATE_EMAIL 에러코드를 반환한다")
     void signUp_duplicateEmail() throws Exception {
         given(memberService.signUp(any()))
-                .willThrow(new BusinessException(MemberErrorCode.DUPLICATE_EMAIL));
+            .willThrow(new BusinessException(MemberErrorCode.DUPLICATE_EMAIL));
 
         mockMvc.perform(post("/api/members/signup")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(validRequest())))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(MemberErrorCode.DUPLICATE_EMAIL.getValue()))
-                .andExpect(jsonPath("$.message").value(MemberErrorCode.DUPLICATE_EMAIL.getMessage()));
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(validRequest())))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(MemberErrorCode.DUPLICATE_EMAIL.getValue()))
+            .andExpect(jsonPath("$.message").value(MemberErrorCode.DUPLICATE_EMAIL.getMessage()));
     }
 
     @Test
     @DisplayName("입력데이터 형식이 맞지 않으면 400과 INVALID_INPUT 에러코드를 반환한다")
     void signUp_validPassword() throws Exception{
         SignUpRequest request = new SignUpRequest(
-                "",
-                "testexample.com",
-                "abc12345",
-                "",
-                "010-1234-56789"
+            "",
+            "testexample.com",
+            "abc12345",
+            "",
+            "010-1234-56789"
         );
 
         mockMvc.perform(post("/api/members/signup")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(MemberErrorCode.INVALID_INPUT.getValue()))
-                .andExpect(jsonPath("$.message").value(MemberErrorCode.INVALID_INPUT.getMessage()));
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(MemberErrorCode.INVALID_INPUT.getValue()))
+            .andExpect(jsonPath("$.message").value(MemberErrorCode.INVALID_INPUT.getMessage()));
     }
 
 }
