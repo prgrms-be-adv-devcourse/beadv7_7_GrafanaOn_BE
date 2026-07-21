@@ -33,4 +33,18 @@ public class SearchRepositoryAdapter implements SearchRepository {
                 .findByProductNameContainingIgnoreCase(keyword, pageable)
                 .map(SearchProductJpaEntity::toDomain);
     }
+
+    @Override
+    public Page<SearchProduct> searchByCategory(String category, Pageable pageable) {
+        return searchJpaRepository
+                .findByCategoryIgnoreCase(category, pageable)
+                .map(SearchProductJpaEntity::toDomain);
+    }
+
+    @Override
+    public Page<SearchProduct> searchByStoryContent(String keyword, Pageable pageable) {
+        return searchJpaRepository
+                .findByStoryContentContainingIgnoreCase(keyword, pageable)
+                .map(SearchProductJpaEntity::toDomain);
+    }
 }

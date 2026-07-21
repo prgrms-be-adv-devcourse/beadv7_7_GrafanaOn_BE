@@ -48,6 +48,10 @@ public class SearchProductJpaEntity extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "story_content", columnDefinition = "TEXT")
+    private String storyContent;
+
+
     @Column(name = "product_inserted_at", nullable = false)
     private LocalDateTime productInsertedAt;
 
@@ -62,6 +66,7 @@ public class SearchProductJpaEntity extends BaseEntity {
                 .saleType(product.getSaleType())
                 .viewCount(product.getViewCount())
                 .description(product.getDescription())
+                .storyContent(product.getStoryContent())
                 .productInsertedAt(product.getProductInsertedAt())
                 .build();
     }
@@ -77,6 +82,7 @@ public class SearchProductJpaEntity extends BaseEntity {
                 saleType,
                 viewCount,
                 description,
+                storyContent,
                 productInsertedAt
         );
     }
