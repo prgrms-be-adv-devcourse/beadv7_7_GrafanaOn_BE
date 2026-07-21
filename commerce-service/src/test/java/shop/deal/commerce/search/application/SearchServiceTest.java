@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import shop.deal.commerce.search.application.dto.SearchType;
 import shop.deal.commerce.search.application.dto.SearchQuery;
 import shop.deal.commerce.search.application.dto.SearchResult;
 import shop.deal.commerce.search.application.dto.SearchSort;
@@ -41,6 +42,7 @@ public class SearchServiceTest {
     void searchesProductsByProductName() {
         SearchQuery query = new SearchQuery(
                 "나이키",
+                SearchType.PRODUCT_NAME,
                 SearchSort.VIEW_COUNT,
                 0,
                 20
@@ -50,12 +52,13 @@ public class SearchServiceTest {
                 1L,
                 "나이키 에어포스",
                 "CW2288-111",
-                "SHOES",
+                "SNEAKERS",
                 LocalDate.of(2025, 1, 1),
                 new BigDecimal("139000"),
                 "IMMEDIATE",
                 100L,
                 "화이트 운동화",
+                "꽁꽁 숨겨져 있는 어느 빈티지샵에서 발굴했습니다.",
                 LocalDateTime.of(2025, 1, 1, 12, 0)
         );
 
@@ -85,5 +88,51 @@ public class SearchServiceTest {
         assertThat(pageable.getSort().getOrderFor("viewCount")
                 .getDirection())
                 .isEqualTo(Sort.Direction.DESC);
+    }
+
+    @Test
+    void searchesProductsByCategory() {
+        SearchQuery query = new SearchQuery(
+                "SNEAKERS",
+                SearchType.CATEGORY,
+                SearchSort.LATEST,
+                0,
+                20
+        );
+
+        given(searchRepository.searchByCategory(
+                eq("SNEAKERS"),
+                any(Pageable.class)
+        )).willReturn(Page.empty());
+
+        searchService.search(query);
+
+        verify(searchRepository).searchByCategory(
+                eq("SNEAKERS"),
+                any(Pageable.class)
+        );
+    }
+
+    @Test
+    void searchesProductsByStoryContent() {
+        SearchQuery query = new SearchQuery(
+                "빈티지샵",
+                SearchType.STORY_CONTENT,
+                SearchSort.LATEST,
+                0,
+                20
+        );
+
+        given(searchRepository.searchByStoryContent(
+                eq("빈티지샵"),
+                any(Pageable.class)
+        )).willReturn(Page.empty());
+
+        searchService.search(query);
+
+        verify(searchRepository).searchByStoryContent(
+                eq("빈티지샵"),
+                any(Pageable.class)
+        );
     }
 }

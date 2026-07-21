@@ -20,6 +20,11 @@ public class ProductEventListener {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(ProductChangedEvent event) {
+        String storyContent = String.join(
+                " ",
+                event.storyContents()
+        ); // 스토리를 하나로 합친다.
+
         SearchProduct product = new SearchProduct(
                 event.productId(),
                 event.productName(),
@@ -30,6 +35,7 @@ public class ProductEventListener {
                 event.saleType(),
                 event.viewCount(),
                 event.description(),
+                storyContent,
                 event.insertedAt()
         );
 

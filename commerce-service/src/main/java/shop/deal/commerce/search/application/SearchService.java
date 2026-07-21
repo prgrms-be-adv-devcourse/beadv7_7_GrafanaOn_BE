@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import shop.deal.commerce.search.application.dto.SearchQuery;
 import shop.deal.commerce.search.application.dto.SearchResult;
 import shop.deal.commerce.search.application.dto.SearchSort;
+import shop.deal.commerce.search.application.dto.SearchType;
 import shop.deal.commerce.search.domain.SearchProduct;
 import shop.deal.commerce.search.domain.SearchRepository;
 
@@ -27,9 +28,28 @@ public class SearchService {
                 toSort(query.sort())
         );
 
-        return searchRepository
-                .searchByProductName(query.keyword(), pageable)
-                .map(this::toSearchResult);
+        SearchType type = query.type() == null
+                ? SearchType.PRODUCT_NAME // 기본 값은 상품명 검색
+                : query.type();
+
+        Page<SearchProduct> products = switch (type) {
+            case PRODUCT_NAME -> searchRepository.searchByProductName(
+                    query.keyword(),
+                    pageable
+            );
+
+            case CATEGORY -> searchRepository.searchByCategory(
+                    query.keyword(),
+                    pageable
+            );
+
+            case STORY_CONTENT -> searchRepository.searchByStoryContent(
+                    query.keyword(),
+                    pageable
+            );
+        };
+
+        return products.map(this::toSearchResult);
     }
 
     private SearchResult toSearchResult(SearchProduct product) {

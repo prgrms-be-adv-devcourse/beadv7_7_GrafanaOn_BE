@@ -18,4 +18,16 @@ public interface SearchRepository {
             String keyword,
             Pageable pageable
     );
+
+    // 카테고리 정확히 일치
+    Page<SearchProduct> searchByCategory(
+            String category,
+            Pageable pageable
+    );
+
+    // 스토리 내용 LIKE 검색
+    Page<SearchProduct> searchByStoryContent(
+            String keyword,
+            Pageable pageable
+    );
 }
