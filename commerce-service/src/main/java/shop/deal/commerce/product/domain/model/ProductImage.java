@@ -1,5 +1,6 @@
 package shop.deal.commerce.product.domain.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -8,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -33,4 +35,21 @@ public class ProductImage extends BaseEntity {
 
     @Column(name = "sort_order", nullable = false)
     private Integer sortOrder;
+
+    @OneToOne(mappedBy = "productImage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Story story;
+
+    ProductImage(
+        final Product product,
+        final String url,
+        final Integer sortOrder
+    ) {
+        this.product = product;
+        this.url = url;
+        this.sortOrder = sortOrder;
+    }
+
+    public void addStory(final String content) {
+        this.story = new Story(this, content);
+    }
 }

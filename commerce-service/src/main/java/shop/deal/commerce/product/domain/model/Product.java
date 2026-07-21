@@ -1,5 +1,6 @@
 package shop.deal.commerce.product.domain.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -7,6 +8,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,7 +19,9 @@ import shop.deal.commerce.product.domain.constant.ProductStatus;
 import shop.deal.common.audit.BaseEntity;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -46,7 +50,7 @@ public class Product extends BaseEntity {
     private ProductCategory category;
 
     @Column(name = "release_date", nullable = true)
-    private Date releaseDate;
+    private LocalDate releaseDate;
 
     @Column(name = "price", precision = 15, scale = 2, nullable = false)
     private BigDecimal price;
@@ -64,4 +68,17 @@ public class Product extends BaseEntity {
 
     @Column(name = "description", nullable = true, columnDefinition = "TEXT")
     private String description;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductImage> images = new ArrayList<>();
+
+    public void addImage(final String url, final int sortOrder) {
+        final ProductImage image = new ProductImage(
+            this,
+            url,
+            sortOrder
+        );
+
+        this.images.add(image);
+    }
 }
