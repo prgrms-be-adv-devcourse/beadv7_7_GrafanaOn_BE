@@ -3,16 +3,18 @@ package shop.deal.member.application;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import shop.deal.common.exception.BusinessException;
 import shop.deal.member.application.dto.MemberInfo;
 import shop.deal.member.application.dto.RegisterCommand;
-import shop.deal.member.domain.Member;
-import shop.deal.member.domain.MemberRepository;
+import shop.deal.member.domain.exception.MemberErrorCode;
+import shop.deal.member.domain.model.Member;
+import shop.deal.member.domain.repository.MemberRepository;
 
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
-public class MemberServiceImpl implements MemberService{
+public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
@@ -22,7 +24,7 @@ public class MemberServiceImpl implements MemberService{
     public MemberInfo register(final RegisterCommand command) {
 
         if(memberRepository.existsByEmail(command.email())) {
-            throw new IllegalStateException("이미 가입된 이메일입니다.");
+            throw new BusinessException(MemberErrorCode.DUPLICATE_EMAIL);
         }
 
         String nickname = createDefaultNickname();

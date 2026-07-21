@@ -1,4 +1,6 @@
-package shop.deal.member.domain;
+package shop.deal.member.domain.repository;
+
+import shop.deal.member.domain.model.Member;
 
 public interface MemberRepository {
 

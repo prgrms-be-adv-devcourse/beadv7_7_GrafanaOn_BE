@@ -1,4 +1,4 @@
-package shop.deal.member.domain;
+package shop.deal.member.domain.model;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -16,22 +16,22 @@ public class Member extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "name", length = 30, nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(name = "email", length = 150, nullable = false)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(nullable = false)
+    @Column(name = "default_shipping_address",nullable = false)
     private String defaultShippingAddress;
 
-    @Column(nullable = false)
+    @Column(name = "phone_number", length = 20, nullable = false)
     private String phoneNumber;
 
-    @Column(nullable = false)
+    @Column(name = "nickname", nullable = false)
     private String nickname;
 
     private Member(

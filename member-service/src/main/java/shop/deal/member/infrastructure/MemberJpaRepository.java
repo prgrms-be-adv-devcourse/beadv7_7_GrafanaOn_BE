@@ -1,7 +1,7 @@
 package shop.deal.member.infrastructure;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import shop.deal.member.domain.Member;
+import shop.deal.member.domain.model.Member;
 
 public interface MemberJpaRepository extends JpaRepository<Member, Long> {
     
