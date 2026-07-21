@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import shop.deal.common.response.ApiResponse;
 import shop.deal.member.application.MemberService;
 import shop.deal.member.presentation.dto.MemberResponse;
-import shop.deal.member.presentation.dto.RegisterRequest;
+import shop.deal.member.presentation.dto.SignUpRequest;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,7 +19,7 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/signup")
-    public ApiResponse<MemberResponse> register(@Valid @RequestBody final RegisterRequest request){
-        return ApiResponse.successWithData(MemberResponse.from(memberService.register(request.toCommand())));
+    public ApiResponse<MemberResponse> signUp(@Valid @RequestBody final SignUpRequest request){
+        return ApiResponse.successWithData(MemberResponse.from(memberService.signUp(request.toCommand())));
     }
 }

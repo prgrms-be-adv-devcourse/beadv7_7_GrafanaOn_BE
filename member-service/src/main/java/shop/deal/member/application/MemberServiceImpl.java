@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import shop.deal.common.exception.BusinessException;
 import shop.deal.member.application.dto.MemberInfo;
-import shop.deal.member.application.dto.RegisterCommand;
+import shop.deal.member.application.dto.SignUpCommand;
 import shop.deal.member.domain.exception.MemberErrorCode;
 import shop.deal.member.domain.model.Member;
 import shop.deal.member.domain.repository.MemberRepository;
@@ -21,7 +21,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Transactional
     @Override
-    public MemberInfo register(final RegisterCommand command) {
+    public MemberInfo signUp(final SignUpCommand command) {
 
         if(memberRepository.existsByEmail(command.email())) {
             throw new BusinessException(MemberErrorCode.DUPLICATE_EMAIL);
