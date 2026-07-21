@@ -4,11 +4,11 @@ import shop.deal.member.application.dto.MemberInfo;
 
 public record MemberResponse(
         Long id,
-        String name,
+        String nickname,
         String email
 ) {
 
     public static MemberResponse from(MemberInfo info) {
-        return new MemberResponse(info.id(), info.name(), info.email());
+        return new MemberResponse(info.id(), info.nickname(), info.email());
     }
 }

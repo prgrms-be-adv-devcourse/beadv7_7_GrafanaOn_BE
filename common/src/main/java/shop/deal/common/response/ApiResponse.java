@@ -28,6 +28,10 @@ public class ApiResponse<T> {
         return new ApiResponse<>(errorCode.getValue(), errorCode.getMessage(), null);
     }
 
+    public static <T> ApiResponse<T> fail(final ErrorCode errorCode, final T data) {
+        return new ApiResponse<>(errorCode.getValue(), errorCode.getMessage(), data);
+    }
+
     private ApiResponse(
         final String code,
         final String message,
