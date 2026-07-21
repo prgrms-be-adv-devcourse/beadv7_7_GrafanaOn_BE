@@ -8,6 +8,10 @@ public record MemberInfo(
     String email
 ){
     public static MemberInfo from(Member member){
-        return null;
+        return new MemberInfo(
+                member.getId(),
+                member.getName(),
+                member.getEmail()
+        );
     }
 }
