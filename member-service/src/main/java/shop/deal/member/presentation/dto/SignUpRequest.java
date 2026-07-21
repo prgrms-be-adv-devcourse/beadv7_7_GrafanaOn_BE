@@ -3,9 +3,9 @@ package shop.deal.member.presentation.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import shop.deal.member.application.dto.RegisterCommand;
+import shop.deal.member.application.dto.SignUpCommand;
 
-public record RegisterRequest(
+public record SignUpRequest(
         @NotBlank String name,
         @NotBlank @Email String email,
         @NotBlank
@@ -23,7 +23,7 @@ public record RegisterRequest(
         String phoneNumber
 ) {
 
-    public RegisterCommand toCommand() {
-        return new RegisterCommand(name, email, password, defaultShippingAddress, phoneNumber);
+    public SignUpCommand toCommand() {
+        return new SignUpCommand(name, email, password, defaultShippingAddress, phoneNumber);
     }
 }

@@ -1,6 +1,6 @@
 package shop.deal.member.application.dto;
 
-public record RegisterCommand (
+public record SignUpCommand (
         String name,
         String email,
         String password,
