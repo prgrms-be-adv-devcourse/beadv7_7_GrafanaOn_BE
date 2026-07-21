@@ -1,7 +1,4 @@
 spring:
-  profiles:
-    active: test
-
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/dear}
     username: ${DB_USERNAME:root}
