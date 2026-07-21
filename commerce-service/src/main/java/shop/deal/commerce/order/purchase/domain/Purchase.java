@@ -1,4 +1,4 @@
-package shop.deal.commerce.trade.order.domain;
+package shop.deal.commerce.order.purchase.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -7,22 +7,20 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.deal.common.audit.BaseEntity;
 import shop.deal.common.exception.BusinessException;
-import shop.deal.commerce.trade.order.domain.exception.OrderErrorCode;
+import shop.deal.commerce.order.purchase.domain.exception.PurchaseErrorCode;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "orders")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Order extends BaseEntity {
+public class Purchase extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,7 +43,7 @@ public class Order extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    private OrderStatus status;
+    private PurchaseStatus status;
 
     @Column(name = "ordered_at", nullable = false)
     private OffsetDateTime orderedAt;
@@ -59,7 +57,7 @@ public class Order extends BaseEntity {
     @Column(nullable = false, length = 255)
     private String delivery;
 
-    private Order(
+    private Purchase(
         final String number,
         final Long buyerId,
         final Long sellerId,
@@ -75,11 +73,11 @@ public class Order extends BaseEntity {
         this.amount = amount;
         this.delivery = delivery;
         this.paymentDueAt = paymentDueAt;
-        this.status = OrderStatus.PENDING_PAYMENT;
+        this.status = PurchaseStatus.PENDING_PAYMENT;
         this.orderedAt = OffsetDateTime.now();
     }
 
-    public static Order create(
+    public static Purchase create(
         final String number,
         final Long buyerId,
         final Long sellerId,
@@ -88,46 +86,46 @@ public class Order extends BaseEntity {
         final String delivery,
         final OffsetDateTime paymentDueAt
     ) {
-        return new Order(number, buyerId, sellerId, productId, amount, delivery, paymentDueAt);
+        return new Purchase(number, buyerId, sellerId, productId, amount, delivery, paymentDueAt);
     }
 
     public void pay() {
-        validateStatus(OrderStatus.PENDING_PAYMENT);
-        this.status = OrderStatus.PAID;
+        validateStatus(PurchaseStatus.PENDING_PAYMENT);
+        this.status = PurchaseStatus.PAID;
         this.paidAt = OffsetDateTime.now();
     }
 
     public void failPayment() {
-        validateStatus(OrderStatus.PENDING_PAYMENT);
-        this.status = OrderStatus.PAYMENT_FAILED;
+        validateStatus(PurchaseStatus.PENDING_PAYMENT);
+        this.status = PurchaseStatus.PAYMENT_FAILED;
     }
 
     public void expire() {
-        validateStatus(OrderStatus.PENDING_PAYMENT);
-        this.status = OrderStatus.EXPIRED;
+        validateStatus(PurchaseStatus.PENDING_PAYMENT);
+        this.status = PurchaseStatus.EXPIRED;
     }
 
     public void cancel() {
-        validateStatus(OrderErrorCode.ORDER_CANNOT_BE_CANCELLED, OrderStatus.PENDING_PAYMENT, OrderStatus.PAID);
-        this.status = OrderStatus.CANCELLED;
+        validateStatus(PurchaseErrorCode.PURCHASE_CANNOT_BE_CANCELLED, PurchaseStatus.PENDING_PAYMENT, PurchaseStatus.PAID);
+        this.status = PurchaseStatus.CANCELLED;
     }
 
     public void confirmPurchase() {
-        validateStatus(OrderStatus.PAID);
-        this.status = OrderStatus.PURCHASE_CONFIRMED;
+        validateStatus(PurchaseStatus.PAID);
+        this.status = PurchaseStatus.PURCHASE_CONFIRMED;
     }
 
     public void refund() {
-        validateStatus(OrderErrorCode.ORDER_CANNOT_BE_REFUNDED, OrderStatus.PAID, OrderStatus.PURCHASE_CONFIRMED);
-        this.status = OrderStatus.REFUNDED;
+        validateStatus(PurchaseErrorCode.PURCHASE_CANNOT_BE_REFUNDED, PurchaseStatus.PAID, PurchaseStatus.PURCHASE_CONFIRMED);
+        this.status = PurchaseStatus.REFUNDED;
     }
 
-    private void validateStatus(final OrderStatus... expected) {
-        validateStatus(OrderErrorCode.INVALID_ORDER_STATUS_TRANSITION, expected);
+    private void validateStatus(final PurchaseStatus... expected) {
+        validateStatus(PurchaseErrorCode.INVALID_PURCHASE_STATUS_TRANSITION, expected);
     }
 
-    private void validateStatus(final OrderErrorCode errorCode, final OrderStatus... expected) {
-        for (final OrderStatus status : expected) {
+    private void validateStatus(final PurchaseErrorCode errorCode, final PurchaseStatus... expected) {
+        for (final PurchaseStatus status : expected) {
             if (this.status == status) {
                 return;
             }

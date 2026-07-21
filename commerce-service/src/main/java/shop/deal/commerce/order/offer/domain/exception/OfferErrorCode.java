@@ -1,4 +1,4 @@
-package shop.deal.commerce.trade.offer.domain.exception;
+package shop.deal.commerce.order.offer.domain.exception;
 
 import lombok.AccessLevel;
 import lombok.Getter;

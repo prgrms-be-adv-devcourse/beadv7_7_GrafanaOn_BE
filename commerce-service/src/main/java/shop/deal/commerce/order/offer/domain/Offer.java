@@ -1,4 +1,4 @@
-package shop.deal.commerce.trade.offer.domain;
+package shop.deal.commerce.order.offer.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -7,19 +7,16 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.deal.common.audit.BaseEntity;
 import shop.deal.common.exception.BusinessException;
-import shop.deal.commerce.trade.offer.domain.exception.OfferErrorCode;
+import shop.deal.commerce.order.offer.domain.exception.OfferErrorCode;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "offers")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Offer extends BaseEntity {

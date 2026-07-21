@@ -1,6 +1,6 @@
-package shop.deal.commerce.trade.order.domain;
+package shop.deal.commerce.order.purchase.domain;
 
-public enum OrderStatus {
+public enum PurchaseStatus {
     PENDING_PAYMENT,
     PAID,
     PAYMENT_FAILED,
