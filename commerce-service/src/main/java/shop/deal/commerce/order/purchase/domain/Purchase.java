@@ -92,6 +92,7 @@ public class Purchase extends BaseEntity {
         return new Purchase(buyerId, sellerId, productId, amount, delivery, paymentDueAt);
     }
 
+    // 날짜 + 판매자 코드로 "의미"를 담고, 뒤에 랜덤 문자열을 붙여 유니크성을 보장
     private static String generateNumber(final Long sellerId) {
         final String date = LocalDate.now().format(NUMBER_DATE_FORMATTER);
         final String sellerCode = Long.toString(sellerId, 36).toUpperCase();

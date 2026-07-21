@@ -60,7 +60,7 @@ public class Offer extends BaseEntity {
     private OfferStatus offerStatus;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_status", length = 30)
+    @Column(name = "payment_status", nullable = false, length = 30)
     private PaymentStatus paymentStatus;
 
     private Offer(
@@ -81,6 +81,7 @@ public class Offer extends BaseEntity {
         this.offerStory = offerStory;
         this.delivery = delivery;
         this.offerStatus = OfferStatus.PENDING;
+        this.paymentStatus = PaymentStatus.PAYMENT_PENDING;
     }
 
     public static Offer create(
@@ -103,6 +104,7 @@ public class Offer extends BaseEntity {
 
     public void accept() {
         validateOfferStatus(OfferStatus.PENDING);
+        validatePaymentStatus(PaymentStatus.PAID);
         this.offerStatus = OfferStatus.ACCEPTED;
     }
 
@@ -114,11 +116,6 @@ public class Offer extends BaseEntity {
     public void cancel() {
         validateOfferStatus(OfferStatus.PENDING);
         this.offerStatus = OfferStatus.CANCELLED;
-    }
-
-    public void requestPayment() {
-        validateOfferStatus(OfferStatus.ACCEPTED);
-        this.paymentStatus = PaymentStatus.PAYMENT_PENDING;
     }
 
     public void markPaid() {
