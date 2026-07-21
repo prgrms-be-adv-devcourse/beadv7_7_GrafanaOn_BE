@@ -2,8 +2,8 @@ package shop.deal.member.infrastructure;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import shop.deal.member.domain.Member;
-import shop.deal.member.domain.MemberRepository;
+import shop.deal.member.domain.model.Member;
+import shop.deal.member.domain.repository.MemberRepository;
 
 @Repository
 @RequiredArgsConstructor

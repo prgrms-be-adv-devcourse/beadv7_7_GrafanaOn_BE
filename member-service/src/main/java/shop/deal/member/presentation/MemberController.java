@@ -1,5 +1,6 @@
 package shop.deal.member.presentation;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,7 +19,7 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/signup")
-    public ApiResponse<MemberResponse> register(@RequestBody final RegisterRequest request){
+    public ApiResponse<MemberResponse> register(@Valid @RequestBody final RegisterRequest request){
         return ApiResponse.successWithData(MemberResponse.from(memberService.register(request.toCommand())));
     }
 }
