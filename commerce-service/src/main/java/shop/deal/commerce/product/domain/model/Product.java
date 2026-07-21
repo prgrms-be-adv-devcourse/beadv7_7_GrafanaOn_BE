@@ -1,4 +1,4 @@
-package shop.deal.commerce.product.domain;
+package shop.deal.commerce.product.domain.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
