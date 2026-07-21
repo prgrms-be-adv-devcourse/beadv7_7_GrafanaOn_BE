@@ -1,4 +1,4 @@
-package shop.deal.commerce.financial.settlement.domain;
+package shop.deal.commerce.financial.settlement.domain.constant;
 
 public enum SettlementStatus {
     PENDING,   // 정산 대기 중
