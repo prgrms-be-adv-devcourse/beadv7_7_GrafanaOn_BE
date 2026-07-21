@@ -8,4 +8,6 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+
+    implementation 'org.springframework.security:spring-security-crypto'
 }
