@@ -1,4 +1,4 @@
-package shop.deal.commerce.financial.payment.domain;
+package shop.deal.commerce.financial.payment.domain.constant;
 
 public enum PaymentStatus {
     PENDING,       // 결제 요청 진행 중
