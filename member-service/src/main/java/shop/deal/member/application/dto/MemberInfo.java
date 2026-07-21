@@ -9,9 +9,9 @@ public record MemberInfo(
 ){
     public static MemberInfo from(Member member){
         return new MemberInfo(
-                member.getId(),
-                member.getNickname(),
-                member.getEmail()
+            member.getId(),
+            member.getNickname(),
+            member.getEmail()
         );
     }
 }

@@ -35,12 +35,12 @@ public class Member extends BaseEntity {
     private String nickname;
 
     private Member(
-            final String name,
-            final String email,
-            final String password,
-            final String defaultShippingAddress,
-            final String phoneNumber,
-            final String nickname
+        final String name,
+        final String email,
+        final String password,
+        final String defaultShippingAddress,
+        final String phoneNumber,
+        final String nickname
     ) {
         this.name = name;
         this.email = email;
@@ -51,19 +51,20 @@ public class Member extends BaseEntity {
     }
 
     public static Member create(
-            final String name,
-            final String email,
-            final String password,
-            final String defaultShippingAddress,
-            final String phoneNumber,
-            final String nickname
+        final String name,
+        final String email,
+        final String password,
+        final String defaultShippingAddress,
+        final String phoneNumber,
+        final String nickname
     ) {
         return new Member(
-                name,
-                email,
-                password,
-                defaultShippingAddress,
-                phoneNumber,
-                nickname);
+            name,
+            email,
+            password,
+            defaultShippingAddress,
+            phoneNumber,
+            nickname
+        );
     }
 }

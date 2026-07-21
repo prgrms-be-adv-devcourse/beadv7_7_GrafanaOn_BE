@@ -22,17 +22,22 @@ public class MemberExceptionHandler{
 
     @ExceptionHandler
     public ResponseEntity<ApiResponse<List<String>>> handleValidException(final MethodArgumentNotValidException e) {
-        //잘못 입력된 필드명 반환
+        //잘못 입력된 필드 리스트 반환
         List<String> errors = e.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(error -> "%s: %s (입력값: %s)".formatted(error.getField(), error.getDefaultMessage(), error.getRejectedValue()))
-                .collect(Collectors.toList());
+            .getFieldErrors()
+            .stream()
+            .map(error -> "%s: %s (입력값: %s)"
+                .formatted(
+                    error.getField(),
+                    error.getDefaultMessage(),
+                    error.getRejectedValue()
+                ))
+            .collect(Collectors.toList());
 
         log.warn("{} 발생! errors={}", e.getClass().getSimpleName(), errors, e);
 
         return ResponseEntity.badRequest()
-                .body(fail(MemberErrorCode.INVALID_INPUT, errors));
+            .body(fail(MemberErrorCode.INVALID_INPUT, errors));
     }
 
 }
