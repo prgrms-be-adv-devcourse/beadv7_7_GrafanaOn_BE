@@ -15,11 +15,17 @@ import shop.deal.common.exception.BusinessException;
 import shop.deal.commerce.order.offer.domain.exception.OfferErrorCode;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Offer extends BaseEntity {
+
+    private static final String NUMBER_PREFIX = "OF";
+    private static final DateTimeFormatter NUMBER_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,7 +64,6 @@ public class Offer extends BaseEntity {
     private PaymentStatus paymentStatus;
 
     private Offer(
-        final String number,
         final Long buyerId,
         final Long sellerId,
         final Long productId,
@@ -67,7 +72,7 @@ public class Offer extends BaseEntity {
         final String offerStory,
         final String delivery
     ) {
-        this.number = number;
+        this.number = generateNumber();
         this.buyerId = buyerId;
         this.sellerId = sellerId;
         this.productId = productId;
@@ -79,7 +84,6 @@ public class Offer extends BaseEntity {
     }
 
     public static Offer create(
-        final String number,
         final Long buyerId,
         final Long sellerId,
         final Long productId,
@@ -88,7 +92,13 @@ public class Offer extends BaseEntity {
         final String offerStory,
         final String delivery
     ) {
-        return new Offer(number, buyerId, sellerId, productId, offerAmount, offerTitle, offerStory, delivery);
+        return new Offer(buyerId, sellerId, productId, offerAmount, offerTitle, offerStory, delivery);
+    }
+
+    private static String generateNumber() {
+        final String timestamp = LocalDateTime.now().format(NUMBER_DATE_FORMATTER);
+        final String random = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+        return NUMBER_PREFIX + timestamp + random;
     }
 
     public void accept() {

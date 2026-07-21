@@ -15,12 +15,17 @@ import shop.deal.common.exception.BusinessException;
 import shop.deal.commerce.order.purchase.domain.exception.PurchaseErrorCode;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Purchase extends BaseEntity {
+
+    private static final DateTimeFormatter NUMBER_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,7 +63,6 @@ public class Purchase extends BaseEntity {
     private String delivery;
 
     private Purchase(
-        final String number,
         final Long buyerId,
         final Long sellerId,
         final Long productId,
@@ -66,7 +70,7 @@ public class Purchase extends BaseEntity {
         final String delivery,
         final OffsetDateTime paymentDueAt
     ) {
-        this.number = number;
+        this.number = generateNumber(sellerId);
         this.buyerId = buyerId;
         this.sellerId = sellerId;
         this.productId = productId;
@@ -78,7 +82,6 @@ public class Purchase extends BaseEntity {
     }
 
     public static Purchase create(
-        final String number,
         final Long buyerId,
         final Long sellerId,
         final Long productId,
@@ -86,7 +89,14 @@ public class Purchase extends BaseEntity {
         final String delivery,
         final OffsetDateTime paymentDueAt
     ) {
-        return new Purchase(number, buyerId, sellerId, productId, amount, delivery, paymentDueAt);
+        return new Purchase(buyerId, sellerId, productId, amount, delivery, paymentDueAt);
+    }
+
+    private static String generateNumber(final Long sellerId) {
+        final String date = LocalDate.now().format(NUMBER_DATE_FORMATTER);
+        final String sellerCode = Long.toString(sellerId, 36).toUpperCase();
+        final String random = UUID.randomUUID().toString().replace("-", "").substring(0, 4).toUpperCase();
+        return date + "-" + sellerCode + random;
     }
 
     public void pay() {
