@@ -1,4 +1,4 @@
-package shop.deal.commerce.product.domain;
+package shop.deal.commerce.product.domain.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -7,7 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -16,21 +16,18 @@ import shop.deal.common.audit.BaseEntity;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "product_image")
+@Table(name = "story")
 @Entity
-public class ProductImage extends BaseEntity {
+public class Story extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "product_image_id")
+    private ProductImage productImage;
 
-    @Column(name = "url", length = 500, nullable = false)
-    private String url;
-
-    @Column(name = "sort_order", nullable = false)
-    private Integer sortOrder;
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    private String content;
 }
