@@ -1,8 +1,4 @@
 spring:
-  config:
-    activate:
-      on-profile: local
-
   datasource:
     url: jdbc:postgresql://localhost:5432/dear
     username: root
@@ -18,8 +14,3 @@ spring:
         format_sql: true
         highlight_sql: true
         default_batch_fetch_size: 100
-
-logging:
-  level:
-    org.hibernate.SQL: debug
-    org.hibernate.type.descriptor.sql.BasicBinder: trace
