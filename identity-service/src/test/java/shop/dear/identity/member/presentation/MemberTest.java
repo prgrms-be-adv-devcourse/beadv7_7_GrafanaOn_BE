@@ -11,7 +11,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import shop.dear.identity.member.application.MemberService;
 import shop.dear.identity.member.application.dto.MemberInfo;
 import shop.dear.identity.member.domain.exception.MemberErrorCode;
-import shop.dear.identity.member.presentation.dto.UpdateProfileRequest;
+import shop.dear.identity.member.presentation.dto.request.UpdateProfileRequest;
 import tools.jackson.databind.ObjectMapper;
 
 import static org.mockito.ArgumentMatchers.any;

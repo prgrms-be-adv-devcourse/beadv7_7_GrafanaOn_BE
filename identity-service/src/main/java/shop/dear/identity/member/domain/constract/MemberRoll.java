@@ -1,7 +1,6 @@
 package shop.dear.identity.member.domain.constract;
 
-public enum MemberStatus {
+public enum MemberRoll {
     BUYER,
-    SELLER,
-    WITHDRAW
+    SELLER
 }
