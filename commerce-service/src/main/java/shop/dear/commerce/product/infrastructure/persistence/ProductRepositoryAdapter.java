@@ -6,6 +6,8 @@ import shop.dear.commerce.product.domain.model.Product;
 import shop.dear.commerce.product.domain.repository.ProductRepository;
 import shop.dear.commerce.product.infrastructure.persistence.jpa.ProductJpaRepository;
 
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 public class ProductRepositoryAdapter implements ProductRepository {
@@ -15,5 +17,10 @@ public class ProductRepositoryAdapter implements ProductRepository {
     @Override
     public Product save(final Product product) {
         return productRepository.save(product);
+    }
+
+    @Override
+    public List<Product> findAll() {
+        return productRepository.findAll();
     }
 }
