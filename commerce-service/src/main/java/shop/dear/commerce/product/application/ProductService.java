@@ -1,8 +1,8 @@
 package shop.dear.commerce.product.application;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.product.application.dto.PresignedUrlInfo;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
 import shop.dear.commerce.product.application.dto.external.GeneratePresignedUrlsCommand;
@@ -20,7 +20,7 @@ import shop.dear.common.exception.BusinessException;
 import java.util.List;
 
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 @Service
 public class ProductService {
 
@@ -40,6 +40,7 @@ public class ProductService {
             .toList();
     }
 
+    @Transactional
     public void createProduct(final Long sellerId, final CreateProductCommand command) {
         final MemberProfile memberProfile = memberPort.getMemberProfile(sellerId);
         validateSeller(sellerId);
