@@ -53,4 +53,14 @@ public class Member extends BaseEntity {
             nickname
         );
     }
+
+    public void changeProfile(
+        final String defaultShippingAddress,
+        final String phoneNumber,
+        final String nickname
+    ) {
+        this.defaultShippingAddress = defaultShippingAddress;
+        this.phoneNumber = phoneNumber;
+        this.nickname = nickname;
+    }
 }

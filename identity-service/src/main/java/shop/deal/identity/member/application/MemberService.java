@@ -2,10 +2,12 @@ package shop.deal.identity.member.application;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import shop.deal.common.exception.BusinessException;
 import shop.deal.identity.member.application.dto.CreateProfileCommand;
 import shop.deal.identity.member.application.dto.MemberInfo;
+import shop.deal.identity.member.application.dto.UpdateProfileCommand;
 import shop.deal.identity.member.domain.exception.MemberErrorCode;
 import shop.deal.identity.member.domain.model.Member;
 import shop.deal.identity.member.domain.repository.MemberRepository;
@@ -37,6 +39,29 @@ public class MemberService  {
         return memberRepository.findById(memberId)
             .map(MemberInfo::from)
             .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    @Transactional
+    public MemberInfo updateProfile(final UpdateProfileCommand command, final Long memberId){
+
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        boolean nicknameChanged = !member.getNickname().equals(command.nickname());
+        if(nicknameChanged && memberRepository.existsByNickname(command.nickname())){
+            throw new BusinessException(MemberErrorCode.DUPLICATE_NICKNAME);
+        }
+
+        try {
+            member.changeProfile(
+                command.defaultShippingAddress(),
+                command.phoneNumber(),
+                command.nickname());
+        } catch ( DataIntegrityViolationException e){
+            throw new BusinessException(MemberErrorCode.DUPLICATE_NICKNAME);
+        }
+
+        return MemberInfo.from(member);
     }
 
     private String createDefaultNickname() {

@@ -3,6 +3,8 @@ package shop.deal.identity.member.presentation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,7 +19,7 @@ import static shop.deal.common.response.ApiResponse.fail;
 
 @Slf4j
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@RestControllerAdvice
+@RestControllerAdvice(assignableTypes = {MemberController.class, InternalMemberController.class})
 public class MemberExceptionHandler{
 
     @ExceptionHandler
@@ -38,6 +40,15 @@ public class MemberExceptionHandler{
 
         return ResponseEntity.badRequest()
             .body(fail(MemberErrorCode.INVALID_INPUT, errors));
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(final DataIntegrityViolationException e) {
+
+        log.warn("{} 발생! 닉네임 중복", e.getClass().getSimpleName(), e);
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(fail(MemberErrorCode.DUPLICATE_NICKNAME));
     }
 
 }
