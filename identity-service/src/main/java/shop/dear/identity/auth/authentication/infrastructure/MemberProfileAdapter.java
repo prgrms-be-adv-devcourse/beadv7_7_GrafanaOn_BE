@@ -1,14 +1,15 @@
-package shop.deal.identity.auth.authentication.infrastructure;
+package shop.dear.identity.auth.authentication.infrastructure;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import shop.deal.identity.auth.authentication.application.MemberProfilePort;
-import shop.deal.identity.auth.authentication.application.dto.MemberProfileResult;
-import shop.deal.identity.member.application.MemberService;
-import shop.deal.identity.member.application.dto.CreateProfileCommand;
-import shop.deal.identity.member.application.dto.MemberInfo;
+import shop.dear.identity.auth.authentication.application.MemberProfilePort;
+import shop.dear.identity.auth.authentication.application.dto.MemberProfileResult;
+import shop.dear.identity.member.application.MemberService;
+import shop.dear.identity.member.application.dto.CreateProfileCommand;
+import shop.dear.identity.member.application.dto.MemberInfo;
 
-// Member 코드가 shop.deal.identity.
+
+// Member 코드가 shop.dear.identity.
 @Component
 @RequiredArgsConstructor
 public class MemberProfileAdapter implements MemberProfilePort {

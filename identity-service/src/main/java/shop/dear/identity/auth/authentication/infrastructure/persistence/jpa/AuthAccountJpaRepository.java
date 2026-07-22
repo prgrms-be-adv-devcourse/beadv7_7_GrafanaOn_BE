@@ -1,7 +1,7 @@
-package shop.deal.identity.auth.authentication.infrastructure.persistence.jpa;
+package shop.dear.identity.auth.authentication.infrastructure.persistence.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import shop.deal.identity.auth.authentication.domain.AuthAccount;
+import shop.dear.identity.auth.authentication.domain.AuthAccount;
 
 import java.util.Optional;
 

@@ -1,4 +1,4 @@
-package shop.deal.identity.auth.authentication.domain;
+package shop.dear.identity.auth.authentication.domain;
 
 import java.util.Optional;
 

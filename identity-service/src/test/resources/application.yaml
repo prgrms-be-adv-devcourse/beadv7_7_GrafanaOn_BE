@@ -12,3 +12,10 @@ spring:
     properties:
       hibernate:
         format_sql: true
+auth:
+  jwt:
+    issuer: test-identity-service
+    # 테스트용 Secret
+    secret: dGVzdC1vbmx5LWp3dC1zZWNyZXQta2V5LW11c3QtYmUtMzItYnl0ZXMtbG9uZw==
+    access-token-expiration: 5m
+    refresh-token-expiration: 1h

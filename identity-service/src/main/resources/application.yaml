@@ -3,3 +3,11 @@ spring:
     name: identity-service
   profiles:
     active: local
+
+# JWT
+auth:
+  jwt:
+    issuer: ${JWT_ISSUER:dear-identity-service}
+    secret: ${JWT_SECRET}
+    access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:60m}
+    refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:14d}

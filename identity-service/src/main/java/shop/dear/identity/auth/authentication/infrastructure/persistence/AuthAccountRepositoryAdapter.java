@@ -1,10 +1,10 @@
-package shop.deal.identity.auth.authentication.infrastructure.persistence;
+package shop.dear.identity.auth.authentication.infrastructure.persistence;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import shop.deal.identity.auth.authentication.domain.AuthAccount;
-import shop.deal.identity.auth.authentication.domain.AuthAccountRepository;
-import shop.deal.identity.auth.authentication.infrastructure.persistence.jpa.AuthAccountJpaRepository;
+import shop.dear.identity.auth.authentication.domain.AuthAccount;
+import shop.dear.identity.auth.authentication.domain.AuthAccountRepository;
+import shop.dear.identity.auth.authentication.infrastructure.persistence.jpa.AuthAccountJpaRepository;
 
 import java.util.Optional;
 
