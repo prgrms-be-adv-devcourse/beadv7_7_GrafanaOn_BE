@@ -16,7 +16,9 @@ import lombok.NoArgsConstructor;
 import shop.dear.commerce.product.domain.constant.ProductCategory;
 import shop.dear.commerce.product.domain.constant.ProductSaleType;
 import shop.dear.commerce.product.domain.constant.ProductStatus;
+import shop.dear.commerce.product.domain.exception.ProductErrorCode;
 import shop.dear.common.audit.BaseEntity;
+import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -28,6 +30,8 @@ import java.util.List;
 @Table(name = "product")
 @Entity
 public class Product extends BaseEntity {
+
+    public static final int PRODUCT_IMAGE_COUNT_LIMIT = 5;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -72,7 +76,57 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductImage> images = new ArrayList<>();
 
-    public void addImage(final String url, final int sortOrder) {
+    private Product(
+        final Long sellerId,
+        final String name,
+        final String brand,
+        final String modelNumber,
+        final ProductCategory category,
+        final LocalDate releaseDate,
+        final BigDecimal price,
+        final ProductSaleType saleType,
+        final String description
+    ) {
+        this.sellerId = sellerId;
+        this.name = name;
+        this.brand = brand;
+        this.modelNumber = modelNumber;
+        this.category = category;
+        this.releaseDate = releaseDate;
+        this.price = price;
+        this.saleType = saleType;
+        this.status = ProductStatus.PREPARING;
+        this.viewCount = 0L;
+        this.description = description;
+    }
+
+    public static Product create(
+        final Long sellerId,
+        final String name,
+        final String brand,
+        final String modelNumber,
+        final ProductCategory category,
+        final LocalDate releaseDate,
+        final BigDecimal price,
+        final ProductSaleType saleType,
+        final String description
+    ) {
+        return new Product(
+            sellerId,
+            name,
+            brand,
+            modelNumber,
+            category,
+            releaseDate,
+            price,
+            saleType,
+            description
+        );
+    }
+
+    public ProductImage addImage(final String url, final int sortOrder) {
+        validateImageCountLimit();
+
         final ProductImage image = new ProductImage(
             this,
             url,
@@ -80,5 +134,13 @@ public class Product extends BaseEntity {
         );
 
         this.images.add(image);
+
+        return image;
+    }
+
+    public void validateImageCountLimit() {
+        if (this.images.size() >= PRODUCT_IMAGE_COUNT_LIMIT) {
+            throw new BusinessException(ProductErrorCode.PRODUCT_IMAGE_LIMIT_EXCEEDED);
+        }
     }
 }
