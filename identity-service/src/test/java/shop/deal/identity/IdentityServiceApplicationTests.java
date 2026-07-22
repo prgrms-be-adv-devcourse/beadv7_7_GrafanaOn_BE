@@ -1,10 +1,10 @@
-package shop.deal.member;
+package shop.deal.identity;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MemberServiceApplicationTests {
+class IdentityServiceApplicationTests {
 
     @Test
     void contextLoads() {
