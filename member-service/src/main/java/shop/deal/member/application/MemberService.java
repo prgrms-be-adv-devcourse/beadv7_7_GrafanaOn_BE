@@ -3,8 +3,10 @@ package shop.deal.member.application;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import shop.deal.common.exception.BusinessException;
 import shop.deal.member.application.dto.CreateProfileCommand;
 import shop.deal.member.application.dto.MemberInfo;
+import shop.deal.member.domain.exception.MemberErrorCode;
 import shop.deal.member.domain.model.Member;
 import shop.deal.member.domain.repository.MemberRepository;
 
@@ -28,6 +30,13 @@ public class MemberService  {
             nickname);
 
         return MemberInfo.from(memberRepository.save(member));
+    }
+
+    public MemberInfo getProfile(final Long memberId){
+
+        return memberRepository.findById(memberId)
+            .map(MemberInfo::from)
+            .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 
     private String createDefaultNickname() {

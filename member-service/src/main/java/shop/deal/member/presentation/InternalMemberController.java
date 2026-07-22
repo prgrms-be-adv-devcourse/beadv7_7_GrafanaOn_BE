@@ -2,6 +2,8 @@ package shop.deal.member.presentation;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +26,14 @@ public class InternalMemberController {
         MemberResponse member = MemberResponse.from(memberService.createProfile(request.toCommand()));
 
         return ApiResponse.successWithData(member.id());
+    }
+
+    @GetMapping("/{memberId}")
+    public ApiResponse<MemberResponse> getProfile(@PathVariable final Long memberId){
+
+        MemberResponse member = MemberResponse.from(memberService.getProfile(memberId));
+
+        return ApiResponse.successWithData(member);
     }
 
 }

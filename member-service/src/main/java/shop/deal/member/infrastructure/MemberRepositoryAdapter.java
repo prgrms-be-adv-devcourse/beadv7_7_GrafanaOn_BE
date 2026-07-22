@@ -5,6 +5,8 @@ import org.springframework.stereotype.Repository;
 import shop.deal.member.domain.model.Member;
 import shop.deal.member.domain.repository.MemberRepository;
 
+import java.util.Optional;
+
 @Repository
 @RequiredArgsConstructor
 public class MemberRepositoryAdapter implements MemberRepository {
@@ -19,5 +21,10 @@ public class MemberRepositoryAdapter implements MemberRepository {
     @Override
     public boolean existsByNickname(final String nickname) {
         return jpaRepository.existsByNickname(nickname);
+    }
+
+    @Override
+    public Optional<Member> findById(final Long id) {
+        return jpaRepository.findById(id);
     }
 }
