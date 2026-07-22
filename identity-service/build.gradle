@@ -4,6 +4,8 @@ plugins {
 
 dependencies {
     implementation project(':common')
+    // Spring Security의 crypto
+    implementation 'org.springframework.security:spring-security-crypto'
 
     runtimeOnly 'org.postgresql:postgresql'
 
