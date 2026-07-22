@@ -42,7 +42,7 @@ class ProductServiceTest {
 
     @DisplayName("유효한 파일 정보가 들어오면 각 정보에 대한 Presigned Url을 반환한다.")
     @Test
-    void givenMemberIdAndFileInfo_whenGeneratePresignedUrls_thenReturnUrls() {
+    void givenFileInfo_whenGeneratePresignedUrls_thenReturnUrls() {
         //Given
         final Long memberId = 1L;
         final GeneratePresignedUrlsCommand command = new GeneratePresignedUrlsCommand(List.of(
@@ -57,5 +57,24 @@ class ProductServiceTest {
         assertThat(result).hasSize(2);
         assertThat(result.get(0).sortOrder()).isEqualTo(1);
         assertThat(result.get(0).presignedUrl()).containsIgnoringCase("PNG");
+    }
+
+    @DisplayName("uploadFileType의 대소문자에 관계없이 Presigned URL을 정상 생성한다.")
+    @Test
+    void givenMixedCaseUploadFileType_whenGeneratePresignedUrls_thenReturnUrls() {
+        //Given
+        final Long memberId = 1L;
+        final GeneratePresignedUrlsCommand command = new GeneratePresignedUrlsCommand(List.of(
+            new GeneratePresignedUrlsCommand.FileInfoCommand(1, "PNG"),
+            new GeneratePresignedUrlsCommand.FileInfoCommand(2, "png")
+        ));
+
+        //When
+        final List<PresignedUrlInfo> result = productService.generatePresignedUrls(memberId, command);
+
+        //Then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).presignedUrl()).containsIgnoringCase("png");
+        assertThat(result.get(1).presignedUrl()).containsIgnoringCase("png");
     }
 }
