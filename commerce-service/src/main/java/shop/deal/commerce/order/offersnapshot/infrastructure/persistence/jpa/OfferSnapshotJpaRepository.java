@@ -1,7 +1,7 @@
-package shop.deal.commerce.order.offer.infrastructure.persistence.jpa;
+package shop.deal.commerce.order.offersnapshot.infrastructure.persistence.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import shop.deal.commerce.order.offer.domain.model.OfferSnapshot;
+import shop.deal.commerce.order.offersnapshot.domain.model.OfferSnapshot;
 
 public interface OfferSnapshotJpaRepository extends JpaRepository<OfferSnapshot, Long> {
 }

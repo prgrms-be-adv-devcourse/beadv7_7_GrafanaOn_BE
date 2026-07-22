@@ -1,9 +1,9 @@
-package shop.deal.commerce.order.offer.infrastructure.persistence;
+package shop.deal.commerce.order.offersnapshot.infrastructure.persistence;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import shop.deal.commerce.order.offer.domain.repository.OfferSnapshotRepository;
-import shop.deal.commerce.order.offer.infrastructure.persistence.jpa.OfferSnapshotJpaRepository;
+import shop.deal.commerce.order.offersnapshot.domain.repository.OfferSnapshotRepository;
+import shop.deal.commerce.order.offersnapshot.infrastructure.persistence.jpa.OfferSnapshotJpaRepository;
 
 @Repository
 @RequiredArgsConstructor

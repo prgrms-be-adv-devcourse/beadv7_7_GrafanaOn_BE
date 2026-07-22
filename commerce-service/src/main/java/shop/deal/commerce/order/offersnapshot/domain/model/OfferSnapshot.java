@@ -1,4 +1,4 @@
-package shop.deal.commerce.order.offer.domain.model;
+package shop.deal.commerce.order.offersnapshot.domain.model;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.deal.common.audit.BaseEntity;
 import shop.deal.common.exception.BusinessException;
-import shop.deal.commerce.order.offer.domain.exception.OfferErrorCode;
+import shop.deal.commerce.order.offersnapshot.domain.exception.OfferSnapshotErrorCode;
 
 import java.math.BigDecimal;
 
@@ -61,7 +61,7 @@ public class OfferSnapshot extends BaseEntity {
 
     public void linkToOffer(final Long offerId) {
         if (this.offerId != null) {
-            throw new BusinessException(OfferErrorCode.OFFER_SNAPSHOT_ALREADY_LINKED);
+            throw new BusinessException(OfferSnapshotErrorCode.OFFER_SNAPSHOT_ALREADY_LINKED);
         }
         this.offerId = offerId;
     }
