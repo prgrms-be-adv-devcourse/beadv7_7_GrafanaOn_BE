@@ -1,4 +1,4 @@
-rootProject.name = 'deal'
+rootProject.name = 'dear'
 
 include 'common'
 include 'identity-service'
