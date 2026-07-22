@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import shop.dear.common.audit.BaseEntity;
+import shop.deal.common.audit.BaseEntity;
+import shop.deal.identity.member.domain.constract.MemberStatus;
 
 @Entity
 @Table(name = "member")
@@ -28,6 +29,13 @@ public class Member extends BaseEntity {
     @Column(name = "nickname", nullable = false, unique = true)
     private String nickname;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private MemberStatus status;
+
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Seller seller;
+
     private Member(
         final String name,
         final String defaultShippingAddress,
@@ -38,6 +46,7 @@ public class Member extends BaseEntity {
         this.defaultShippingAddress = defaultShippingAddress;
         this.phoneNumber = phoneNumber;
         this.nickname = nickname;
+        this.status = MemberStatus.BUYER;
     }
 
     public static Member create(
@@ -62,5 +71,18 @@ public class Member extends BaseEntity {
         this.defaultShippingAddress = defaultShippingAddress;
         this.phoneNumber = phoneNumber;
         this.nickname = nickname;
+    }
+
+    public void registerAsSeller(final String bank, final String account) {
+        if (this.status == MemberStatus.SELLER) {
+            throw new IllegalStateException("이미 판매자로 등록된 회원입니다.");
+        }
+
+        this.status = MemberStatus.SELLER;
+        this.seller = new Seller(
+            bank,
+            account,
+            this
+        );
     }
 }
