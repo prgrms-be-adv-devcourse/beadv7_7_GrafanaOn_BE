@@ -138,7 +138,7 @@ public class Product extends BaseEntity {
         return image;
     }
 
-    public void validateImageCountLimit() {
+    private void validateImageCountLimit() {
         if (this.images.size() >= PRODUCT_IMAGE_COUNT_LIMIT) {
             throw new BusinessException(ProductErrorCode.PRODUCT_IMAGE_LIMIT_EXCEEDED);
         }
