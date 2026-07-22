@@ -13,6 +13,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.dear.common.audit.BaseEntity;
+import shop.dear.identity.member.domain.constract.SellerStatus;
 
 @Entity
 @Table(name = "seller")
@@ -30,6 +31,9 @@ public class Seller extends BaseEntity {
     @Column(name = "account", nullable = false)
     private String account;
 
+    @Column(name = "status", nullable = false)
+    private SellerStatus status;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false, unique = true)
     private Member member;
@@ -37,11 +41,13 @@ public class Seller extends BaseEntity {
     Seller(
         final String bank,
         final String account,
-        final Member member
+        final Member member,
+        final SellerStatus status
     ){
         this.bank = bank;
         this.account = account;
         this.member = member;
+        this.status = status;
     }
 
 }

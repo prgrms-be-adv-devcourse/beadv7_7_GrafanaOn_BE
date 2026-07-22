@@ -5,7 +5,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.dear.common.audit.BaseEntity;
-import shop.dear.identity.member.domain.constract.MemberStatus;
+import shop.dear.common.exception.BusinessException;
+import shop.dear.identity.member.domain.constract.MemberRoll;
+import shop.dear.identity.member.domain.constract.SellerStatus;
+import shop.dear.identity.member.domain.exception.MemberErrorCode;
 
 @Entity
 @Table(name = "member")
@@ -31,7 +34,7 @@ public class Member extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private MemberStatus status;
+    private MemberRoll status;
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Seller seller;
@@ -46,6 +49,7 @@ public class Member extends BaseEntity {
         this.defaultShippingAddress = defaultShippingAddress;
         this.phoneNumber = phoneNumber;
         this.nickname = nickname;
+        this.status = MemberRoll.BUYER;
     }
 
     public static Member create(
@@ -70,5 +74,16 @@ public class Member extends BaseEntity {
         this.defaultShippingAddress = defaultShippingAddress;
         this.phoneNumber = phoneNumber;
         this.nickname = nickname;
+    }
+
+    public void registerAsSeller(final String bank, final String account) {
+
+        this.status = MemberRoll.SELLER;
+        this.seller = new Seller(
+            bank,
+            account,
+            this,
+            SellerStatus.ACTIVE
+        );
     }
 }

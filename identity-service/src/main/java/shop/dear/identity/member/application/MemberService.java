@@ -7,7 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.identity.member.application.dto.CreateProfileCommand;
 import shop.dear.identity.member.application.dto.MemberInfo;
+import shop.dear.identity.member.application.dto.RegisterSellerCommand;
+import shop.dear.identity.member.application.dto.SellerInfo;
 import shop.dear.identity.member.application.dto.UpdateProfileCommand;
+import shop.dear.identity.member.domain.constract.SellerStatus;
+import shop.dear.identity.member.domain.model.Seller;
 import shop.dear.identity.member.domain.exception.MemberErrorCode;
 import shop.dear.identity.member.domain.model.Member;
 import shop.dear.identity.member.domain.repository.MemberRepository;
@@ -63,6 +67,37 @@ public class MemberService  {
         }
 
         return MemberInfo.from(member);
+    }
+
+    @Transactional
+    public void registerAsSeller(final Long memberId, final RegisterSellerCommand command) {
+
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        member.registerAsSeller(command.bank(), command.account());
+    }
+
+    @Transactional
+    public boolean checkSeller(final Long memberId) {
+
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        return member.getSeller().getStatus() == SellerStatus.ACTIVE;
+    }
+
+    public SellerInfo getMyAccount(final Long memberId) {
+
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        Seller seller = member.getSeller();
+        if (seller == null) {
+            throw new BusinessException(MemberErrorCode.NOT_SELLER);
+        }
+
+        return SellerInfo.from(seller);
     }
 
     private String createDefaultNickname() {

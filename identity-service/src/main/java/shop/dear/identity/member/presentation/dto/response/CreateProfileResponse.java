@@ -1,4 +1,4 @@
-package shop.dear.identity.member.presentation.dto;
+package shop.dear.identity.member.presentation.dto.response;
 
 import shop.dear.identity.member.application.dto.MemberInfo;
 

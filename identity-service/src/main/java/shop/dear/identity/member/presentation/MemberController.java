@@ -5,8 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import shop.dear.common.response.ApiResponse;
 import shop.dear.identity.member.application.MemberService;
-import shop.dear.identity.member.presentation.dto.MemberResponse;
-import shop.dear.identity.member.presentation.dto.UpdateProfileRequest;
+import shop.dear.identity.member.presentation.dto.request.SellerCheckRequest;
+import shop.dear.identity.member.presentation.dto.response.MemberResponse;
+import shop.dear.identity.member.presentation.dto.request.RegisterSellerRequest;
+import shop.dear.identity.member.presentation.dto.response.SellerAccountResponse;
+import shop.dear.identity.member.presentation.dto.response.SellerCheckResponse;
+import shop.dear.identity.member.presentation.dto.request.UpdateProfileRequest;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,5 +46,33 @@ public class MemberController {
 
         return ApiResponse.successWithData(member);
     }
+
+    @PostMapping("/me/seller")
+    public ApiResponse<Void> registerAsSeller(
+        @Valid @RequestBody final RegisterSellerRequest request,
+        @RequestHeader("X-Member-Id") Long memberId
+    ){
+
+        memberService.registerAsSeller(memberId, request.toCommand());
+
+        return ApiResponse.success();
+    }
+
+    @GetMapping("/me/seller")
+    public ApiResponse<SellerAccountResponse> getMyAccount(@RequestHeader("X-Member-Id") Long memberId){
+
+        SellerAccountResponse account = SellerAccountResponse.from(memberService.getMyAccount(memberId));
+
+        return ApiResponse.successWithData(account);
+    }
+
+    @GetMapping("/seller")
+    public ApiResponse<SellerCheckResponse> checkSeller(@RequestBody final SellerCheckRequest request){
+
+        boolean isSeller = memberService.checkSeller(request.memberId());
+
+        return ApiResponse.successWithData(SellerCheckResponse.from(isSeller));
+    }
+
 
 }
