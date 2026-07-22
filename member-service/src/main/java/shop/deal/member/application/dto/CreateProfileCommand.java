@@ -1,9 +1,7 @@
 package shop.deal.member.application.dto;
 
-public record SignUpCommand (
+public record CreateProfileCommand (
     String name,
-    String email,
-    String rawPassword,
     String defaultShippingAddress,
     String phoneNumber
 ){

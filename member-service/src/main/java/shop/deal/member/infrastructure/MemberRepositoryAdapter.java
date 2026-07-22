@@ -17,11 +17,6 @@ public class MemberRepositoryAdapter implements MemberRepository {
     }
 
     @Override
-    public boolean existsByEmail(final String email) {
-        return jpaRepository.existsByEmail(email);
-    }
-
-    @Override
     public boolean existsByNickname(final String nickname) {
         return jpaRepository.existsByNickname(nickname);
     }

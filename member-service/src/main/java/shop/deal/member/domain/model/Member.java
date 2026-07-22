@@ -19,12 +19,6 @@ public class Member extends BaseEntity {
     @Column(name = "name", length = 30, nullable = false)
     private String name;
 
-    @Column(name = "email", length = 150, nullable = false, unique = true)
-    private String email;
-
-    @Column(name = "password", nullable = false)
-    private String password;
-
     @Column(name = "default_shipping_address",nullable = false)
     private String defaultShippingAddress;
 
@@ -36,15 +30,11 @@ public class Member extends BaseEntity {
 
     private Member(
         final String name,
-        final String email,
-        final String password,
         final String defaultShippingAddress,
         final String phoneNumber,
         final String nickname
     ) {
         this.name = name;
-        this.email = email;
-        this.password = password;
         this.defaultShippingAddress = defaultShippingAddress;
         this.phoneNumber = phoneNumber;
         this.nickname = nickname;
@@ -52,16 +42,12 @@ public class Member extends BaseEntity {
 
     public static Member create(
         final String name,
-        final String email,
-        final String password,
         final String defaultShippingAddress,
         final String phoneNumber,
         final String nickname
     ) {
         return new Member(
             name,
-            email,
-            password,
             defaultShippingAddress,
             phoneNumber,
             nickname

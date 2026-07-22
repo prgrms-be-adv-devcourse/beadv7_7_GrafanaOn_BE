@@ -3,10 +3,8 @@ package shop.deal.member.application;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import shop.deal.common.exception.BusinessException;
+import shop.deal.member.application.dto.CreateProfileCommand;
 import shop.deal.member.application.dto.MemberInfo;
-import shop.deal.member.application.dto.SignUpCommand;
-import shop.deal.member.domain.exception.MemberErrorCode;
 import shop.deal.member.domain.model.Member;
 import shop.deal.member.domain.repository.MemberRepository;
 
@@ -17,22 +15,14 @@ import java.util.concurrent.ThreadLocalRandom;
 public class MemberService  {
 
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public MemberInfo signUp(final SignUpCommand command) {
-
-        if(memberRepository.existsByEmail(command.email())) {
-            throw new BusinessException(MemberErrorCode.DUPLICATE_EMAIL);
-        }
+    public MemberInfo createProfile(final CreateProfileCommand command) {
 
         String nickname = createDefaultNickname();
-        String encodePassword = passwordEncoder.encode(command.rawPassword());
 
         Member member = Member.create(
             command.name(),
-            command.email(),
-            encodePassword,
             command.defaultShippingAddress(),
             command.phoneNumber(),
             nickname);

@@ -7,12 +7,11 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.ResultActions;
 import shop.deal.member.application.MemberService;
+import shop.deal.member.presentation.dto.CreateProfileRequest;
 import tools.jackson.databind.ObjectMapper;
 import org.springframework.test.web.servlet.MockMvc;
-import shop.deal.common.exception.BusinessException;
 import shop.deal.member.application.dto.MemberInfo;
 import shop.deal.member.domain.exception.MemberErrorCode;
-import shop.deal.member.presentation.dto.SignUpRequest;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -20,8 +19,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(MemberController.class)
-class MemberSignUpTest {
+@WebMvcTest(InternalMemberController.class)
+class InternalMemberTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -32,26 +31,23 @@ class MemberSignUpTest {
     @MockitoBean
     private MemberService memberService;
 
-    private SignUpRequest validRequest() {
+    private CreateProfileRequest validRequest() {
 
-        return new SignUpRequest(
+        return new CreateProfileRequest(
             "테스트",
-            "test@example.com",
-            "abc12345!",
             "서울시 강남구",
             "010-1234-5678"
         );
     }
 
     @Test
-    @DisplayName("회원가입에 성공하면 상태코드 200과 회원 정보를 반환한다")
-    void signUp_success() throws Exception {
+    @DisplayName("프로필 생성에 성공하면 상태코드 200과 memberId를 반환한다")
+    void createProfile_success() throws Exception {
 
-        given(memberService.signUp(any()))
+        given(memberService.createProfile(any()))
             .willReturn(new MemberInfo(
                     1L,
                     "테스트",
-                    "test@example.com",
                     "서울시 강남구",
                     "010-1234-5678",
                     "user_000001"
@@ -59,53 +55,28 @@ class MemberSignUpTest {
             );
 
         final ResultActions result = mockMvc
-            .perform(post("/api/members/signup")
+            .perform(post("/internal/members")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(validRequest())));
 
         result
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value("success"))
-            .andExpect(jsonPath("$.data.id").value(1L))
-            .andExpect(jsonPath("$.data.name").value("테스트"))
-            .andExpect(jsonPath("$.data.email").value("test@example.com"))
-            .andExpect(jsonPath("$.data.defaultShippingAddress").value("서울시 강남구"))
-            .andExpect(jsonPath("$.data.phoneNumber").value("010-1234-5678"))
-            .andExpect(jsonPath("$.data.nickname").value("user_000001"));
-    }
-
-    @Test
-    @DisplayName("이미 가입된 이메일이면 상태코드 400과 DUPLICATE_EMAIL 에러코드를 반환한다")
-    void signUp_duplicateEmail() throws Exception {
-
-        given(memberService.signUp(any()))
-            .willThrow(new BusinessException(MemberErrorCode.DUPLICATE_EMAIL));
-
-        final ResultActions result = mockMvc
-            .perform(post("/api/members/signup")
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(validRequest())));
-
-        result
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value(MemberErrorCode.DUPLICATE_EMAIL.getValue()))
-            .andExpect(jsonPath("$.message").value(MemberErrorCode.DUPLICATE_EMAIL.getMessage()));
+            .andExpect(jsonPath("$.data").value(1L));
     }
 
     @Test
     @DisplayName("입력데이터 형식이 맞지 않으면 상태코드 400과 INVALID_INPUT 에러코드를 반환한다")
-    void signUp_validPassword() throws Exception{
+    void createProfile_invalidInput() throws Exception{
 
-        SignUpRequest request = new SignUpRequest(
+        CreateProfileRequest request = new CreateProfileRequest(
             "",
-            "testexample.com",
-            "abc12345",
             "",
             "010-1234-56789"
         );
 
         final ResultActions result = mockMvc
-            .perform(post("/api/members/signup")
+            .perform(post("/internal/members")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(request)));
 

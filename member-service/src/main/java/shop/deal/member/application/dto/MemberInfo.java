@@ -5,7 +5,6 @@ import shop.deal.member.domain.model.Member;
 public record MemberInfo(
     Long id,
     String name,
-    String email,
     String defaultShippingAddress,
     String phoneNumber,
     String nickname
@@ -14,7 +13,6 @@ public record MemberInfo(
         return new MemberInfo(
             member.getId(),
             member.getName(),
-            member.getEmail(),
             member.getDefaultShippingAddress(),
             member.getPhoneNumber(),
             member.getNickname()

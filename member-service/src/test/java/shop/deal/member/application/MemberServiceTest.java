@@ -6,7 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import shop.deal.member.application.dto.SignUpCommand;
+import shop.deal.member.application.dto.CreateProfileCommand;
 import shop.deal.member.domain.repository.MemberRepository;
 
 import static org.mockito.BDDMockito.given;
@@ -19,20 +19,15 @@ public class MemberServiceTest {
     @Mock
     private MemberRepository memberRepository;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
     @InjectMocks
     private MemberService memberService;
 
     @Test
-    @DisplayName("회원가입 성공")
-    void signUpTest(){
+    @DisplayName("프로필생성 성공")
+    void createProfileTest(){
 
-        SignUpCommand command = new SignUpCommand(
+        CreateProfileCommand command = new CreateProfileCommand(
             "테스트",
-            "test@example.com",
-            "abc12345!",
             "서울시 강남구",
             "010-1234-5678"
         );
@@ -41,10 +36,8 @@ public class MemberServiceTest {
             .save(any()))
             .willAnswer(invocation -> invocation.getArgument(0));
 
-        memberService.signUp(command);
+        memberService.createProfile(command);
 
-        verify(memberRepository).existsByEmail(command.email());
-        verify(passwordEncoder).encode(command.rawPassword());
         verify(memberRepository).save(any());
     }
 }

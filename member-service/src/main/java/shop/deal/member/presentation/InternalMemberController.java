@@ -8,12 +8,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import shop.deal.common.response.ApiResponse;
 import shop.deal.member.application.MemberService;
+import shop.deal.member.presentation.dto.CreateProfileRequest;
 import shop.deal.member.presentation.dto.MemberResponse;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/members")
-public class MemberController {
+@RequestMapping("/internal/members")
+public class InternalMemberController {
 
     private final MemberService memberService;
+
+    @PostMapping
+    public ApiResponse<Long> createProfile(@Valid @RequestBody final CreateProfileRequest request){
+
+        MemberResponse member = MemberResponse.from(memberService.createProfile(request.toCommand()));
+
+        return ApiResponse.successWithData(member.id());
+    }
+
 }
