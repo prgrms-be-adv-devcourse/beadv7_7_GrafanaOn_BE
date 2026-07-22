@@ -1,6 +1,6 @@
 package shop.deal.commerce.order.purchase.domain.repository;
 
-import shop.deal.commerce.order.purchase.domain.Purchase;
+import shop.deal.commerce.order.purchase.domain.model.Purchase;
 
 import java.util.Optional;
 

@@ -1,10 +1,6 @@
-package shop.deal.commerce.order.offer.domain;
+package shop.deal.commerce.order.offer.domain.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,11 +12,11 @@ import java.math.BigDecimal;
 
 /**
  * 오퍼 작성 시작 시점의 상품 정보(모델 번호, 가격)를 보존하는 스냅샷 엔티티
- * 오퍼 생성 전까지는 독립적으로 존재하다가 오퍼 제출 시점에 offerId로 연결됨
  */
-@Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
+@Table(name = "offer_snapshot")
 public class OfferSnapshot extends BaseEntity {
 
     @Id
@@ -36,8 +32,8 @@ public class OfferSnapshot extends BaseEntity {
     @Column(name = "product_id", nullable = false)
     private Long productId;
 
-    @Column(name = "model_snapshot", nullable = false, length = 100)
-    private String modelSnapshot;
+    @Column(name = "model_number_snapshot", nullable = false, length = 100)
+    private String modelNumberSnapshot;
 
     @Column(name = "price_snapshot", nullable = false, precision = 15, scale = 2)
     private BigDecimal priceSnapshot;
@@ -45,22 +41,22 @@ public class OfferSnapshot extends BaseEntity {
     private OfferSnapshot(
         final Long writerId,
         final Long productId,
-        final String modelSnapshot,
+        final String modelNumberSnapshot,
         final BigDecimal priceSnapshot
     ) {
         this.writerId = writerId;
         this.productId = productId;
-        this.modelSnapshot = modelSnapshot;
+        this.modelNumberSnapshot = modelNumberSnapshot;
         this.priceSnapshot = priceSnapshot;
     }
 
     public static OfferSnapshot create(
         final Long writerId,
         final Long productId,
-        final String modelSnapshot,
+        final String modelNumberSnapshot,
         final BigDecimal priceSnapshot
     ) {
-        return new OfferSnapshot(writerId, productId, modelSnapshot, priceSnapshot);
+        return new OfferSnapshot(writerId, productId, modelNumberSnapshot, priceSnapshot);
     }
 
     public void linkToOffer(final Long offerId) {
