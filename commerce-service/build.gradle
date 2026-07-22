@@ -12,3 +12,4 @@ dependencies {
 //plain jar 생성 false
 tasks.named('jar') {
     enabled = false
+}
