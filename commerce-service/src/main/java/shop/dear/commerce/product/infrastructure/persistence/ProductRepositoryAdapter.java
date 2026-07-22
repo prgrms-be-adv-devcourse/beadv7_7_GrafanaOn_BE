@@ -13,7 +13,7 @@ public class ProductRepositoryAdapter implements ProductRepository {
     private final ProductJpaRepository productRepository;
 
     @Override
-    public void save(final Product product) {
-        productRepository.save(product);
+    public Product save(final Product product) {
+        return productRepository.save(product);
     }
 }
