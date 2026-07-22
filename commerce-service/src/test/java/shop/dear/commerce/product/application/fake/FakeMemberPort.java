@@ -1,5 +1,6 @@
 package shop.dear.commerce.product.application.fake;
 
+import shop.dear.commerce.product.application.dto.external.IsSeller;
 import shop.dear.commerce.product.application.dto.external.MemberProfile;
 import shop.dear.commerce.product.application.port.MemberPort;
 
@@ -14,5 +15,10 @@ public class FakeMemberPort implements MemberPort {
             "address",
             "number"
         );
+    }
+
+    @Override
+    public IsSeller isSeller(final Long memberId) {
+        return new IsSeller(true);
     }
 }
