@@ -1,15 +1,11 @@
-package shop.deal.commerce.order.offer.domain;
+package shop.deal.commerce.order.offer.domain.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import shop.deal.commerce.order.offer.domain.constant.OfferStatus;
+import shop.deal.commerce.order.offer.domain.constant.PaymentStatus;
 import shop.deal.common.audit.BaseEntity;
 import shop.deal.common.exception.BusinessException;
 import shop.deal.commerce.order.offer.domain.exception.OfferErrorCode;
@@ -19,9 +15,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-@Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "offer")
+@Entity
 public class Offer extends BaseEntity {
 
     private static final String NUMBER_PREFIX = "OF";
@@ -31,7 +28,7 @@ public class Offer extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, unique = true, length = 50)
     private String number;
 
     @Column(name = "buyer_id", nullable = false)
@@ -43,21 +40,21 @@ public class Offer extends BaseEntity {
     @Column(name = "product_id", nullable = false)
     private Long productId;
 
-    @Column(name = "offer_amount", nullable = false, precision = 15, scale = 2)
-    private BigDecimal offerAmount;
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal amount;
 
-    @Column(name = "offer_title", nullable = false, columnDefinition = "TEXT")
-    private String offerTitle;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String title;
 
-    @Column(name = "offer_story", nullable = false, columnDefinition = "TEXT")
-    private String offerStory;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String story;
 
     @Column(nullable = false, length = 255)
     private String delivery;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "offer_status", nullable = false, length = 30)
-    private OfferStatus offerStatus;
+    @Column(nullable = false, length = 30)
+    private OfferStatus status;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", nullable = false, length = 30)
@@ -67,20 +64,20 @@ public class Offer extends BaseEntity {
         final Long buyerId,
         final Long sellerId,
         final Long productId,
-        final BigDecimal offerAmount,
-        final String offerTitle,
-        final String offerStory,
+        final BigDecimal amount,
+        final String title,
+        final String story,
         final String delivery
     ) {
         this.number = generateNumber();
         this.buyerId = buyerId;
         this.sellerId = sellerId;
         this.productId = productId;
-        this.offerAmount = offerAmount;
-        this.offerTitle = offerTitle;
-        this.offerStory = offerStory;
+        this.amount = amount;
+        this.title = title;
+        this.story = story;
         this.delivery = delivery;
-        this.offerStatus = OfferStatus.PENDING;
+        this.status = OfferStatus.PENDING;
         this.paymentStatus = PaymentStatus.PAYMENT_PENDING;
     }
 
@@ -88,12 +85,12 @@ public class Offer extends BaseEntity {
         final Long buyerId,
         final Long sellerId,
         final Long productId,
-        final BigDecimal offerAmount,
-        final String offerTitle,
-        final String offerStory,
+        final BigDecimal amount,
+        final String title,
+        final String story,
         final String delivery
     ) {
-        return new Offer(buyerId, sellerId, productId, offerAmount, offerTitle, offerStory, delivery);
+        return new Offer(buyerId, sellerId, productId, amount, title, story, delivery);
     }
 
     private static String generateNumber() {
@@ -105,17 +102,29 @@ public class Offer extends BaseEntity {
     public void accept() {
         validateOfferStatus(OfferStatus.PENDING);
         validatePaymentStatus(PaymentStatus.PAID);
-        this.offerStatus = OfferStatus.ACCEPTED;
+        this.status = OfferStatus.ACCEPTED;
+    }
+
+    private void validateOfferStatus(final OfferStatus expected) {
+        if (this.status != expected) {
+            throw new BusinessException(OfferErrorCode.INVALID_OFFER_STATUS_TRANSITION);
+        }
+    }
+
+    private void validatePaymentStatus(final PaymentStatus expected) {
+        if (this.paymentStatus != expected) {
+            throw new BusinessException(OfferErrorCode.INVALID_OFFER_PAYMENT_STATUS_TRANSITION);
+        }
     }
 
     public void reject() {
         validateOfferStatus(OfferStatus.PENDING);
-        this.offerStatus = OfferStatus.REJECTED;
+        this.status = OfferStatus.REJECTED;
     }
 
     public void cancel() {
         validateOfferStatus(OfferStatus.PENDING);
-        this.offerStatus = OfferStatus.CANCELLED;
+        this.status = OfferStatus.CANCELLED;
     }
 
     public void markPaid() {
@@ -126,17 +135,5 @@ public class Offer extends BaseEntity {
     public void markPaymentFailed() {
         validatePaymentStatus(PaymentStatus.PAYMENT_PENDING);
         this.paymentStatus = PaymentStatus.PAYMENT_FAILED;
-    }
-
-    private void validateOfferStatus(final OfferStatus expected) {
-        if (this.offerStatus != expected) {
-            throw new BusinessException(OfferErrorCode.INVALID_OFFER_STATUS_TRANSITION);
-        }
-    }
-
-    private void validatePaymentStatus(final PaymentStatus expected) {
-        if (this.paymentStatus != expected) {
-            throw new BusinessException(OfferErrorCode.INVALID_OFFER_PAYMENT_STATUS_TRANSITION);
-        }
     }
 }

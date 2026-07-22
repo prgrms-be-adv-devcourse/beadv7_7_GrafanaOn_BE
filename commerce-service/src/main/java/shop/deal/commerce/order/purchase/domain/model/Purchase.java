@@ -1,15 +1,10 @@
-package shop.deal.commerce.order.purchase.domain;
+package shop.deal.commerce.order.purchase.domain.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import shop.deal.commerce.order.purchase.domain.constant.PurchaseStatus;
 import shop.deal.common.audit.BaseEntity;
 import shop.deal.common.exception.BusinessException;
 import shop.deal.commerce.order.purchase.domain.exception.PurchaseErrorCode;
@@ -20,9 +15,10 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-@Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "purchase")
+@Entity
 public class Purchase extends BaseEntity {
 
     private static final DateTimeFormatter NUMBER_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -50,8 +46,8 @@ public class Purchase extends BaseEntity {
     @Column(nullable = false, length = 30)
     private PurchaseStatus status;
 
-    @Column(name = "ordered_at", nullable = false)
-    private OffsetDateTime orderedAt;
+    @Column(name = "purchased_at", nullable = false)
+    private OffsetDateTime purchasedAt;
 
     @Column(name = "payment_due_at")
     private OffsetDateTime paymentDueAt;
@@ -78,7 +74,7 @@ public class Purchase extends BaseEntity {
         this.delivery = delivery;
         this.paymentDueAt = paymentDueAt;
         this.status = PurchaseStatus.PENDING_PAYMENT;
-        this.orderedAt = OffsetDateTime.now();
+        this.purchasedAt = OffsetDateTime.now();
     }
 
     public static Purchase create(
@@ -106,6 +102,19 @@ public class Purchase extends BaseEntity {
         this.paidAt = OffsetDateTime.now();
     }
 
+    private void validateStatus(final PurchaseStatus... expected) {
+        validateStatus(PurchaseErrorCode.INVALID_PURCHASE_STATUS_TRANSITION, expected);
+    }
+
+    private void validateStatus(final PurchaseErrorCode errorCode, final PurchaseStatus... expected) {
+        for (final PurchaseStatus status : expected) {
+            if (this.status == status) {
+                return;
+            }
+        }
+        throw new BusinessException(errorCode);
+    }
+
     public void failPayment() {
         validateStatus(PurchaseStatus.PENDING_PAYMENT);
         this.status = PurchaseStatus.PAYMENT_FAILED;
@@ -129,18 +138,5 @@ public class Purchase extends BaseEntity {
     public void refund() {
         validateStatus(PurchaseErrorCode.PURCHASE_CANNOT_BE_REFUNDED, PurchaseStatus.PAID, PurchaseStatus.PURCHASE_CONFIRMED);
         this.status = PurchaseStatus.REFUNDED;
-    }
-
-    private void validateStatus(final PurchaseStatus... expected) {
-        validateStatus(PurchaseErrorCode.INVALID_PURCHASE_STATUS_TRANSITION, expected);
-    }
-
-    private void validateStatus(final PurchaseErrorCode errorCode, final PurchaseStatus... expected) {
-        for (final PurchaseStatus status : expected) {
-            if (this.status == status) {
-                return;
-            }
-        }
-        throw new BusinessException(errorCode);
     }
 }

@@ -1,4 +1,4 @@
-package shop.deal.commerce.order.offer.domain;
+package shop.deal.commerce.order.offer.domain.constant;
 
 public enum OfferStatus {
     PENDING,

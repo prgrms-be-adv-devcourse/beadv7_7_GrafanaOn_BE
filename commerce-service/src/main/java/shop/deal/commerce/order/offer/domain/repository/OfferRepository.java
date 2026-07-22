@@ -1,6 +1,6 @@
 package shop.deal.commerce.order.offer.domain.repository;
 
-import shop.deal.commerce.order.offer.domain.Offer;
+import shop.deal.commerce.order.offer.domain.model.Offer;
 
 import java.util.Optional;
 

@@ -1,4 +1,4 @@
-package shop.deal.commerce.order.purchase.domain;
+package shop.deal.commerce.order.purchase.domain.constant;
 
 public enum PurchaseStatus {
     PENDING_PAYMENT,
