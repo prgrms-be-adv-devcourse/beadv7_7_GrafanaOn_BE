@@ -3,3 +3,6 @@ spring:
     name: identity-service
   profiles:
     active: local
+
+server:
+  port: 8081

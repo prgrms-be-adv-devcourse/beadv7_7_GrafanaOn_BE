@@ -4,6 +4,9 @@ spring:
   profiles:
     active: local
 
+server:
+  port: 8082
+
 order:
   client:
     base-url: ${ORDER_CLIENT_BASE_URL}
