@@ -1,9 +1,10 @@
-package shop.deal.identity.member.infrastructure;
+package shop.deal.identity.member.infrastructure.persistence;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import shop.deal.identity.member.domain.model.Member;
 import shop.deal.identity.member.domain.repository.MemberRepository;
+import shop.deal.identity.member.infrastructure.persistence.jpa.MemberJpaRepository;
 
 import java.util.Optional;
 

@@ -1,9 +1,9 @@
 package shop.deal.identity.member.application;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import shop.deal.common.exception.BusinessException;
 import shop.deal.identity.member.application.dto.CreateProfileCommand;
 import shop.deal.identity.member.application.dto.MemberInfo;
@@ -16,6 +16,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MemberService  {
 
     private final MemberRepository memberRepository;

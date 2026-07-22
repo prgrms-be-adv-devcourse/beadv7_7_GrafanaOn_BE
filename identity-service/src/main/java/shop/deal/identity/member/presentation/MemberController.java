@@ -34,8 +34,10 @@ public class MemberController {
     }
 
     @PatchMapping("/profile/me")
-    public ApiResponse<MemberResponse> updateProfile(@Valid @RequestBody final UpdateProfileRequest request
-                                                     , @RequestHeader("X-Member-Id") Long memberId){
+    public ApiResponse<MemberResponse> updateProfile(
+        @Valid @RequestBody final UpdateProfileRequest request,
+        @RequestHeader("X-Member-Id") Long memberId
+    ){
 
         MemberResponse member = MemberResponse.from(memberService.updateProfile(request.toCommand(), memberId));
 
