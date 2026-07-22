@@ -9,3 +9,6 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
 }
+//plain jar 생성 false
+tasks.named('jar') {
+    enabled = false
