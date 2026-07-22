@@ -9,6 +9,8 @@ import shop.dear.commerce.product.application.dto.external.GeneratePresignedUrls
 import shop.dear.commerce.product.application.dto.external.MemberProfile;
 import shop.dear.commerce.product.application.port.MemberPort;
 import shop.dear.commerce.product.application.port.PresignedUrlGenerator;
+import shop.dear.commerce.product.application.port.ProductEventPublisher;
+import shop.dear.commerce.product.domain.event.ProductChangedEvent;
 import shop.dear.commerce.product.domain.exception.ProductErrorCode;
 import shop.dear.commerce.product.domain.model.Product;
 import shop.dear.commerce.product.domain.model.ProductImage;
@@ -24,6 +26,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final MemberPort memberPort;
+    private final ProductEventPublisher productEventPublisher;
     private final PresignedUrlGenerator presignedUrlGenerator;
 
     public List<PresignedUrlInfo> generatePresignedUrls(final Long memberId, final GeneratePresignedUrlsCommand generatePresignedUrlsCommand) {
@@ -61,7 +64,19 @@ public class ProductService {
             }
         }
 
-        productRepository.save(product);
+        final Product savedProduct = productRepository.save(product);
+
+        productEventPublisher.publish(new ProductChangedEvent(
+            savedProduct.getId(),
+            savedProduct.getName(),
+            savedProduct.getModelNumber(),
+            savedProduct.getCategory().toString(),
+            savedProduct.getReleaseDate(),
+            savedProduct.getPrice(),
+            savedProduct.getSaleType().toString(),
+            savedProduct.getViewCount(),
+            savedProduct.getDescription()
+        ));
     }
 
     private void validateSeller(final Long memberId) {
