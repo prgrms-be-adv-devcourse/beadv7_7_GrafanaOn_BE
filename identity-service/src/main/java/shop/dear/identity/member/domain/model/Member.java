@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.dear.common.audit.BaseEntity;
+import shop.dear.identity.member.domain.constract.MemberStatus;
 
 @Entity
 @Table(name = "member")
@@ -27,6 +28,13 @@ public class Member extends BaseEntity {
 
     @Column(name = "nickname", nullable = false, unique = true)
     private String nickname;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private MemberStatus status;
+
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Seller seller;
 
     private Member(
         final String name,
