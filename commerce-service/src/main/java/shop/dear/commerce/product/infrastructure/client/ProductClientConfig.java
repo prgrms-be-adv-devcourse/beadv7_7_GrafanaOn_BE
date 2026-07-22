@@ -9,7 +9,7 @@ import org.springframework.web.client.RestClient;
 public class ProductClientConfig {
 
     @Bean
-    RestClient productRestClient(@Value("${order.client.base-url:http://localhost:8080}") final String baseUrl) {
+    RestClient productRestClient(@Value("${order.client.base-url}") final String baseUrl) {
         return RestClient.builder()
             .baseUrl(baseUrl)
             .build();
