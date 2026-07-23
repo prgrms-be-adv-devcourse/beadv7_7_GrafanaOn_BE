@@ -26,10 +26,9 @@ public class AuthService {
      * [회원가입 순서]
      * 1. 이메일 중복 확인
      * 2. 비밀번호 BCrypt 암호화
-     * 3. PENDING AuthAccount 저장
-     * 4. Member 프로필 생성
-     * 5. memberId 연결 및 ACTIVE 전환
-     * 6. AuthAccount 저장
+     * 3. Member 프로필 생성
+     * 4. memberId 연결 및 ACTIVE 전환
+     * 5. AuthAccount 저장
      */
     @Transactional
     public SignUpResult signUp(SignUpCommand command) {
@@ -84,27 +83,7 @@ public class AuthService {
             );
         }
 
-        if (!authAccount.isActive()) {
-            throw new BusinessException(
-                    AuthErrorCode.INACTIVE_ACCOUNT
-            );
-        }
-
-        TokenResult tokenResult = tokenProviderPort.issueTokens(
-                authAccount.getMemberId(),
-                authAccount.getRole()
-        );
-
-        Instant refreshTokenExpiresAt = Instant.now()
-                .plusSeconds(tokenResult.refreshTokenExpiresInSeconds());
-
-        refreshTokenStorePort.save(
-                authAccount.getMemberId(),
-                tokenResult.refreshToken(),
-                refreshTokenExpiresAt
-        );
-
-        return tokenResult;
+        return issueAndStoreTokens(authAccount);
     }
 
     /**
@@ -136,7 +115,17 @@ public class AuthService {
                 .orElseThrow(() -> new BusinessException(
                         AuthErrorCode.AUTH_ACCOUNT_NOT_FOUND
                 ));
+        return issueAndStoreTokens(authAccount);
+    }
 
+    @Transactional
+    public void logout(LogoutCommand command) {
+        refreshTokenStorePort.deleteByMemberId(
+                command.memberId()
+        );
+    }
+
+    private TokenResult issueAndStoreTokens(AuthAccount authAccount) {
         if (!authAccount.isActive()) {
             throw new BusinessException(
                     AuthErrorCode.INACTIVE_ACCOUNT
@@ -148,9 +137,10 @@ public class AuthService {
                 authAccount.getRole()
         );
 
-        Instant refreshTokenExpiresAt = Instant.now().plusSeconds(
-                tokenResult.refreshTokenExpiresInSeconds()
-        );
+        Instant refreshTokenExpiresAt = Instant.now()
+                .plusSeconds(
+                        tokenResult.refreshTokenExpiresInSeconds()
+                );
 
         refreshTokenStorePort.save(
                 authAccount.getMemberId(),
@@ -159,12 +149,5 @@ public class AuthService {
         );
 
         return tokenResult;
-    }
-
-    @Transactional
-    public void logout(LogoutCommand command) {
-        refreshTokenStorePort.deleteByMemberId(
-                command.memberId()
-        );
     }
 }

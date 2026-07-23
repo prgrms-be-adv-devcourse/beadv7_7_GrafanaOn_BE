@@ -4,7 +4,7 @@ import shop.dear.identity.auth.authentication.application.dto.TokenResult;
 
 // Token 응답 DTO
 public record TokenResponse(
-        String accessTokens,
+        String accessToken,
         String tokenType,
         long expiresIn
 ) {

@@ -3,6 +3,7 @@ package shop.dear.common.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -26,8 +27,13 @@ public class CommonExceptionHandler {
 
     @ExceptionHandler
     public ResponseEntity<ApiResponse<Void>> handleBusinessException(final BusinessException e) {
+        HttpStatus status =
+                e.getErrorCode()
+                        == CommonErrorCode.AUTHENTICATION_REQUIRED
+                        ? HttpStatus.UNAUTHORIZED
+                        : HttpStatus.BAD_REQUEST;
         log.warn("{} 발생! errorCode={}", e.getClass().getSimpleName(), e.getErrorCode().getValue(), e);
-        return ResponseEntity.badRequest()
+        return ResponseEntity.status(status)
             .body(fail(e.getErrorCode()));
     }
 

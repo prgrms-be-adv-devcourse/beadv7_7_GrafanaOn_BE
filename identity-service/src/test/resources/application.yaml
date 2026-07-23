@@ -19,3 +19,9 @@ auth:
     secret: dGVzdC1vbmx5LWp3dC1zZWNyZXQta2V5LW11c3QtYmUtMzItYnl0ZXMtbG9uZw==
     access-token-expiration: 5m
     refresh-token-expiration: 1h
+
+  cookie:
+    name: refreshToken
+    secure: false
+    same-site: Strict
+    path: /api/auth
