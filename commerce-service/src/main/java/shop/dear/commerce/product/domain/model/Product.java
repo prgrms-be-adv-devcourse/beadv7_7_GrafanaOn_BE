@@ -126,32 +126,6 @@ public class Product extends BaseEntity {
         );
     }
 
-    public ProductImage addImage(final String url, final int sortOrder) {
-        validateImageCountLimit();
-
-        final ProductImage image = new ProductImage(
-            this,
-            url,
-            sortOrder
-        );
-
-        this.images.add(image);
-
-        return image;
-    }
-
-    private void validateImageCountLimit() {
-        if (this.images.size() >= PRODUCT_IMAGE_COUNT_LIMIT) {
-            throw new BusinessException(ProductErrorCode.PRODUCT_IMAGE_LIMIT_EXCEEDED);
-        }
-    }
-
-    public void validateOwner(final Long memberId) {
-        if (!this.sellerId.equals(memberId)) {
-            throw new BusinessException(NOT_PRODUCT_SELLER);
-        }
-    }
-
     public Product update(
         final String name,
         final String brand,
@@ -174,7 +148,28 @@ public class Product extends BaseEntity {
         return this;
     }
 
-    public boolean validateUpdatable() {
+    public ProductImage addImage(final String url, final int sortOrder) {
+        validateImageCountLimit();
+
+        final ProductImage image = ProductImage.create(this, url, sortOrder);
+        this.images.add(image);
+
+        return image;
+    }
+
+    private void validateImageCountLimit() {
+        if (this.images.size() >= PRODUCT_IMAGE_COUNT_LIMIT) {
+            throw new BusinessException(ProductErrorCode.PRODUCT_IMAGE_LIMIT_EXCEEDED);
+        }
+    }
+
+    public void validateOwner(final Long memberId) {
+        if (!this.sellerId.equals(memberId)) {
+            throw new BusinessException(NOT_PRODUCT_SELLER);
+        }
+    }
+
+    public boolean isUpdatable() {
         return this.status == ProductStatus.PREPARING || this.status == ProductStatus.ON_SALE;
     }
 }
