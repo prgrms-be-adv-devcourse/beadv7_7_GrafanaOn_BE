@@ -93,6 +93,4 @@ public class MemberController {
 
         return ApiResponse.successWithData(SellerCheckResponse.from(isSeller));
     }
-
-
 }

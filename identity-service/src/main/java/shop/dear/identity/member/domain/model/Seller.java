@@ -52,16 +52,16 @@ public class Seller extends BaseEntity {
         this.status = SellerStatus.ACTIVE;
     }
 
-    public void changeAccount(final String bank, final String account) {
+    void changeAccount(final String bank, final String account) {
         this.bank = bank;
         this.account = account;
     }
 
-    public void withdrawing(){
+    void withdrawing(){
         this.status = SellerStatus.WITHDRAWING;
     }
 
-    public void withdraw() {
+    void withdraw() {
         this.status = SellerStatus.WITHDRAWN;
         this.bank = "****";
         this.account = "****";
