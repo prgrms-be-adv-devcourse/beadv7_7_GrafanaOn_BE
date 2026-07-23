@@ -87,8 +87,9 @@ public class MemberService  {
         }
 
         Seller seller = member.getSeller();
+        String decodedAccount = encryptor.decode(seller.getAccount());
 
-        return SellerInfo.from(seller);
+        return new SellerInfo(seller.getBank(), maskAccount(decodedAccount));
     }
 
     @Transactional
@@ -140,5 +141,18 @@ public class MemberService  {
         } while (memberRepository.existsByNickname(nickname));
 
         return nickname;
+    }
+
+    private String maskAccount(final String account) {
+
+        if (account.length() <= 6) {
+            return "*".repeat(account.length());
+        }
+
+        String prefix = account.substring(0, 3);
+        String suffix = account.substring(account.length() - 3);
+        int maskedLength = account.length() - 6;
+
+        return prefix + "*".repeat(maskedLength) + suffix;
     }
 }

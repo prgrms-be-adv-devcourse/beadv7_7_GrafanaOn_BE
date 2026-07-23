@@ -199,11 +199,12 @@ public class MemberServiceTest {
         member.registerSeller("국민은행", "encrypted-123-456-789");
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+        given(encryptor.decode("encrypted-123-456-789")).willReturn("123-456-789");
 
         SellerInfo sellerInfo = memberService.getMyAccount(1L);
 
         Assertions.assertEquals("국민은행", sellerInfo.bank());
-        Assertions.assertEquals("encrypted-123-456-789", sellerInfo.account());
+        Assertions.assertEquals("123*****789", sellerInfo.account());
     }
 
     @Test
