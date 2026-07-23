@@ -1,7 +1,6 @@
 package shop.dear.identity.member.application;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.common.exception.BusinessException;
@@ -10,6 +9,8 @@ import shop.dear.identity.member.application.dto.MemberInfo;
 import shop.dear.identity.member.application.dto.RegisterSellerCommand;
 import shop.dear.identity.member.application.dto.SellerInfo;
 import shop.dear.identity.member.application.dto.UpdateProfileCommand;
+import shop.dear.identity.member.application.dto.UpdateSellerAccountCommand;
+import shop.dear.identity.member.domain.constract.MemberRoll;
 import shop.dear.identity.member.domain.constract.SellerStatus;
 import shop.dear.identity.member.domain.model.Seller;
 import shop.dear.identity.member.domain.exception.MemberErrorCode;
@@ -57,34 +58,30 @@ public class MemberService  {
             throw new BusinessException(MemberErrorCode.DUPLICATE_NICKNAME);
         }
 
-        try {
-            member.changeProfile(
-                command.defaultShippingAddress(),
-                command.phoneNumber(),
-                command.nickname());
-        } catch ( DataIntegrityViolationException e){
-            throw new BusinessException(MemberErrorCode.DUPLICATE_NICKNAME);
-        }
+        member.changeProfile(
+            command.defaultShippingAddress(),
+            command.phoneNumber(),
+            command.nickname());
 
         return MemberInfo.from(member);
     }
 
     @Transactional
-    public void registerAsSeller(final Long memberId, final RegisterSellerCommand command) {
+    public void registerSeller(final Long memberId, final RegisterSellerCommand command) {
 
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        member.registerAsSeller(command.bank(), command.account());
+        member.registerSeller(command.bank(), command.account());
     }
 
     @Transactional
-    public boolean checkSeller(final Long memberId) {
+    public boolean isSeller(final Long memberId) {
 
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        return member.getSeller().getStatus() == SellerStatus.ACTIVE;
+        return member.getRoll() == MemberRoll.SELLER;
     }
 
     public SellerInfo getMyAccount(final Long memberId) {
@@ -92,12 +89,39 @@ public class MemberService  {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        Seller seller = member.getSeller();
-        if (seller == null) {
+        if (member.getRoll() != MemberRoll.SELLER) {
             throw new BusinessException(MemberErrorCode.NOT_SELLER);
         }
 
+        Seller seller = member.getSeller();
+
         return SellerInfo.from(seller);
+    }
+
+    @Transactional
+    public void updateSellerAccount(final Long memberId, final UpdateSellerAccountCommand command) {
+
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        if (member.getRoll() != MemberRoll.SELLER) {
+            throw new BusinessException(MemberErrorCode.NOT_SELLER);
+        }
+
+        member.getSeller().changeAccount(command.bank(), command.account());
+    }
+
+    @Transactional
+    public void unRegister(final Long memberId) {
+
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        if (member.getRoll() != MemberRoll.SELLER) {
+            throw new BusinessException(MemberErrorCode.NOT_SELLER);
+        }
+
+        member.requestSellerWithdrawal();
     }
 
     private String createDefaultNickname() {

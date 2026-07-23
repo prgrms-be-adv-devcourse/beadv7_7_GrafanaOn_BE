@@ -9,7 +9,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.identity.member.application.dto.CreateProfileCommand;
+import shop.dear.identity.member.application.dto.RegisterSellerCommand;
 import shop.dear.identity.member.application.dto.UpdateProfileCommand;
+import shop.dear.identity.member.application.dto.UpdateSellerAccountCommand;
+import shop.dear.identity.member.domain.constract.MemberRoll;
+import shop.dear.identity.member.domain.constract.SellerStatus;
 import shop.dear.identity.member.domain.model.Member;
 import shop.dear.identity.member.domain.repository.MemberRepository;
 
@@ -112,5 +116,97 @@ public class MemberServiceTest {
         given(memberRepository.existsByNickname("너구리")).willReturn(true);
 
         Assertions.assertThrows(BusinessException.class, () -> memberService.updateProfile(command, 1L));
+    }
+
+    @Test
+    @DisplayName("판매자 등록 성공")
+    void registerSellerTest(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+
+        RegisterSellerCommand command = new RegisterSellerCommand("국민은행", "123-456-789");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+
+        memberService.registerSeller(1L, command);
+
+        Assertions.assertEquals(MemberRoll.SELLER, member.getRoll());
+        Assertions.assertEquals(SellerStatus.ACTIVE, member.getSeller().getStatus());
+    }
+
+    @Test
+    @DisplayName("판매자 계좌 수정 성공")
+    void updateSellerAccountTest(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+        member.registerSeller("국민은행", "123-456-789");
+
+        UpdateSellerAccountCommand command = new UpdateSellerAccountCommand("신한은행", "987-654-321");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+
+        memberService.updateSellerAccount(1L, command);
+
+        Assertions.assertEquals("신한은행", member.getSeller().getBank());
+        Assertions.assertEquals("987-654-321", member.getSeller().getAccount());
+    }
+
+    @Test
+    @DisplayName("판매자 계좌 수정 실패 (판매자 아님)")
+    void updateSellerAccount_notSeller(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+
+        UpdateSellerAccountCommand command = new UpdateSellerAccountCommand("신한은행", "987-654-321");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+
+        Assertions.assertThrows(BusinessException.class, () -> memberService.updateSellerAccount(1L, command));
+    }
+
+    @Test
+    @DisplayName("판매자 등록 해지 성공")
+    void unRegisterTest(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+        member.registerSeller("국민은행", "123-456-789");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+
+        memberService.unRegister(1L);
+
+        Assertions.assertEquals(MemberRoll.BUYER, member.getRoll());
+        Assertions.assertEquals(SellerStatus.WITHDRAWING, member.getSeller().getStatus());
+    }
+
+    @Test
+    @DisplayName("판매자 등록 해지 실패 (판매자 아님)")
+    void unRegister_notSeller(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+
+        Assertions.assertThrows(BusinessException.class, () -> memberService.unRegister(1L));
     }
 }
