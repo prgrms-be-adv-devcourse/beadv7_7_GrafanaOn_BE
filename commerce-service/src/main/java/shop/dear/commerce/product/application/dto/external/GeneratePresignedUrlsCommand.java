@@ -1,5 +1,7 @@
 package shop.dear.commerce.product.application.dto.external;
 
+import shop.dear.commerce.product.domain.constant.UploadFileType;
+
 import java.util.List;
 
 public record GeneratePresignedUrlsCommand(
@@ -7,7 +9,7 @@ public record GeneratePresignedUrlsCommand(
 ) {
     public record FileInfoCommand(
         int sortOrder,
-        String uploadFileType
+        UploadFileType uploadFileType
     ) {
     }
 }

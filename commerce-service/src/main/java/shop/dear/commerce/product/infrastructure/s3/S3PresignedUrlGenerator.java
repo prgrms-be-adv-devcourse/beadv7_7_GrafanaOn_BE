@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import shop.dear.commerce.product.application.port.PresignedUrlGenerator;
+import shop.dear.commerce.product.domain.constant.UploadFileType;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -33,7 +34,7 @@ public class S3PresignedUrlGenerator implements PresignedUrlGenerator {
     }
 
     private PutObjectPresignRequest buildPutObjectPresignRequest(final int sortOrder, final String uploadFileType) {
-        final S3UploadFileType s3UploadFileType = S3UploadFileType.from(uploadFileType);
+        final UploadFileType s3UploadFileType = UploadFileType.from(uploadFileType);
 
         final String s3ObjectKey = String.format("%s/%s/%d.%s",
             PRODUCT_IMAGE_ROOT_DIR_NAME,
