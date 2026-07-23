@@ -11,11 +11,11 @@ import shop.dear.identity.member.application.dto.SellerInfo;
 import shop.dear.identity.member.application.dto.UpdateProfileCommand;
 import shop.dear.identity.member.application.dto.UpdateSellerAccountCommand;
 import shop.dear.identity.member.domain.constract.MemberRoll;
-import shop.dear.identity.member.domain.constract.SellerStatus;
 import shop.dear.identity.member.domain.model.Seller;
 import shop.dear.identity.member.domain.exception.MemberErrorCode;
 import shop.dear.identity.member.domain.model.Member;
 import shop.dear.identity.member.domain.repository.MemberRepository;
+import shop.dear.identity.member.application.port.ProductPort;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -25,6 +25,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class MemberService  {
 
     private final MemberRepository memberRepository;
+    private final ProductPort productPort;
     private final Encryptor encryptor;
 
     @Transactional
@@ -120,6 +121,10 @@ public class MemberService  {
 
         if (member.getRoll() != MemberRoll.SELLER) {
             throw new BusinessException(MemberErrorCode.NOT_SELLER);
+        }
+
+        if (productPort.hasProduct()){
+            throw new BusinessException(MemberErrorCode.WITHDRAWAL_FAILED);
         }
 
         member.requestSellerWithdrawal();
