@@ -25,6 +25,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static shop.dear.commerce.product.domain.exception.ProductErrorCode.NOT_PRODUCT_SELLER;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "product")
@@ -142,5 +144,37 @@ public class Product extends BaseEntity {
         if (this.images.size() >= PRODUCT_IMAGE_COUNT_LIMIT) {
             throw new BusinessException(ProductErrorCode.PRODUCT_IMAGE_LIMIT_EXCEEDED);
         }
+    }
+
+    public void validateOwner(final Long memberId) {
+        if (!this.sellerId.equals(memberId)) {
+            throw new BusinessException(NOT_PRODUCT_SELLER);
+        }
+    }
+
+    public Product update(
+        final String name,
+        final String brand,
+        final String modelNumber,
+        final ProductCategory category,
+        final LocalDate releaseDate,
+        final BigDecimal price,
+        final String description
+    ) {
+        this.name = name;
+        this.brand = brand;
+        this.modelNumber = modelNumber;
+        this.category = category;
+        this.releaseDate = releaseDate;
+        this.price = price;
+        this.description = description;
+
+        this.images.clear();
+
+        return this;
+    }
+
+    public boolean validateUpdatable() {
+        return this.status == ProductStatus.PREPARING || this.status == ProductStatus.ON_SALE;
     }
 }

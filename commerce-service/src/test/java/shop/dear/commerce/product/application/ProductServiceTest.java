@@ -10,6 +10,7 @@ import shop.dear.commerce.product.application.dto.PresignedUrlInfo;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
 import shop.dear.commerce.product.application.dto.external.GeneratePresignedUrlsCommand;
 import shop.dear.commerce.product.application.fake.FakeMemberPort;
+import shop.dear.commerce.product.application.fake.FakeOfferPort;
 import shop.dear.commerce.product.application.fake.FakePresignedUrlGenerator;
 import shop.dear.commerce.product.application.fake.FakeProductEventPublisher;
 import shop.dear.commerce.product.application.port.MemberPort;
@@ -42,12 +43,14 @@ class ProductServiceTest {
     @BeforeEach
     void setUp() {
         final MemberPort fakeMemberPort = new FakeMemberPort();
+        final FakeOfferPort fakeOfferPort = new FakeOfferPort();
         final PresignedUrlGenerator fakePresignedUrlGenerator = new FakePresignedUrlGenerator();
         fakeProductEventPublisher = new FakeProductEventPublisher();
 
         productService = new ProductService(
             productRepository,
             fakeMemberPort,
+            fakeOfferPort,
             fakeProductEventPublisher,
             fakePresignedUrlGenerator
         );
