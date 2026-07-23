@@ -25,10 +25,10 @@ public class Seller extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "bank")
+    @Column(name = "bank", nullable = false)
     private String bank;
 
-    @Column(name = "account")
+    @Column(name = "account", nullable = false)
     private String account;
 
     @Column(name = "status", nullable = false)
@@ -54,13 +54,13 @@ public class Seller extends BaseEntity {
         this.account = account;
     }
 
-    public void withdraw() {
-        this.status = SellerStatus.WITHDRAWN;
-        this.bank = "";
-        this.account = "";
-    }
-
     public void withdrawing(){
         this.status = SellerStatus.WITHDRAWING;
+    }
+
+    public void withdraw() {
+        this.status = SellerStatus.WITHDRAWN;
+        this.bank = "****";
+        this.account = "****";
     }
 }
