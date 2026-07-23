@@ -17,3 +17,6 @@ auth:
     secure: ${AUTH_COOKIE_SECURE:true} # HTTPS에서만 쿠키 전송, 테스트 시 false
     same-site: ${AUTH_COOKIE_SAME_SITE:Strict}
     path: ${AUTH_COOKIE_PATH:/api/auth}
+
+server:
+  port: 8081
