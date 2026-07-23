@@ -39,7 +39,7 @@ public class ProductImage extends BaseEntity {
     @OneToOne(mappedBy = "productImage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Story story;
 
-    ProductImage(
+    private ProductImage(
         final Product product,
         final String url,
         final Integer sortOrder
@@ -49,7 +49,19 @@ public class ProductImage extends BaseEntity {
         this.sortOrder = sortOrder;
     }
 
+    static ProductImage create(
+        final Product product,
+        final String url,
+        final Integer sortOrder
+    ) {
+        return new ProductImage(
+            product,
+            url,
+            sortOrder
+        );
+    }
+
     public void addStory(final String content) {
-        this.story = new Story(this, content);
+        this.story = Story.create(this, content);
     }
 }

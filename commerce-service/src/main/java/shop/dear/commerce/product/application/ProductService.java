@@ -49,7 +49,6 @@ public class ProductService {
 
     @Transactional
     public void createProduct(final Long sellerId, final CreateProductCommand command) {
-        final MemberProfile memberProfile = memberPort.getMemberProfile(sellerId);
         validateSeller(sellerId);
 
         final Product product = Product.create(
@@ -143,7 +142,7 @@ public class ProductService {
     }
 
     private void validateProductUpdatable(final Product originalProduct) {
-        if (!originalProduct.validateUpdatable()) {
+        if (!originalProduct.isUpdatable()) {
             throw new BusinessException(INVALID_PRODUCT_STATUS_FOR_UPDATE);
         }
 

@@ -31,8 +31,12 @@ public class Story extends BaseEntity {
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    Story(final ProductImage productImage, final String content) {
+    private Story(final ProductImage productImage, final String content) {
         this.productImage = productImage;
         this.content = content;
+    }
+
+    static Story create(final ProductImage productImage, final String content) {
+        return new Story(productImage, content);
     }
 }
