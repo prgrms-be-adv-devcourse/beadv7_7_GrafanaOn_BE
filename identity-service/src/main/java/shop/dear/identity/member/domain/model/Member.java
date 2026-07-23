@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.dear.common.audit.BaseEntity;
 import shop.dear.common.exception.BusinessException;
-import shop.dear.identity.member.domain.constract.MemberRoll;
 import shop.dear.identity.member.domain.constract.SellerStatus;
 import shop.dear.identity.member.domain.exception.MemberErrorCode;
 
@@ -32,10 +31,6 @@ public class Member extends BaseEntity {
     @Column(name = "nickname", nullable = false, unique = true)
     private String nickname;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "roll", nullable = false)
-    private MemberRoll roll;
-
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Seller seller;
 
@@ -49,7 +44,6 @@ public class Member extends BaseEntity {
         this.defaultShippingAddress = defaultShippingAddress;
         this.phoneNumber = phoneNumber;
         this.nickname = nickname;
-        this.roll = MemberRoll.BUYER;
     }
 
     public static Member create(
@@ -76,9 +70,14 @@ public class Member extends BaseEntity {
         this.nickname = nickname;
     }
 
-    public void registerSeller(final String bank, final String account) {
+    public boolean isSeller(){
+        return this.seller != null && this.seller.getStatus() == SellerStatus.ACTIVE;
+    }
 
-        this.roll = MemberRoll.SELLER;
+    public void registerSeller(final String bank, final String account) {
+        if (this.isSeller()) {
+            throw new BusinessException(MemberErrorCode.ALREADY_SELLER);
+        }
         this.seller = new Seller(
             bank,
             account,
@@ -87,17 +86,20 @@ public class Member extends BaseEntity {
     }
 
     public void updateSellerAccount(String bank, String account){
+        if (!this.isSeller()) {
+            throw new BusinessException(MemberErrorCode.NOT_SELLER);
+        }
         this.seller.changeAccount(bank,account);
     }
 
     public void requestSellerWithdrawal() {
-
+        if (!this.isSeller()) {
+            throw new BusinessException(MemberErrorCode.NOT_SELLER);
+        }
         this.seller.withdrawing();
-        this.roll = MemberRoll.BUYER;
     }
 
     public void completeSellerWithdrawal(){
-
         this.seller.withdraw();
     }
 }
