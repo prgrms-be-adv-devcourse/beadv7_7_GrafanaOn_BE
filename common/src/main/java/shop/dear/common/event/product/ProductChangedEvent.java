@@ -1,4 +1,4 @@
-package shop.dear.commerce.product.domain.event;
+package shop.dear.common.event.product;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,7 +13,8 @@ public record ProductChangedEvent(
     BigDecimal price,
     String saleType,
     Long viewCount,
-    String description
+    String description,
+    String fullStory
 
 ) {
 }

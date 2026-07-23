@@ -10,7 +10,7 @@ import shop.dear.commerce.product.application.dto.external.MemberProfile;
 import shop.dear.commerce.product.application.port.MemberPort;
 import shop.dear.commerce.product.application.port.PresignedUrlGenerator;
 import shop.dear.commerce.product.application.port.ProductEventPublisher;
-import shop.dear.commerce.product.domain.event.ProductChangedEvent;
+import shop.dear.common.event.product.ProductChangedEvent;
 import shop.dear.commerce.product.domain.exception.ProductErrorCode;
 import shop.dear.commerce.product.domain.model.Product;
 import shop.dear.commerce.product.domain.model.ProductImage;
@@ -57,11 +57,14 @@ public class ProductService {
             command.description()
         );
 
+        final StringBuilder fullStory = new StringBuilder();
+
         for (final CreateProductCommand.ProductImageContentCommand content : command.productImageContents()) {
             final ProductImage image = product.addImage(content.url(), content.sortOrder());
 
             if (content.story() != null) {
                 image.addStory(content.story());
+                fullStory.append(content.story()).append(" ");
             }
         }
 
@@ -76,7 +79,8 @@ public class ProductService {
             savedProduct.getPrice(),
             savedProduct.getSaleType().toString(),
             savedProduct.getViewCount(),
-            savedProduct.getDescription()
+            savedProduct.getDescription(),
+            fullStory.toString()
         ));
     }
 
