@@ -18,6 +18,7 @@ import shop.dear.commerce.product.application.port.PresignedUrlGenerator;
 import shop.dear.commerce.product.domain.constant.ProductCategory;
 import shop.dear.commerce.product.domain.constant.ProductSaleType;
 import shop.dear.commerce.product.domain.constant.ProductStatus;
+import shop.dear.commerce.product.domain.constant.UploadFileType;
 import shop.dear.commerce.product.domain.model.Product;
 import shop.dear.commerce.product.domain.repository.ProductRepository;
 
@@ -62,8 +63,8 @@ class ProductServiceTest {
         //Given
         final Long memberId = 1L;
         final GeneratePresignedUrlsCommand command = new GeneratePresignedUrlsCommand(List.of(
-            new GeneratePresignedUrlsCommand.FileInfoCommand(1, "PNG"),
-            new GeneratePresignedUrlsCommand.FileInfoCommand(2, "JPG")
+            new GeneratePresignedUrlsCommand.FileInfoCommand(1, UploadFileType.PNG),
+            new GeneratePresignedUrlsCommand.FileInfoCommand(2, UploadFileType.JPEG)
         ));
 
         //When
@@ -72,26 +73,7 @@ class ProductServiceTest {
         //Then
         assertThat(result).hasSize(2);
         assertThat(result.get(0).sortOrder()).isEqualTo(1);
-        assertThat(result.get(0).presignedUrl()).containsIgnoringCase("PNG");
-    }
-
-    @DisplayName("uploadFileType의 대소문자에 관계없이 Presigned URL을 정상 생성한다.")
-    @Test
-    void givenMixedCaseUploadFileType_whenGeneratePresignedUrls_thenReturnUrls() {
-        //Given
-        final Long memberId = 1L;
-        final GeneratePresignedUrlsCommand command = new GeneratePresignedUrlsCommand(List.of(
-            new GeneratePresignedUrlsCommand.FileInfoCommand(1, "PNG"),
-            new GeneratePresignedUrlsCommand.FileInfoCommand(2, "png")
-        ));
-
-        //When
-        final List<PresignedUrlInfo> result = productService.generatePresignedUrls(memberId, command);
-
-        //Then
-        assertThat(result).hasSize(2);
         assertThat(result.get(0).presignedUrl()).containsIgnoringCase("png");
-        assertThat(result.get(1).presignedUrl()).containsIgnoringCase("png");
     }
 
     @DisplayName("유효한 값(sellerId, CreateProductCommand)이 들어오면 각 데이터를 DB에 저장한다.")
