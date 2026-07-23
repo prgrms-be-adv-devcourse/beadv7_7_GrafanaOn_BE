@@ -1,4 +1,4 @@
-package shop.dear.commerce.product.infrastructure.s3;
+package shop.dear.commerce.product.domain.constant;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +9,7 @@ import java.util.Arrays;
 
 @Getter
 @RequiredArgsConstructor
-public enum S3UploadFileType {
+public enum UploadFileType {
 
     JPG("image/jpeg", "jpg"),
     JPEG("image/jpeg", "jpeg"),
@@ -20,7 +20,7 @@ public enum S3UploadFileType {
     private final String contentType;
     private final String extension;
 
-    public static S3UploadFileType from(final String extension) {
+    public static UploadFileType from(final String extension) {
         return Arrays.stream(values())
             .filter(type -> type.getExtension().equalsIgnoreCase(extension))
             .findFirst()
