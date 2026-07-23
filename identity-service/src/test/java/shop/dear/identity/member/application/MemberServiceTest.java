@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.identity.member.application.dto.CreateProfileCommand;
 import shop.dear.identity.member.application.dto.RegisterSellerCommand;
+import shop.dear.identity.member.application.dto.SellerInfo;
 import shop.dear.identity.member.application.dto.UpdateProfileCommand;
 import shop.dear.identity.member.application.dto.UpdateSellerAccountCommand;
 import shop.dear.identity.member.domain.constract.MemberRoll;
@@ -29,6 +30,9 @@ public class MemberServiceTest {
 
     @Mock
     private MemberRepository memberRepository;
+
+    @Mock
+    private Encryptor encryptor;
 
     @InjectMocks
     private MemberService memberService;
@@ -131,11 +135,13 @@ public class MemberServiceTest {
         RegisterSellerCommand command = new RegisterSellerCommand("국민은행", "123-456-789");
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+        given(encryptor.encode("123-456-789")).willReturn("encrypted-123-456-789");
 
         memberService.registerSeller(1L, command);
 
         Assertions.assertEquals(MemberRoll.SELLER, member.getRoll());
         Assertions.assertEquals(SellerStatus.ACTIVE, member.getSeller().getStatus());
+        Assertions.assertEquals("encrypted-123-456-789", member.getSeller().getAccount());
     }
 
     @Test
@@ -152,11 +158,12 @@ public class MemberServiceTest {
         UpdateSellerAccountCommand command = new UpdateSellerAccountCommand("신한은행", "987-654-321");
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+        given(encryptor.encode("987-654-321")).willReturn("encrypted-987-654-321");
 
         memberService.updateSellerAccount(1L, command);
 
         Assertions.assertEquals("신한은행", member.getSeller().getBank());
-        Assertions.assertEquals("987-654-321", member.getSeller().getAccount());
+        Assertions.assertEquals("encrypted-987-654-321", member.getSeller().getAccount());
     }
 
     @Test
@@ -174,6 +181,71 @@ public class MemberServiceTest {
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
 
         Assertions.assertThrows(BusinessException.class, () -> memberService.updateSellerAccount(1L, command));
+    }
+
+    @Test
+    @DisplayName("판매자 계좌 조회 성공")
+    void getMyAccountTest(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+        member.registerSeller("국민은행", "encrypted-123-456-789");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+
+        SellerInfo sellerInfo = memberService.getMyAccount(1L);
+
+        Assertions.assertEquals("국민은행", sellerInfo.bank());
+        Assertions.assertEquals("encrypted-123-456-789", sellerInfo.account());
+    }
+
+    @Test
+    @DisplayName("판매자 계좌 조회 실패 (판매자 아님)")
+    void getMyAccount_notSeller(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+
+        Assertions.assertThrows(BusinessException.class, () -> memberService.getMyAccount(1L));
+    }
+
+    @Test
+    @DisplayName("판매자 여부 확인 (판매자)")
+    void isSeller_true(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+        member.registerSeller("국민은행", "123-456-789");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+
+        Assertions.assertTrue(memberService.isSeller(1L));
+    }
+
+    @Test
+    @DisplayName("판매자 여부 확인 (판매자 아님)")
+    void isSeller_false(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+
+        Assertions.assertFalse(memberService.isSeller(1L));
     }
 
     @Test

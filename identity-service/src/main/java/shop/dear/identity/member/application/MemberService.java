@@ -25,6 +25,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class MemberService  {
 
     private final MemberRepository memberRepository;
+    private final Encryptor encryptor;
 
     @Transactional
     public MemberInfo createProfile(final CreateProfileCommand command) {
@@ -72,7 +73,7 @@ public class MemberService  {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        member.registerSeller(command.bank(), command.account());
+        member.registerSeller(command.bank(), encryptor.encode(command.account()));
     }
 
     public SellerInfo getMyAccount(final Long memberId) {
@@ -108,7 +109,7 @@ public class MemberService  {
             throw new BusinessException(MemberErrorCode.NOT_SELLER);
         }
 
-        member.updateSellerAccount(command.bank(), command.account());
+        member.updateSellerAccount(command.bank(), encryptor.encode(command.account()));
     }
 
     @Transactional
