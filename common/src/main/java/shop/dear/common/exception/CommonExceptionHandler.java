@@ -1,8 +1,6 @@
 package shop.dear.common.exception;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,7 +12,6 @@ import static shop.dear.common.exception.CommonErrorCode.INTERNAL_SERVER_APPLICA
 import static shop.dear.common.response.ApiResponse.fail;
 
 @Slf4j
-@Order(Ordered.LOWEST_PRECEDENCE)
 @RestControllerAdvice
 public class CommonExceptionHandler {
 
