@@ -3,6 +3,8 @@ package shop.dear.identity.member.domain.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.GeneratedValue;
@@ -31,6 +33,7 @@ public class Seller extends BaseEntity {
     @Column(name = "account", nullable = false)
     private String account;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private SellerStatus status;
 

@@ -13,6 +13,7 @@ import shop.dear.identity.member.application.dto.RegisterSellerCommand;
 import shop.dear.identity.member.application.dto.SellerInfo;
 import shop.dear.identity.member.application.dto.UpdateProfileCommand;
 import shop.dear.identity.member.application.dto.UpdateSellerAccountCommand;
+import shop.dear.identity.member.application.port.ProductPort;
 import shop.dear.identity.member.domain.constract.MemberRoll;
 import shop.dear.identity.member.domain.constract.SellerStatus;
 import shop.dear.identity.member.domain.model.Member;
@@ -33,6 +34,9 @@ public class MemberServiceTest {
 
     @Mock
     private Encryptor encryptor;
+
+    @Mock
+    private ProductPort productPort;
 
     @InjectMocks
     private MemberService memberService;
@@ -260,11 +264,31 @@ public class MemberServiceTest {
         member.registerSeller("국민은행", "123-456-789");
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+        given(productPort.hasProduct()).willReturn(false);
 
         memberService.unRegister(1L);
 
         Assertions.assertEquals(MemberRoll.BUYER, member.getRoll());
         Assertions.assertEquals(SellerStatus.WITHDRAWING, member.getSeller().getStatus());
+    }
+
+    @Test
+    @DisplayName("판매자 등록 해지 실패 (등록된 판매상품 존재)")
+    void unRegister_hasProduct(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+        member.registerSeller("국민은행", "123-456-789");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+        given(productPort.hasProduct()).willReturn(true);
+
+        Assertions.assertThrows(BusinessException.class, () -> memberService.unRegister(1L));
+        Assertions.assertEquals(MemberRoll.SELLER, member.getRoll());
+        Assertions.assertEquals(SellerStatus.ACTIVE, member.getSeller().getStatus());
     }
 
     @Test
