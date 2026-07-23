@@ -5,8 +5,11 @@ import org.springframework.stereotype.Repository;
 import shop.dear.commerce.product.domain.model.Product;
 import shop.dear.commerce.product.domain.repository.ProductRepository;
 import shop.dear.commerce.product.infrastructure.persistence.jpa.ProductJpaRepository;
+import shop.dear.common.exception.BusinessException;
 
 import java.util.List;
+
+import static shop.dear.commerce.product.domain.exception.ProductErrorCode.INVALID_PRODUCT;
 
 @Repository
 @RequiredArgsConstructor
@@ -22,5 +25,11 @@ public class ProductRepositoryAdapter implements ProductRepository {
     @Override
     public List<Product> findAll() {
         return productRepository.findAll();
+    }
+
+    @Override
+    public Product findById(final Long productId) {
+        return productRepository.findById(productId)
+            .orElseThrow(() -> new BusinessException(INVALID_PRODUCT));
     }
 }
