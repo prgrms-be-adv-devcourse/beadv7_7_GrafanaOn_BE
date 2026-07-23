@@ -1,11 +1,11 @@
 package shop.dear.commerce.product.application;
 
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.product.application.dto.PresignedUrlInfo;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
 import shop.dear.commerce.product.application.dto.external.GeneratePresignedUrlsCommand;
@@ -19,6 +19,7 @@ import shop.dear.commerce.product.domain.constant.ProductCategory;
 import shop.dear.commerce.product.domain.constant.ProductSaleType;
 import shop.dear.commerce.product.domain.constant.ProductStatus;
 import shop.dear.commerce.product.domain.constant.UploadFileType;
+import shop.dear.commerce.product.domain.model.Price;
 import shop.dear.commerce.product.domain.model.Product;
 import shop.dear.commerce.product.domain.repository.ProductRepository;
 
@@ -89,7 +90,7 @@ class ProductServiceTest {
             ),
             "testBrand",
             "testName",
-            BigDecimal.valueOf(120000),
+            Price.from(BigDecimal.valueOf(120000)),
             "testModelNumber-001",
             ProductCategory.SNEAKERS,
             LocalDate.now(),
@@ -120,7 +121,6 @@ class ProductServiceTest {
         );
 
         assertThat(savedProduct.getImages()).hasSize(2);
-
         assertThat(fakeProductEventPublisher.getEvents()).hasSize(1);
     }
 }

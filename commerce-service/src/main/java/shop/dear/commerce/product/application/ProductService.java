@@ -15,6 +15,7 @@ import shop.dear.commerce.product.application.port.PresignedUrlGenerator;
 import shop.dear.commerce.product.application.port.ProductEventPublisher;
 import shop.dear.commerce.product.domain.constant.ProductSaleType;
 import shop.dear.commerce.product.domain.exception.ProductErrorCode;
+import shop.dear.commerce.product.domain.model.Price;
 import shop.dear.commerce.product.domain.model.Product;
 import shop.dear.commerce.product.domain.model.ProductImage;
 import shop.dear.commerce.product.domain.repository.ProductRepository;
@@ -82,7 +83,7 @@ public class ProductService {
             savedProduct.getModelNumber(),
             savedProduct.getCategory().toString(),
             savedProduct.getReleaseDate(),
-            savedProduct.getPrice(),
+            savedProduct.getPrice().getValue(),
             savedProduct.getSaleType().toString(),
             savedProduct.getViewCount(),
             savedProduct.getDescription(),
@@ -110,7 +111,7 @@ public class ProductService {
             command.modelNumber(),
             command.category(),
             command.releaseDate(),
-            command.price(),
+            Price.from(command.price()),
             command.description()
         );
 
@@ -133,7 +134,7 @@ public class ProductService {
             savedProduct.getModelNumber(),
             savedProduct.getCategory().toString(),
             savedProduct.getReleaseDate(),
-            savedProduct.getPrice(),
+            savedProduct.getPrice().getValue(),
             savedProduct.getSaleType().toString(),
             savedProduct.getViewCount(),
             savedProduct.getDescription(),
