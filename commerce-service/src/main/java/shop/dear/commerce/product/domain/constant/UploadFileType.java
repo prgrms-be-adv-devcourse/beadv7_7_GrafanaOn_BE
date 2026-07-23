@@ -1,5 +1,6 @@
 package shop.dear.commerce.product.domain.constant;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import shop.dear.commerce.product.domain.exception.ProductErrorCode;
@@ -20,10 +21,11 @@ public enum UploadFileType {
     private final String contentType;
     private final String extension;
 
-    public static UploadFileType from(final String extension) {
-        return Arrays.stream(values())
-            .filter(type -> type.getExtension().equalsIgnoreCase(extension))
+    @JsonCreator
+    public static UploadFileType from(final String value) {
+        return Arrays.stream(UploadFileType.values())
+            .filter(type -> type.name().equalsIgnoreCase(value))
             .findFirst()
-            .orElseThrow(() -> new BusinessException(ProductErrorCode.INVALID_PRODUCT_IMAGE_TYPE));
+            .orElseThrow(() -> new BusinessException(ProductErrorCode.INVALID_UPLOAD_FILE_TYPE));
     }
 }

@@ -27,20 +27,18 @@ public class S3PresignedUrlGenerator implements PresignedUrlGenerator {
     private final S3Presigner s3Presigner;
 
     @Override
-    public String generate(final int sortOrder, final String uploadFileType) {
+    public String generate(final int sortOrder, final UploadFileType uploadFileType) {
         return s3Presigner.presignPutObject(buildPutObjectPresignRequest(sortOrder, uploadFileType))
             .url()
             .toExternalForm();
     }
 
-    private PutObjectPresignRequest buildPutObjectPresignRequest(final int sortOrder, final String uploadFileType) {
-        final UploadFileType s3UploadFileType = UploadFileType.from(uploadFileType);
-
+    private PutObjectPresignRequest buildPutObjectPresignRequest(final int sortOrder, final UploadFileType uploadFileType) {
         final String s3ObjectKey = String.format("%s/%s/%d.%s",
             PRODUCT_IMAGE_ROOT_DIR_NAME,
             UUID.randomUUID(),
             sortOrder,
-            s3UploadFileType.getExtension()
+            uploadFileType.getExtension()
         );
 
         log.info("generate s3 put object key: {}", s3ObjectKey);
@@ -48,7 +46,7 @@ public class S3PresignedUrlGenerator implements PresignedUrlGenerator {
         final PutObjectRequest putObjectRequest = PutObjectRequest.builder()
             .bucket(bucketName)
             .key(s3ObjectKey)
-            .contentType(s3UploadFileType.getContentType())
+            .contentType(uploadFileType.getContentType())
             .build();
 
         return PutObjectPresignRequest.builder()
