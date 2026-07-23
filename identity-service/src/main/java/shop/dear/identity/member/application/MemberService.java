@@ -75,15 +75,6 @@ public class MemberService  {
         member.registerSeller(command.bank(), command.account());
     }
 
-    @Transactional
-    public boolean isSeller(final Long memberId) {
-
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
-
-        return member.getRoll() == MemberRoll.SELLER;
-    }
-
     public SellerInfo getMyAccount(final Long memberId) {
 
         Member member = memberRepository.findById(memberId)
@@ -99,6 +90,15 @@ public class MemberService  {
     }
 
     @Transactional
+    public boolean isSeller(final Long memberId) {
+
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        return member.getRoll() == MemberRoll.SELLER;
+    }
+
+    @Transactional
     public void updateSellerAccount(final Long memberId, final UpdateSellerAccountCommand command) {
 
         Member member = memberRepository.findById(memberId)
@@ -108,7 +108,7 @@ public class MemberService  {
             throw new BusinessException(MemberErrorCode.NOT_SELLER);
         }
 
-        member.getSeller().changeAccount(command.bank(), command.account());
+        member.updateSellerAccount(command.bank(), command.account());
     }
 
     @Transactional

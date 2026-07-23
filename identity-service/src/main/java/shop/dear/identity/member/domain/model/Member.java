@@ -86,12 +86,18 @@ public class Member extends BaseEntity {
         );
     }
 
+    public void updateSellerAccount(String bank, String account){
+        this.seller.changeAccount(bank,account);
+    }
+
     public void requestSellerWithdrawal() {
+
         this.seller.withdrawing();
         this.roll = MemberRoll.BUYER;
     }
 
     public void completeSellerWithdrawal(){
+
         this.seller.withdraw();
     }
 }
