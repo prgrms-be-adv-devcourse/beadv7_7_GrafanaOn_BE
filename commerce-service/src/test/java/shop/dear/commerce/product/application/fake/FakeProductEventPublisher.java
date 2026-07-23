@@ -3,7 +3,7 @@ package shop.dear.commerce.product.application.fake;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import shop.dear.commerce.product.application.port.ProductEventPublisher;
-import shop.dear.commerce.product.domain.event.ProductChangedEvent;
+import shop.dear.common.event.product.ProductChangedEvent;
 
 import java.util.ArrayList;
 import java.util.List;
