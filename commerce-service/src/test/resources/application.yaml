@@ -12,3 +12,18 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        highlight_sql: true
+        default_batch_fetch_size: 100
+
+order:
+  client:
+    base-url: ${ORDER_CLIENT_BASE_URL:http://localhost:8080}
+
+secret:
+  aws:
+    s3:
+      bucket-name: ${AWS_S3_BUCKET_NAME:fakeAwsS3BucketName}
+    region: ${AWS_REGION:fakeAwsRegion}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY:fakeAwsAccessKey}
+      secret-key: ${AWS_SECRET_KEY:fakeAwsSecretKey}
