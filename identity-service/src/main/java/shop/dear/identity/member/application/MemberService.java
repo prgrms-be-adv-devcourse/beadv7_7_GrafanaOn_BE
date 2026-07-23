@@ -128,7 +128,6 @@ public class MemberService  {
         }
 
         member.requestSellerWithdrawal();
-        member.completeSellerWithdrawal();
     }
 
     private String createDefaultNickname() {

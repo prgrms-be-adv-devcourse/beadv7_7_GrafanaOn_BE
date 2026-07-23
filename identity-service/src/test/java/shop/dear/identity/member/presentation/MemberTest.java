@@ -130,17 +130,14 @@ public class MemberTest {
     @DisplayName("판매자 등록에 성공하면 상태코드 200을 반환한다")
     void registerSeller_success() throws Exception {
 
-        // given
         RegisterSellerRequest request = new RegisterSellerRequest("국민은행", "123-456-789");
 
-        // when
         final ResultActions result = mockMvc
             .perform(post("/api/members/me/seller")
                 .header("X-Member-Id", "1")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(request)));
 
-        // then
         result
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value("success"));
@@ -150,20 +147,17 @@ public class MemberTest {
     @DisplayName("이미 판매자로 등록된 회원이 판매자 등록을 요청하면 상태코드 400과 ALREADY_SELLER 에러코드를 반환한다")
     void registerSeller_alreadySeller() throws Exception {
 
-        // given
         RegisterSellerRequest request = new RegisterSellerRequest("국민은행", "123-456-789");
 
         willThrow(new BusinessException(MemberErrorCode.ALREADY_SELLER))
             .given(memberService).registerSeller(eq(1L), any());
 
-        // when
         final ResultActions result = mockMvc
             .perform(post("/api/members/me/seller")
                 .header("X-Member-Id", "1")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(request)));
 
-        // then
         result
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value(MemberErrorCode.ALREADY_SELLER.getValue()))
@@ -174,17 +168,14 @@ public class MemberTest {
     @DisplayName("판매자 계좌 수정에 성공하면 상태코드 200을 반환한다")
     void updateSellerAccount_success() throws Exception {
 
-        // given
         UpdateSellerAccountRequest request = new UpdateSellerAccountRequest("신한은행", "987-654-321");
 
-        // when
         final ResultActions result = mockMvc
             .perform(patch("/api/members/me/seller")
                 .header("X-Member-Id", "1")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(request)));
 
-        // then
         result
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value("success"));
@@ -194,20 +185,17 @@ public class MemberTest {
     @DisplayName("판매자가 아닌 회원이 계좌 수정을 요청하면 상태코드 400과 NOT_SELLER 에러코드를 반환한다")
     void updateSellerAccount_notSeller() throws Exception {
 
-        // given
         UpdateSellerAccountRequest request = new UpdateSellerAccountRequest("신한은행", "987-654-321");
 
         willThrow(new BusinessException(MemberErrorCode.NOT_SELLER))
             .given(memberService).updateSellerAccount(eq(1L), any());
 
-        // when
         final ResultActions result = mockMvc
             .perform(patch("/api/members/me/seller")
                 .header("X-Member-Id", "1")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(request)));
 
-        // then
         result
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value(MemberErrorCode.NOT_SELLER.getValue()))
@@ -218,12 +206,10 @@ public class MemberTest {
     @DisplayName("판매자 등록 해지에 성공하면 상태코드 200을 반환한다")
     void unRegister_success() throws Exception {
 
-        // given & when
         final ResultActions result = mockMvc
             .perform(delete("/api/members/me/seller")
                 .header("X-Member-Id", "1"));
 
-        // then
         result
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value("success"));
@@ -233,16 +219,13 @@ public class MemberTest {
     @DisplayName("등록된 판매상품이 있으면 판매자 등록 해지 요청에 상태코드 400과 WITHDRAWAL_FAILED 에러코드를 반환한다")
     void unRegister_hasProduct() throws Exception {
 
-        // given
         willThrow(new BusinessException(MemberErrorCode.WITHDRAWAL_FAILED))
             .given(memberService).unRegister(1L);
 
-        // when
         final ResultActions result = mockMvc
             .perform(delete("/api/members/me/seller")
                 .header("X-Member-Id", "1"));
 
-        // then
         result
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value(MemberErrorCode.WITHDRAWAL_FAILED.getValue()))
@@ -253,16 +236,13 @@ public class MemberTest {
     @DisplayName("판매자 계좌 조회에 성공하면 상태코드 200과 마스킹된 계좌 정보를 반환한다")
     void getMyAccount_success() throws Exception {
 
-        // given
         given(memberService.getMyAccount(1L))
             .willReturn(new SellerInfo("국민은행", "123*****789"));
 
-        // when
         final ResultActions result = mockMvc
             .perform(get("/api/members/me/seller")
                 .header("X-Member-Id", "1"));
 
-        // then
         result
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.bank").value("국민은행"))
@@ -273,16 +253,13 @@ public class MemberTest {
     @DisplayName("판매자가 아닌 회원이 계좌 조회를 요청하면 상태코드 400과 NOT_SELLER 에러코드를 반환한다")
     void getMyAccount_notSeller() throws Exception {
 
-        // given
         given(memberService.getMyAccount(1L))
             .willThrow(new BusinessException(MemberErrorCode.NOT_SELLER));
 
-        // when
         final ResultActions result = mockMvc
             .perform(get("/api/members/me/seller")
                 .header("X-Member-Id", "1"));
 
-        // then
         result
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value(MemberErrorCode.NOT_SELLER.getValue()))
@@ -293,18 +270,15 @@ public class MemberTest {
     @DisplayName("판매자인 회원을 조회하면 상태코드 200과 isSeller=true를 반환한다")
     void isSeller_true() throws Exception {
 
-        // given
         given(memberService.isSeller(1L)).willReturn(true);
 
         SellerCheckRequest request = new SellerCheckRequest(1L);
 
-        // when
         final ResultActions result = mockMvc
             .perform(get("/api/members/seller")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(request)));
 
-        // then
         result
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.isSeller").value(true));
@@ -314,18 +288,15 @@ public class MemberTest {
     @DisplayName("판매자가 아닌 회원을 조회하면 상태코드 200과 isSeller=false를 반환한다")
     void isSeller_false() throws Exception {
 
-        // given
         given(memberService.isSeller(1L)).willReturn(false);
 
         SellerCheckRequest request = new SellerCheckRequest(1L);
 
-        // when
         final ResultActions result = mockMvc
             .perform(get("/api/members/seller")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(request)));
 
-        // then
         result
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.isSeller").value(false));
