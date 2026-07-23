@@ -2,6 +2,7 @@ package shop.dear.commerce.product.domain.model;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -20,7 +21,6 @@ import shop.dear.commerce.product.domain.exception.ProductErrorCode;
 import shop.dear.common.audit.BaseEntity;
 import shop.dear.common.exception.BusinessException;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,8 +58,8 @@ public class Product extends BaseEntity {
     @Column(name = "release_date", nullable = true)
     private LocalDate releaseDate;
 
-    @Column(name = "price", precision = 15, scale = 2, nullable = false)
-    private BigDecimal price;
+    @Embedded
+    private Price price;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "sale_type", nullable = false)
@@ -85,7 +85,7 @@ public class Product extends BaseEntity {
         final String modelNumber,
         final ProductCategory category,
         final LocalDate releaseDate,
-        final BigDecimal price,
+        final Price price,
         final ProductSaleType saleType,
         final String description
     ) {
@@ -109,7 +109,7 @@ public class Product extends BaseEntity {
         final String modelNumber,
         final ProductCategory category,
         final LocalDate releaseDate,
-        final BigDecimal price,
+        final Price price,
         final ProductSaleType saleType,
         final String description
     ) {
@@ -132,7 +132,7 @@ public class Product extends BaseEntity {
         final String modelNumber,
         final ProductCategory category,
         final LocalDate releaseDate,
-        final BigDecimal price,
+        final Price price,
         final String description
     ) {
         this.name = name;
