@@ -33,8 +33,8 @@ public class Member extends BaseEntity {
     private String nickname;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private MemberRoll status;
+    @Column(name = "roll", nullable = false)
+    private MemberRoll roll;
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Seller seller;
@@ -49,7 +49,7 @@ public class Member extends BaseEntity {
         this.defaultShippingAddress = defaultShippingAddress;
         this.phoneNumber = phoneNumber;
         this.nickname = nickname;
-        this.status = MemberRoll.BUYER;
+        this.roll = MemberRoll.BUYER;
     }
 
     public static Member create(
@@ -76,14 +76,22 @@ public class Member extends BaseEntity {
         this.nickname = nickname;
     }
 
-    public void registerAsSeller(final String bank, final String account) {
+    public void registerSeller(final String bank, final String account) {
 
-        this.status = MemberRoll.SELLER;
+        this.roll = MemberRoll.SELLER;
         this.seller = new Seller(
             bank,
             account,
-            this,
-            SellerStatus.ACTIVE
+            this
         );
+    }
+
+    public void requestSellerWithdrawal() {
+        this.seller.withdrawing();
+        this.roll = MemberRoll.BUYER;
+    }
+
+    public void completeSellerWithdrawal(){
+        this.seller.withdraw();
     }
 }

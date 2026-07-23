@@ -11,6 +11,7 @@ import shop.dear.identity.member.presentation.dto.request.RegisterSellerRequest;
 import shop.dear.identity.member.presentation.dto.response.SellerAccountResponse;
 import shop.dear.identity.member.presentation.dto.response.SellerCheckResponse;
 import shop.dear.identity.member.presentation.dto.request.UpdateProfileRequest;
+import shop.dear.identity.member.presentation.dto.request.UpdateSellerAccountRequest;
 
 @RestController
 @RequiredArgsConstructor
@@ -48,12 +49,31 @@ public class MemberController {
     }
 
     @PostMapping("/me/seller")
-    public ApiResponse<Void> registerAsSeller(
+    public ApiResponse<Void> registerSeller(
         @Valid @RequestBody final RegisterSellerRequest request,
         @RequestHeader("X-Member-Id") Long memberId
     ){
 
-        memberService.registerAsSeller(memberId, request.toCommand());
+        memberService.registerSeller(memberId, request.toCommand());
+
+        return ApiResponse.success();
+    }
+
+    @PatchMapping("/me/seller")
+    public ApiResponse<Void> updateSellerAccount(
+        @Valid @RequestBody final UpdateSellerAccountRequest request,
+        @RequestHeader("X-Member-Id") Long memberId
+    ){
+
+        memberService.updateSellerAccount(memberId, request.toCommand());
+
+        return ApiResponse.success();
+    }
+
+    @DeleteMapping("/me/seller")
+    public ApiResponse<Void> unRegister(@RequestHeader("X-Member-Id") Long memberId){
+
+        memberService.unRegister(memberId);
 
         return ApiResponse.success();
     }
@@ -67,9 +87,9 @@ public class MemberController {
     }
 
     @GetMapping("/seller")
-    public ApiResponse<SellerCheckResponse> checkSeller(@RequestBody final SellerCheckRequest request){
+    public ApiResponse<SellerCheckResponse> isSeller(@RequestBody final SellerCheckRequest request){
 
-        boolean isSeller = memberService.checkSeller(request.memberId());
+        boolean isSeller = memberService.isSeller(request.memberId());
 
         return ApiResponse.successWithData(SellerCheckResponse.from(isSeller));
     }

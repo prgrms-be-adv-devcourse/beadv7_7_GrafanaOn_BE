@@ -25,10 +25,10 @@ public class Seller extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "bank", nullable = false)
+    @Column(name = "bank")
     private String bank;
 
-    @Column(name = "account", nullable = false)
+    @Column(name = "account")
     private String account;
 
     @Column(name = "status", nullable = false)
@@ -41,13 +41,26 @@ public class Seller extends BaseEntity {
     Seller(
         final String bank,
         final String account,
-        final Member member,
-        final SellerStatus status
+        final Member member
     ){
         this.bank = bank;
         this.account = account;
         this.member = member;
-        this.status = status;
+        this.status = SellerStatus.ACTIVE;
     }
 
+    public void changeAccount(final String bank, final String account) {
+        this.bank = bank;
+        this.account = account;
+    }
+
+    public void withdraw() {
+        this.status = SellerStatus.WITHDRAWN;
+        this.bank = "";
+        this.account = "";
+    }
+
+    public void withdrawing(){
+        this.status = SellerStatus.WITHDRAWING;
+    }
 }
