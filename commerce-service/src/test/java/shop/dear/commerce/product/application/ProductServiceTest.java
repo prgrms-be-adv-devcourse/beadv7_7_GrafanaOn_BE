@@ -59,7 +59,7 @@ class ProductServiceTest {
         );
     }
 
-    private static Product createProduct(final Long memberId) {
+    private Product createProduct(final Long memberId) {
         return Product.create(
             memberId,
             "testName",
