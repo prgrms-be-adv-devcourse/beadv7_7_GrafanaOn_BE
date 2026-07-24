@@ -1,4 +1,4 @@
-package shop.dear.identity.auth.authentication.application;
+package shop.dear.identity.auth.authentication.application.port;
 
 import shop.dear.identity.auth.authentication.application.dto.MemberProfileResult;
 

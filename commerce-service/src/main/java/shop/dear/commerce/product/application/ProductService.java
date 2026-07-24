@@ -71,16 +71,17 @@ public class ProductService {
         final Product savedProduct = productRepository.save(product);
 
         productEventPublisher.publish(new ProductChangedEvent(
-            savedProduct.getId(),
-            savedProduct.getName(),
-            savedProduct.getModelNumber(),
-            savedProduct.getCategory().toString(),
-            savedProduct.getReleaseDate(),
-            savedProduct.getPrice(),
-            savedProduct.getSaleType().toString(),
-            savedProduct.getViewCount(),
-            savedProduct.getDescription(),
-            fullStory.toString()
+                savedProduct.getId(),
+                savedProduct.getName(),
+                savedProduct.getModelNumber(),
+                savedProduct.getCategory().toString(),
+                savedProduct.getReleaseDate(),
+                savedProduct.getPrice(),
+                savedProduct.getSaleType().toString(),
+                savedProduct.getViewCount(),
+                savedProduct.getDescription(),
+                fullStory.toString(),
+                savedProduct.getInsertedAt()
         ));
     }
 

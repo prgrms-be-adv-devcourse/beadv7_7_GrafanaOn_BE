@@ -2,7 +2,7 @@ package shop.dear.identity.auth.authentication.infrastructure;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import shop.dear.identity.auth.authentication.application.MemberProfilePort;
+import shop.dear.identity.auth.authentication.application.port.MemberProfilePort;
 import shop.dear.identity.auth.authentication.application.dto.MemberProfileResult;
 import shop.dear.identity.member.application.MemberService;
 import shop.dear.identity.member.application.dto.CreateProfileCommand;
