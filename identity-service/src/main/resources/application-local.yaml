@@ -14,3 +14,7 @@ spring:
         format_sql: true
         highlight_sql: true
         default_batch_fetch_size: 100
+
+auth:
+  cookie:
+    secure: false

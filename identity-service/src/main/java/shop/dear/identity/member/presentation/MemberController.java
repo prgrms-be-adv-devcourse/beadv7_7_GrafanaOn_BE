@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import shop.dear.common.response.ApiResponse;
 import shop.dear.identity.member.application.MemberService;
-import shop.dear.identity.member.presentation.dto.CreateProfileRequest;
 import shop.dear.identity.member.presentation.dto.MemberResponse;
 import shop.dear.identity.member.presentation.dto.UpdateProfileRequest;
 
