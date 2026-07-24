@@ -1,4 +1,4 @@
-package shop.dear.identity.auth.authentication.application;
+package shop.dear.identity.auth.authentication.application.port;
 
 // Auth 서비스는 다른 암호화 알고리즘을 알지 못하고 이 인터페이스만 사용한다.
 public interface PasswordEncoderPort {
