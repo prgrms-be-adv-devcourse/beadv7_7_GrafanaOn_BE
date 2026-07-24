@@ -8,7 +8,8 @@ import shop.dear.commerce.order.offer.domain.exception.OfferErrorCode;
 import shop.dear.commerce.order.offer.domain.model.Offer;
 import shop.dear.commerce.order.offer.domain.constant.OfferStatus;
 import shop.dear.commerce.order.offer.domain.repository.OfferRepository;
-import shop.dear.common.event.order.offer.OfferAcceptedEvent;
+import shop.dear.common.event.order.FinishedOrderEvent;
+import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
 
 import java.util.List;
@@ -33,13 +34,13 @@ public class OfferService {
 
     offer.accept();
 
-    offerEventPublisher.publish(new OfferAcceptedEvent(
+    offerEventPublisher.publish(new FinishedOrderEvent(
         offer.getId(),
         offer.getBuyerId(),
         offer.getSellerId(),
         offer.getProductId(),
         offer.getAmount(),
-        offer.getStatus().toString()
+        OrderType.OFFER
     ));
   }
 

@@ -17,21 +17,21 @@ import static shop.dear.common.response.ApiResponse.successWithData;
 @RestController
 public class OfferController {
 
-  private final OfferService offerService;
+    private final OfferService offerService;
 
-  @GetMapping("/{productId}/status")
-  public ResponseEntity<ApiResponse<OfferStatusResponse>> getOfferStatus(
-      @Positive @PathVariable final Long productId
-  ) {
-    final boolean exists = offerService.existsActiveOfferByProductId(productId);
-    return ResponseEntity.ok(successWithData(OfferStatusResponse.from(exists)));
-  }
+    @GetMapping("/{productId}/status")
+    public ResponseEntity<ApiResponse<OfferStatusResponse>> getOfferStatus(
+        @Positive @PathVariable final Long productId
+    ) {
+      final boolean exists = offerService.existsActiveOfferByProductId(productId);
+      return ResponseEntity.ok(successWithData(OfferStatusResponse.from(exists)));
+    }
 
-  @PatchMapping("/{offerId}/accept")
-  public ResponseEntity<ApiResponse<Void>> acceptOffer(
-      @PathVariable final Long offerId
-  ) {
-    offerService.acceptOffer(offerId);
-    return ResponseEntity.ok(successWithData(null));
-  }
+    @PatchMapping("/{offerId}/accept")
+    public ResponseEntity<ApiResponse<Void>> acceptOffer(
+        @Positive @PathVariable final Long offerId
+    ) {
+      offerService.acceptOffer(offerId);
+      return ResponseEntity.ok(successWithData(null));
+    }
 }
