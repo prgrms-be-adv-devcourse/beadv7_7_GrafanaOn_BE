@@ -14,13 +14,17 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import shop.dear.commerce.product.domain.exception.ProductImageErrorCode;
 import shop.dear.common.audit.BaseEntity;
+import shop.dear.common.exception.BusinessException;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "product_image")
 @Entity
 public class ProductImage extends BaseEntity {
+
+    public static final int MAX_URL_LENGTH = 500;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,8 +61,28 @@ public class ProductImage extends BaseEntity {
         final int sortOrder
     ) {
         this.product = product;
-        this.url = url;
-        this.sortOrder = sortOrder;
+        this.url = validateUrl(url);
+        this.sortOrder = validateSortOrder(sortOrder);
+    }
+
+    private String validateUrl(final String url) {
+        if (url == null || url.isBlank()) {
+            throw new BusinessException(ProductImageErrorCode.INVALID_URL);
+        }
+
+        if (url.length() > MAX_URL_LENGTH) {
+            throw new BusinessException(ProductImageErrorCode.EXCEEDED_URL_LENGTH_LIMIT);
+        }
+
+        return url;
+    }
+
+    private int validateSortOrder(final int sortOrder) {
+        if (sortOrder > Product.PRODUCT_IMAGE_COUNT_LIMIT) {
+            throw new BusinessException(ProductImageErrorCode.EXCEEDED_SORT_ORDER_NUM_LIMIT);
+        }
+
+        return sortOrder;
     }
 
     public void addStory(final String content) {
