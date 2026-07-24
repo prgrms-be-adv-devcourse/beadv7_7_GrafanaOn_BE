@@ -1,7 +1,9 @@
-package shop.deal.commerce.order.offer.domain.repository;
+package shop.dear.commerce.order.offer.domain.repository;
 
-import shop.deal.commerce.order.offer.domain.model.Offer;
+import shop.dear.commerce.order.offer.domain.constant.OfferStatus;
+import shop.dear.commerce.order.offer.domain.model.Offer;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface OfferRepository {
@@ -13,4 +15,6 @@ public interface OfferRepository {
     boolean existsById(Long id);
 
     void deleteById(Long id);
+
+    boolean existsByProductIdAndStatusIn(Long productId, List<OfferStatus> statuses);
 }
