@@ -34,7 +34,7 @@ public class ProductImage extends BaseEntity {
     private String url;
 
     @Column(name = "sort_order", nullable = false)
-    private Integer sortOrder;
+    private int sortOrder;
 
     @OneToOne(mappedBy = "productImage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Story story;
@@ -42,7 +42,7 @@ public class ProductImage extends BaseEntity {
     static ProductImage create(
         final Product product,
         final String url,
-        final Integer sortOrder
+        final int sortOrder
     ) {
         return new ProductImage(
             product,
@@ -54,7 +54,7 @@ public class ProductImage extends BaseEntity {
     private ProductImage(
         final Product product,
         final String url,
-        final Integer sortOrder
+        final int sortOrder
     ) {
         this.product = product;
         this.url = url;
