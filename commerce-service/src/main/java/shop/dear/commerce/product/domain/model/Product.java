@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static shop.dear.commerce.product.domain.exception.ProductErrorCode.ALREADY_EXISTS_SORT_ORDER_NUMBER;
 import static shop.dear.commerce.product.domain.exception.ProductErrorCode.EXCEEDED_BRAND_LENGTH_LIMIT;
 import static shop.dear.commerce.product.domain.exception.ProductErrorCode.EXCEEDED_MODEL_NUMBER_LENGTH_LIMIT;
 import static shop.dear.commerce.product.domain.exception.ProductErrorCode.INVALID_BRAND;
@@ -229,6 +230,7 @@ public class Product extends BaseEntity {
 
     public ProductImage addImage(final String url, final int sortOrder) {
         validateImageCountLimit();
+        validateDuplicateImageSortOrder(sortOrder);
 
         final ProductImage image = ProductImage.create(this, url, sortOrder);
         this.images.add(image);
@@ -239,6 +241,14 @@ public class Product extends BaseEntity {
     private void validateImageCountLimit() {
         if (this.images.size() >= PRODUCT_IMAGE_COUNT_LIMIT) {
             throw new BusinessException(ProductErrorCode.EXCEEDED_PRODUCT_IMAGE_COUNT_LIMIT);
+        }
+    }
+
+    private void validateDuplicateImageSortOrder(final int sortOrder) {
+        for (ProductImage pi : this.images) {
+            if (pi.getSortOrder() == sortOrder) {
+                throw new BusinessException(ALREADY_EXISTS_SORT_ORDER_NUMBER);
+            }
         }
     }
 
