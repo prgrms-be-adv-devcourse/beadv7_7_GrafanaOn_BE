@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import shop.dear.commerce.financial.wallet.domain.costant.WalletLogType;
+import shop.dear.commerce.financial.wallet.domain.exception.WalletErrorCode;
 import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
@@ -37,6 +38,7 @@ public class WalletTest {
         WalletLog log = wallet.hold(BigDecimal.valueOf(6000), 200L);
 
         assertEquals(0, BigDecimal.valueOf(4000).compareTo(wallet.getBalance()));
+        assertEquals(0, BigDecimal.valueOf(6000).compareTo(wallet.getHeldBalance()));
         assertEquals(WalletLogType.HOLD, log.getType());
         assertEquals(200L, log.getReferenceId());
     }
@@ -46,8 +48,9 @@ public class WalletTest {
     void hold_insufficientBalance_throwsException() {
         wallet.topup(BigDecimal.valueOf(1000), 100L);
 
-        assertThrows(BusinessException.class,
+        BusinessException e = assertThrows(BusinessException.class,
                 () -> wallet.hold(BigDecimal.valueOf(5000), 200L));
+        assertEquals(WalletErrorCode.INSUFFICIENT_BALANCE, e.getErrorCode());
     }
 
     @Test
@@ -59,6 +62,7 @@ public class WalletTest {
         WalletLog log = wallet.release(BigDecimal.valueOf(6000), 200L);
 
         assertEquals(0, BigDecimal.valueOf(10000).compareTo(wallet.getBalance()));
+        assertEquals(0, BigDecimal.ZERO.compareTo(wallet.getHeldBalance()));
         assertEquals(WalletLogType.RELEASE, log.getType());
         assertEquals(200L, log.getReferenceId());
     }
@@ -80,8 +84,9 @@ public class WalletTest {
     void pay_insufficientBalance_throwsException() {
         wallet.topup(BigDecimal.valueOf(1000), 100L);
 
-        assertThrows(BusinessException.class,
+        BusinessException e = assertThrows(BusinessException.class,
                 () -> wallet.pay(BigDecimal.valueOf(5000), 300L));
+        assertEquals(WalletErrorCode.INSUFFICIENT_BALANCE, e.getErrorCode());
     }
 
     @Test
@@ -111,7 +116,124 @@ public class WalletTest {
     void settle_insufficientBalance_throwsException() {
         wallet.earn(BigDecimal.valueOf(10000), 400L);
 
-        assertThrows(BusinessException.class,
+        BusinessException e = assertThrows(BusinessException.class,
                 () -> wallet.settle(BigDecimal.valueOf(50000), 500L));
+        assertEquals(WalletErrorCode.INSUFFICIENT_BALANCE, e.getErrorCode());
+    }
+
+    // 금액 검증
+
+    @Test
+    @DisplayName("금액이 null이면 INVALID_AMOUNT 예외가 발생한다")
+    void pay_nullAmount_throwsInvalidAmount() {
+        wallet.topup(BigDecimal.valueOf(1000), 100L);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> wallet.pay(null, 300L));
+        assertEquals(WalletErrorCode.INVALID_AMOUNT, e.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("금액이 0이면 INVALID_AMOUNT 예외가 발생한다")
+    void pay_zeroAmount_throwsInvalidAmount() {
+        wallet.topup(BigDecimal.valueOf(1000), 100L);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> wallet.pay(BigDecimal.ZERO, 300L));
+        assertEquals(WalletErrorCode.INVALID_AMOUNT, e.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("음수 금액으로 pay하면 INVALID_AMOUNT 예외가 발생하고 잔액이 변하지 않는다")
+    void pay_negativeAmount_throwsInvalidAmount() {
+        wallet.topup(BigDecimal.valueOf(1000), 100L);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> wallet.pay(BigDecimal.valueOf(-100), 300L));
+        assertEquals(WalletErrorCode.INVALID_AMOUNT, e.getErrorCode());
+        assertEquals(0, BigDecimal.valueOf(1000).compareTo(wallet.getBalance()));
+    }
+
+    @Test
+    @DisplayName("소수점 2자리를 초과하면 INVALID_AMOUNT 예외가 발생한다")
+    void pay_scaleOverTwo_throwsInvalidAmount() {
+        wallet.topup(BigDecimal.valueOf(1000), 100L);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> wallet.pay(new BigDecimal("100.123"), 300L));
+        assertEquals(WalletErrorCode.INVALID_AMOUNT, e.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("referenceId가 null이면 INVALID_REFERENCE_ID 예외가 발생한다")
+    void pay_nullReferenceId_throwsInvalidReferenceId() {
+        wallet.topup(BigDecimal.valueOf(1000), 100L);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> wallet.pay(BigDecimal.valueOf(100), null));
+        assertEquals(WalletErrorCode.INVALID_REFERENCE_ID, e.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("음수 금액으로 topup하면 예외가 발생하고 잔액이 변하지 않는다")
+    void topup_negativeAmount_throwsInvalidAmount() {
+        wallet.topup(BigDecimal.valueOf(1000), 100L);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> wallet.topup(BigDecimal.valueOf(-500), 200L));
+        assertEquals(WalletErrorCode.INVALID_AMOUNT, e.getErrorCode());
+        assertEquals(0, BigDecimal.valueOf(1000).compareTo(wallet.getBalance()));
+    }
+
+    @Test
+    @DisplayName("음수 금액으로 hold하면 INVALID_AMOUNT 예외가 발생한다")
+    void hold_negativeAmount_throwsInvalidAmount() {
+        wallet.topup(BigDecimal.valueOf(1000), 100L);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> wallet.hold(BigDecimal.valueOf(-100), 200L));
+        assertEquals(WalletErrorCode.INVALID_AMOUNT, e.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("음수 금액으로 release하면 INVALID_AMOUNT 예외가 발생한다")
+    void release_negativeAmount_throwsInvalidAmount() {
+        wallet.topup(BigDecimal.valueOf(1000), 100L);
+        wallet.hold(BigDecimal.valueOf(300), 200L);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> wallet.release(BigDecimal.valueOf(-100), 200L));
+        assertEquals(WalletErrorCode.INVALID_AMOUNT, e.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("음수 금액으로 settle하면 INVALID_AMOUNT 예외가 발생한다")
+    void settle_negativeAmount_throwsInvalidAmount() {
+        wallet.earn(BigDecimal.valueOf(10000), 400L);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> wallet.settle(BigDecimal.valueOf(-100), 500L));
+        assertEquals(WalletErrorCode.INVALID_AMOUNT, e.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("음수 금액으로 earn하면 INVALID_AMOUNT 예외가 발생한다")
+    void earn_negativeAmount_throwsInvalidAmount() {
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> wallet.earn(BigDecimal.valueOf(-100), 400L));
+        assertEquals(WalletErrorCode.INVALID_AMOUNT, e.getErrorCode());
+    }
+
+    // hold/release 무결성
+
+    @Test
+    @DisplayName("release 요청 금액이 heldBalance를 초과하면 INSUFFICIENT_HELD_BALANCE 예외가 발생한다")
+    void release_exceedsHeldBalance_throwsInsufficientHeldBalance() {
+        wallet.topup(BigDecimal.valueOf(1000), 100L);
+        wallet.hold(BigDecimal.valueOf(300), 200L);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> wallet.release(BigDecimal.valueOf(500), 200L));
+        assertEquals(WalletErrorCode.INSUFFICIENT_HELD_BALANCE, e.getErrorCode());
     }
 }
