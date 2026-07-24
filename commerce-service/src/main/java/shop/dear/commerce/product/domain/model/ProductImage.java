@@ -25,6 +25,7 @@ import shop.dear.common.exception.BusinessException;
 public class ProductImage extends BaseEntity {
 
     public static final int MAX_URL_LENGTH = 500;
+    public static final int MIN_SORT_ORDER = 1;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -78,8 +79,8 @@ public class ProductImage extends BaseEntity {
     }
 
     private int validateSortOrder(final int sortOrder) {
-        if (sortOrder > Product.PRODUCT_IMAGE_COUNT_LIMIT) {
-            throw new BusinessException(ProductImageErrorCode.EXCEEDED_SORT_ORDER_NUM_LIMIT);
+        if (sortOrder < MIN_SORT_ORDER || sortOrder > Product.PRODUCT_IMAGE_COUNT_LIMIT) {
+            throw new BusinessException(ProductImageErrorCode.INVALID_SORT_ORDER);
         }
 
         return sortOrder;
