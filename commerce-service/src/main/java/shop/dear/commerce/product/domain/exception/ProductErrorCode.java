@@ -18,13 +18,14 @@ public enum ProductErrorCode implements ErrorCode {
     INVALID_PRODUCT_CATEGORY("PD-009", "상품 카테고리로 null을 입력할 수 없습니다."),
     INVALID_RELEASE_DATE("PD-010", "발매일은 미래 날짜로 설정할 수 없습니다."),
     INVALID_PRODUCT_SALE_TYPE("PD-011", "상품 판매방식으로 null을 입력할 수 없습니다."),
-    EXCEEDED_DESCRIPTION_LENGTH_LIMIT("PD-010", "상품 상세설명이 최대 글자수를 초과했습니다."),
-    EXCEEDED_PRODUCT_IMAGE_COUNT_LIMIT("PD-012", "상품 이미지 등록 가능 개수를 초과했습니다."),
-    INVALID_PRODUCT("PD-013", "존재하지 않는 상품입니다."),
-    NOT_PRODUCT_SELLER("PD-014", "해당 상품의 판매자가 아닙니다."),
-    INVALID_PRODUCT_STATUS_FOR_UPDATE("PD-015", "해당 상품을 수정할 수 있는 상태가 아닙니다."),
-    INVALID_PRODUCT_PRICE("PD-016", "유효하지 않은 상품 가격입니다."),
-    PRODUCT_PRICE_CANNOT_BE_NEGATIVE("PD-017", "상품 가격은 음수일 수 없습니다."),
+    EXCEEDED_DESCRIPTION_LENGTH_LIMIT("PD-012", "상품 상세설명이 최대 글자수를 초과했습니다."),
+    EXCEEDED_PRODUCT_IMAGE_COUNT_LIMIT("PD-013", "상품 이미지 등록 가능 개수를 초과했습니다."),
+    ALREADY_EXISTS_SORT_ORDER_NUMBER("PD-014", "이미 동일한 순서의 상품 이미지가 존재합니다."),
+    INVALID_PRODUCT("PD-015", "존재하지 않는 상품입니다."),
+    NOT_PRODUCT_SELLER("PD-016", "해당 상품의 판매자가 아닙니다."),
+    INVALID_PRODUCT_STATUS_FOR_UPDATE("PD-017", "해당 상품을 수정할 수 있는 상태가 아닙니다."),
+    INVALID_PRODUCT_PRICE("PD-018", "유효하지 않은 상품 가격입니다."),
+    PRODUCT_PRICE_CANNOT_BE_NEGATIVE("PD-019", "상품 가격은 음수일 수 없습니다."),
     ;
 
     private final String value;
