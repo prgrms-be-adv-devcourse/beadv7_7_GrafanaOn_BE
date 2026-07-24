@@ -103,7 +103,7 @@ class OfferServiceTest {
       when(offerRepository.findById(1L)).thenReturn(Optional.of(offer));
 
       // when
-      offerService.acceptOffer(1L);
+      offerService.acceptOffer(1L, 2L);
 
       // then
       assertThat(offer.getStatus()).isEqualTo(OfferStatus.ACCEPTED);
@@ -123,7 +123,7 @@ class OfferServiceTest {
       when(offerRepository.findById(1L)).thenReturn(Optional.empty());
 
       // when & then
-      assertThatThrownBy(() -> offerService.acceptOffer(1L))
+      assertThatThrownBy(() -> offerService.acceptOffer(1L, 2L))
               .isInstanceOf(BusinessException.class);
     }
 
@@ -136,7 +136,7 @@ class OfferServiceTest {
       when(offerRepository.findById(1L)).thenReturn(Optional.of(offer));
 
       // when & then
-      assertThatThrownBy(() -> offerService.acceptOffer(1L))
+      assertThatThrownBy(() -> offerService.acceptOffer(1L, 2L))
               .isInstanceOf(BusinessException.class);
     }
 

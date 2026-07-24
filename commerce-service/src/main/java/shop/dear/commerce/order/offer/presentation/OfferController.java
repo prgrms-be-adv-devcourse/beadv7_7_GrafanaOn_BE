@@ -7,6 +7,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import shop.dear.commerce.order.offer.application.OfferService;
 import shop.dear.commerce.order.offer.presentation.dto.OfferStatusResponse;
+import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
 
 import static shop.dear.common.response.ApiResponse.successWithData;
@@ -23,15 +24,16 @@ public class OfferController {
     public ResponseEntity<ApiResponse<OfferStatusResponse>> getOfferStatus(
         @Positive @PathVariable final Long productId
     ) {
-      final boolean exists = offerService.existsActiveOfferByProductId(productId);
-      return ResponseEntity.ok(successWithData(OfferStatusResponse.from(exists)));
+        final boolean exists = offerService.existsActiveOfferByProductId(productId);
+        return ResponseEntity.ok(successWithData(OfferStatusResponse.from(exists)));
     }
 
     @PatchMapping("/{offerId}/accept")
     public ResponseEntity<ApiResponse<Void>> acceptOffer(
-        @Positive @PathVariable final Long offerId
+        @Positive @PathVariable final Long offerId,
+        @AuthUser final Long memberId
     ) {
-      offerService.acceptOffer(offerId);
-      return ResponseEntity.ok(successWithData(null));
+        offerService.acceptOffer(offerId, memberId);
+        return ResponseEntity.ok(successWithData(null));
     }
 }

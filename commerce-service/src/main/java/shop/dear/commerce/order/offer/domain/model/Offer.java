@@ -136,4 +136,8 @@ public class Offer extends BaseEntity {
         validatePaymentStatus(PaymentStatus.PAYMENT_PENDING);
         this.paymentStatus = PaymentStatus.PAYMENT_FAILED;
     }
+
+    public boolean isSeller(final Long memberId) {
+        return sellerId.equals(memberId);
+    }
 }

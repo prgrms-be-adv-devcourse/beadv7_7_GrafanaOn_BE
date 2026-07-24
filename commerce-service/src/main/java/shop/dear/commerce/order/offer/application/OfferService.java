@@ -28,9 +28,13 @@ public class OfferService {
   private final OfferEventPublisher offerEventPublisher;
 
   @Transactional
-  public void acceptOffer(final Long offerId) {
+  public void acceptOffer(final Long offerId, final Long memberId) {
     final Offer offer = offerRepository.findById(offerId)
             .orElseThrow(() -> new BusinessException(OfferErrorCode.OFFER_NOT_FOUND));
+
+    if (!offer.isSeller(memberId)) {
+      throw new BusinessException(OfferErrorCode.NOT_OFFER_SELLER);
+    }
 
     offer.accept();
 
