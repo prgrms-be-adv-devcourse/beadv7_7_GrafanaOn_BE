@@ -3,6 +3,7 @@ package shop.dear.identity.member.presentation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
 import shop.dear.identity.member.application.MemberService;
 import shop.dear.identity.member.presentation.dto.request.SellerCheckRequest;
@@ -20,11 +21,10 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    //ToDo : 추후 jwt토큰 전달 방식에 따라 어노테이션 수정
     @PatchMapping("/profile/me")
     public ApiResponse<MemberResponse> updateProfile(
         @Valid @RequestBody final UpdateProfileRequest request,
-        @RequestHeader("X-Member-Id") Long memberId
+        @AuthUser Long memberId
     ){
 
         MemberResponse member = MemberResponse.from(memberService.updateProfile(request.toCommand(), memberId));
@@ -33,7 +33,7 @@ public class MemberController {
     }
 
     @GetMapping("/profile/me")
-    public ApiResponse<MemberResponse> getMyProfile(@RequestHeader("X-Member-Id") Long memberId){
+    public ApiResponse<MemberResponse> getMyProfile(@AuthUser Long memberId){
 
         MemberResponse member = MemberResponse.from(memberService.getProfile(memberId));
 
@@ -51,7 +51,7 @@ public class MemberController {
     @PostMapping("/me/seller")
     public ApiResponse<Void> registerSeller(
         @Valid @RequestBody final RegisterSellerRequest request,
-        @RequestHeader("X-Member-Id") Long memberId
+        @AuthUser Long memberId
     ){
 
         memberService.registerSeller(memberId, request.toCommand());
@@ -62,7 +62,7 @@ public class MemberController {
     @PatchMapping("/me/seller")
     public ApiResponse<Void> updateSellerAccount(
         @Valid @RequestBody final UpdateSellerAccountRequest request,
-        @RequestHeader("X-Member-Id") Long memberId
+        @AuthUser Long memberId
     ){
 
         memberService.updateSellerAccount(memberId, request.toCommand());
@@ -71,7 +71,7 @@ public class MemberController {
     }
 
     @DeleteMapping("/me/seller")
-    public ApiResponse<Void> unRegister(@RequestHeader("X-Member-Id") Long memberId){
+    public ApiResponse<Void> unRegister(@AuthUser Long memberId){
 
         memberService.unRegister(memberId);
 
@@ -79,7 +79,7 @@ public class MemberController {
     }
 
     @GetMapping("/me/seller")
-    public ApiResponse<SellerAccountResponse> getMyAccount(@RequestHeader("X-Member-Id") Long memberId){
+    public ApiResponse<SellerAccountResponse> getMyAccount(@AuthUser Long memberId){
 
         SellerAccountResponse account = SellerAccountResponse.from(memberService.getMyAccount(memberId));
 

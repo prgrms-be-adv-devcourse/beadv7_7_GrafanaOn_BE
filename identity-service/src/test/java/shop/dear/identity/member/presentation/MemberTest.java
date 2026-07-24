@@ -95,7 +95,7 @@ public class MemberTest {
 
         final ResultActions result = mockMvc
             .perform(get("/api/members/profile/me")
-                .header("X-Member-Id", "1"));
+                .header("X-Authenticated-Member-Id", "1"));
 
         result
             .andExpect(status().isOk())
@@ -116,7 +116,7 @@ public class MemberTest {
 
         final ResultActions result = mockMvc
             .perform(patch("/api/members/profile/me")
-                .header("X-Member-Id", "1")
+                .header("X-Authenticated-Member-Id", "1")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(validUpdateRequest())));
 
@@ -134,7 +134,7 @@ public class MemberTest {
 
         final ResultActions result = mockMvc
             .perform(post("/api/members/me/seller")
-                .header("X-Member-Id", "1")
+                .header("X-Authenticated-Member-Id", "1")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -154,7 +154,7 @@ public class MemberTest {
 
         final ResultActions result = mockMvc
             .perform(post("/api/members/me/seller")
-                .header("X-Member-Id", "1")
+                .header("X-Authenticated-Member-Id", "1")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -172,7 +172,7 @@ public class MemberTest {
 
         final ResultActions result = mockMvc
             .perform(patch("/api/members/me/seller")
-                .header("X-Member-Id", "1")
+                .header("X-Authenticated-Member-Id", "1")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -192,7 +192,7 @@ public class MemberTest {
 
         final ResultActions result = mockMvc
             .perform(patch("/api/members/me/seller")
-                .header("X-Member-Id", "1")
+                .header("X-Authenticated-Member-Id", "1")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -208,7 +208,7 @@ public class MemberTest {
 
         final ResultActions result = mockMvc
             .perform(delete("/api/members/me/seller")
-                .header("X-Member-Id", "1"));
+                .header("X-Authenticated-Member-Id", "1"));
 
         result
             .andExpect(status().isOk())
@@ -224,7 +224,7 @@ public class MemberTest {
 
         final ResultActions result = mockMvc
             .perform(delete("/api/members/me/seller")
-                .header("X-Member-Id", "1"));
+                .header("X-Authenticated-Member-Id", "1"));
 
         result
             .andExpect(status().isBadRequest())
@@ -241,7 +241,7 @@ public class MemberTest {
 
         final ResultActions result = mockMvc
             .perform(get("/api/members/me/seller")
-                .header("X-Member-Id", "1"));
+                .header("X-Authenticated-Member-Id", "1"));
 
         result
             .andExpect(status().isOk())
@@ -258,7 +258,7 @@ public class MemberTest {
 
         final ResultActions result = mockMvc
             .perform(get("/api/members/me/seller")
-                .header("X-Member-Id", "1"));
+                .header("X-Authenticated-Member-Id", "1"));
 
         result
             .andExpect(status().isBadRequest())
