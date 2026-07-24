@@ -7,6 +7,6 @@ public class FakeOfferPort implements OfferPort {
 
     @Override
     public ExistsOffer existsOffer(final Long productId) {
-        return new ExistsOffer(true);
+        return new ExistsOffer(false);
     }
 }
