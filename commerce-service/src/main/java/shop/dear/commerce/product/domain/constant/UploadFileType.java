@@ -3,7 +3,7 @@ package shop.dear.commerce.product.domain.constant;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import shop.dear.commerce.product.domain.exception.ProductErrorCode;
+import shop.dear.commerce.product.domain.exception.ProductImageErrorCode;
 import shop.dear.common.exception.BusinessException;
 
 import java.util.Arrays;
@@ -26,6 +26,6 @@ public enum UploadFileType {
         return Arrays.stream(UploadFileType.values())
             .filter(type -> type.name().equalsIgnoreCase(value))
             .findFirst()
-            .orElseThrow(() -> new BusinessException(ProductErrorCode.INVALID_UPLOAD_FILE_TYPE));
+            .orElseThrow(() -> new BusinessException(ProductImageErrorCode.INVALID_UPLOAD_FILE_TYPE));
     }
 }
