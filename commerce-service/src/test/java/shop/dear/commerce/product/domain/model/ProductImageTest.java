@@ -72,7 +72,7 @@ class ProductImageTest {
         // When & Then
         assertThatThrownBy(() -> ProductImage.create(product, url, exceededSortOrder))
             .isInstanceOf(BusinessException.class)
-            .hasMessage("이미지 정렬 순서가 최대 이미지 개수를 초과했습니다.");
+            .hasMessage("유효하지 않은 이미지 정렬 순서입니다.");
     }
 
     @DisplayName("이미지 정렬 순서가 최대 이미지 등록 가능 개수를 초과하면 예외가 발생한다.")
@@ -86,7 +86,7 @@ class ProductImageTest {
         // When & Then
         assertThatThrownBy(() -> ProductImage.create(product, url, exceededSortOrder))
             .isInstanceOf(BusinessException.class)
-            .hasMessage("이미지 정렬 순서가 최대 이미지 개수를 초과했습니다.");
+            .hasMessage("유효하지 않은 이미지 정렬 순서입니다.");
     }
 
     @DisplayName("상품 이미지에 이야기를 추가한다.")
