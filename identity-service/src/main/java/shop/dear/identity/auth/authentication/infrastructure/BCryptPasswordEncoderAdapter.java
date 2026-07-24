@@ -2,7 +2,7 @@ package shop.dear.identity.auth.authentication.infrastructure;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
-import shop.dear.identity.auth.authentication.application.PasswordEncoderPort;
+import shop.dear.identity.auth.authentication.application.port.PasswordEncoderPort;
 
 @Component
 public class BCryptPasswordEncoderAdapter implements PasswordEncoderPort {

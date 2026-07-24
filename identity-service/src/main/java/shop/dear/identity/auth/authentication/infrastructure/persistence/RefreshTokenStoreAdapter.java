@@ -3,7 +3,7 @@ package shop.dear.identity.auth.authentication.infrastructure.persistence;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import shop.dear.identity.auth.authentication.application.RefreshTokenStorePort;
+import shop.dear.identity.auth.authentication.application.port.RefreshTokenStorePort;
 import shop.dear.identity.auth.authentication.domain.RefreshToken;
 import shop.dear.identity.auth.authentication.infrastructure.persistence.jpa.RefreshTokenJpaRepository;
 

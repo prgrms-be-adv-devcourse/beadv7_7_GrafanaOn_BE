@@ -5,7 +5,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 import shop.dear.common.exception.BusinessException;
-import shop.dear.identity.auth.authentication.application.TokenProviderPort;
+import shop.dear.identity.auth.authentication.application.port.TokenProviderPort;
 import shop.dear.identity.auth.authentication.application.dto.TokenResult;
 import shop.dear.identity.auth.authentication.domain.exception.AuthErrorCode;
 import shop.dear.identity.auth.authorization.domain.Role;
@@ -68,6 +68,38 @@ public class JwtTokenProviderAdapter implements TokenProviderPort {
         );
     }
 
+    private String createAccessToken(
+            Long memberId,
+            Role role,
+            Instant issuedAt,
+            Instant expiresAt
+    ) {
+        // Access Token 생성
+        return Jwts.builder()
+                .issuer(properties.issuer())
+                .subject(memberId.toString())
+                .claim(MEMBER_ID_CLAIM, memberId)
+                .claim(ROLE_CLAIM, role.name())
+                .claim(TOKEN_TYPE_CLAIM, ACCESS_TOKEN_TYPE)
+                .issuedAt(Date.from(issuedAt))
+                .expiration(Date.from(expiresAt))
+                .signWith(signingKey, Jwts.SIG.HS256)
+                .compact();
+    }
+
+    private String createRefreshToken(Long memberId, Instant issuedAt, Instant expiresAt) {
+        // Refresh Token 생성
+        return Jwts.builder()
+                .issuer(properties.issuer())
+                .subject(memberId.toString())
+                .claim(MEMBER_ID_CLAIM, memberId)
+                .claim(TOKEN_TYPE_CLAIM, REFRESH_TOKEN_TYPE)
+                .issuedAt(Date.from(issuedAt))
+                .expiration(Date.from(expiresAt))
+                .signWith(signingKey, Jwts.SIG.HS256)
+                .compact();
+    }
+
     @Override
     public Long parseMemberIdFromRefreshToken(String refreshToken) {
         try {
@@ -101,37 +133,5 @@ public class JwtTokenProviderAdapter implements TokenProviderPort {
         } catch (JwtException | IllegalArgumentException e) {
             throw new BusinessException(AuthErrorCode.INVALID_TOKEN);
         }
-    }
-
-    private String createAccessToken(
-            Long memberId,
-            Role role,
-            Instant issuedAt,
-            Instant expiresAt
-    ) {
-        // Access Token 생성
-        return Jwts.builder()
-                .issuer(properties.issuer())
-                .subject(memberId.toString())
-                .claim(MEMBER_ID_CLAIM, memberId)
-                .claim(ROLE_CLAIM, role.name())
-                .claim(TOKEN_TYPE_CLAIM, ACCESS_TOKEN_TYPE)
-                .issuedAt(Date.from(issuedAt))
-                .expiration(Date.from(expiresAt))
-                .signWith(signingKey, Jwts.SIG.HS256)
-                .compact();
-    }
-
-    private String createRefreshToken(Long memberId, Instant issuedAt, Instant expiresAt) {
-        // Refresh Token 생성
-        return Jwts.builder()
-                .issuer(properties.issuer())
-                .subject(memberId.toString())
-                .claim(MEMBER_ID_CLAIM, memberId)
-                .claim(TOKEN_TYPE_CLAIM, REFRESH_TOKEN_TYPE)
-                .issuedAt(Date.from(issuedAt))
-                .expiration(Date.from(expiresAt))
-                .signWith(signingKey, Jwts.SIG.HS256)
-                .compact();
     }
 }
