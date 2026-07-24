@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.identity.member.application.dto.CreateProfileCommand;
 import shop.dear.identity.member.application.dto.RegisterSellerCommand;
@@ -24,8 +25,7 @@ import java.util.Optional;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class MemberServiceTest {
@@ -279,7 +279,7 @@ public class MemberServiceTest {
         member.registerSeller("국민은행", "123-456-789");
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
-        given(productPort.existsProduct()).willReturn(new ExistsProduct(false));
+        given(productPort.existsProduct(1L)).willReturn(new ExistsProduct(false));
 
         memberService.unRegister(1L);
 
@@ -301,7 +301,7 @@ public class MemberServiceTest {
         member.registerSeller("국민은행", "123-456-789");
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
-        given(productPort.existsProduct()).willReturn(new ExistsProduct(true));
+        given(productPort.existsProduct(1L)).willReturn(new ExistsProduct(true));
 
         BusinessException exception = Assertions.assertThrows(BusinessException.class,
             () -> memberService.unRegister(1L));
@@ -311,4 +311,119 @@ public class MemberServiceTest {
         Assertions.assertEquals(SellerStatus.ACTIVE, member.getSeller().getStatus());
     }
 
+    @Test
+    @DisplayName("일반회원 탈퇴 시 개인정보를 익명화한다")
+    void withdrawProfileSuccess() {
+        // given
+        Member member = Member.create(
+                "홍길동",
+                "서울시 강남구",
+                "010-1234-5678",
+                "user_000001"
+        );
+
+        ReflectionTestUtils.setField(member, "id", 1L);
+
+        given(memberRepository.findById(1L))
+                .willReturn(Optional.of(member));
+
+        // when
+        memberService.withdrawProfile(1L);
+
+        // then
+        Assertions.assertEquals("탈퇴한 회원", member.getName());
+        Assertions.assertEquals("", member.getDefaultShippingAddress());
+        Assertions.assertEquals("", member.getPhoneNumber());
+        Assertions.assertEquals("withdrawn_1", member.getNickname());
+
+        verifyNoInteractions(productPort);
+    }
+
+    @Test
+    @DisplayName("판매자 정산이 완료되지 않으면 회원 탈퇴에 실패한다")
+    void withdrawProfileFailsWhenSellerSettlementIsPending() {
+        // given
+        Member member = Member.create(
+                "홍길동",
+                "서울시 강남구",
+                "010-1234-5678",
+                "user_000001"
+        );
+
+        member.registerSeller(
+                "국민은행",
+                "encrypted-account"
+        );
+        member.requestSellerWithdrawal();
+
+        given(memberRepository.findById(1L))
+                .willReturn(Optional.of(member));
+
+        // when
+        BusinessException exception = Assertions.assertThrows(
+                BusinessException.class,
+                () -> memberService.withdrawProfile(1L)
+        );
+
+        // then
+        Assertions.assertEquals(
+                MemberErrorCode.SELLER_WITHDRAWAL_REQUIRED,
+                exception.getErrorCode()
+        );
+
+        Assertions.assertEquals("홍길동", member.getName());
+        Assertions.assertEquals("서울시 강남구", member.getDefaultShippingAddress());
+        Assertions.assertEquals("010-1234-5678", member.getPhoneNumber());
+        Assertions.assertEquals("user_000001", member.getNickname());
+
+        verifyNoInteractions(productPort);
+    }
+
+    @Test
+    @DisplayName("판매자 정산이 완료되면 회원 탈퇴에 성공한다")
+    void withdrawProfileSuccessWhenSellerSettlementIsCompleted() {
+        // given
+        Member member = Member.create(
+                "홍길동",
+                "서울시 강남구",
+                "010-1234-5678",
+                "user_000001"
+        );
+
+        ReflectionTestUtils.setField(member, "id", 1L);
+
+        member.registerSeller(
+                "국민은행",
+                "encrypted-account"
+        );
+        member.requestSellerWithdrawal();
+        member.completeSellerWithdrawal();
+
+        given(memberRepository.findById(1L))
+                .willReturn(Optional.of(member));
+
+        // when
+        memberService.withdrawProfile(1L);
+
+        // then
+        Assertions.assertEquals("탈퇴한 회원", member.getName());
+        Assertions.assertEquals("", member.getDefaultShippingAddress());
+        Assertions.assertEquals("", member.getPhoneNumber());
+        Assertions.assertEquals("withdrawn_1", member.getNickname());
+
+        Assertions.assertEquals(
+                SellerStatus.WITHDRAWN,
+                member.getSeller().getStatus()
+        );
+        Assertions.assertEquals(
+                "****",
+                member.getSeller().getBank()
+        );
+        Assertions.assertEquals(
+                "****",
+                member.getSeller().getAccount()
+        );
+
+        verifyNoInteractions(productPort);
+    }
 }
