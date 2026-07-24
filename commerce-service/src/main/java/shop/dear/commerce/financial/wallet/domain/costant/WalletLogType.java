@@ -6,4 +6,5 @@ public enum WalletLogType {
     TOPUP,        // 충전
     HOLD,         // 홀드
     RELEASE,      // 홀드 해제
+    PROCEEDS,     // 판매 대금 적립
 }
