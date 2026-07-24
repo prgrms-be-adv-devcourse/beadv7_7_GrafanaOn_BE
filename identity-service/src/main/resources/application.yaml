@@ -18,5 +18,12 @@ auth:
     same-site: ${AUTH_COOKIE_SAME_SITE:Strict}
     path: ${AUTH_COOKIE_PATH:/api/auth}
 
+identity:
+  client:
+    commerce-base-url: ${COMMERCE_BASE_URL}
+  security:
+    account-key: ${AES_SECRET_KEY}
+    account-iv: ${AES_SECRET_IV}
+
 server:
   port: 8081
