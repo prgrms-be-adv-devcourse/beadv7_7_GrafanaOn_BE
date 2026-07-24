@@ -3,28 +3,37 @@ package shop.dear.commerce.order.offer.presentation;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import shop.dear.commerce.order.offer.application.OfferService;
 import shop.dear.commerce.order.offer.presentation.dto.OfferStatusResponse;
+import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
 
 import static shop.dear.common.response.ApiResponse.successWithData;
 
+@Validated
 @RequiredArgsConstructor
 @RequestMapping("/api/offers")
 @RestController
 public class OfferController {
 
-  private final OfferService offerService;
+    private final OfferService offerService;
 
-  @GetMapping("/{productId}/status")
-  public ResponseEntity<ApiResponse<OfferStatusResponse>> getOfferStatus(
-      @Positive @PathVariable final Long productId
-  ) {
-    final boolean exists = offerService.existsActiveOfferByProductId(productId);
-    return ResponseEntity.ok(successWithData(OfferStatusResponse.from(exists)));
-  }
+    @GetMapping("/{productId}/status")
+    public ResponseEntity<ApiResponse<OfferStatusResponse>> getOfferStatus(
+        @Positive @PathVariable final Long productId
+    ) {
+        final boolean exists = offerService.existsActiveOfferByProductId(productId);
+        return ResponseEntity.ok(successWithData(OfferStatusResponse.from(exists)));
+    }
+
+    @PatchMapping("/{offerId}/accept")
+    public ResponseEntity<ApiResponse<Void>> acceptOffer(
+        @Positive @PathVariable final Long offerId,
+        @AuthUser final Long memberId
+    ) {
+        offerService.acceptOffer(offerId, memberId);
+        return ResponseEntity.ok(successWithData(null));
+    }
 }

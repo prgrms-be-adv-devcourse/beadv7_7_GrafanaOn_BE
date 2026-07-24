@@ -11,6 +11,7 @@ import shop.dear.commerce.order.offer.application.OfferService;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,6 +53,20 @@ class OfferControllerTest {
   void returnsBadRequest_whenProductIdNotPositive() throws Exception {
     // when & then
     mockMvc.perform(get("/api/offers/0/status"))
+            .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @DisplayName("오퍼 수락 요청 시 200을 반환한다")
+  void returnsOk_whenAcceptOffer() throws Exception {
+    mockMvc.perform(patch("/api/offers/1/accept"))
+            .andExpect(status().isOk());
+  }
+
+  @Test
+  @DisplayName("offerId가 0 이하면 400을 반환한다")
+  void returnsBadRequest_whenOfferIdNotPositive() throws Exception {
+    mockMvc.perform(patch("/api/offers/0/accept"))
             .andExpect(status().isBadRequest());
   }
 }

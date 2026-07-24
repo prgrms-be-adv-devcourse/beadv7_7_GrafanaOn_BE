@@ -1,5 +1,6 @@
 package shop.dear.common.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import shop.dear.common.response.ApiResponse;
 
 import static shop.dear.common.exception.CommonErrorCode.INTERNAL_SERVER_APPLICATION_ERROR;
+import static shop.dear.common.exception.CommonErrorCode.INVALID_REQUEST_PARAMETER;
 import static shop.dear.common.response.ApiResponse.fail;
 
 @Slf4j
@@ -32,6 +34,14 @@ public class CommonExceptionHandler {
         log.warn("{} 발생! errorCode={}", e.getClass().getSimpleName(), e.getErrorCode().getValue(), e);
         return ResponseEntity.status(status)
             .body(fail(e.getErrorCode()));
+    }
+
+    @ExceptionHandler
+
+    public ResponseEntity<ApiResponse<Void>> handleConstraintViolationException(final ConstraintViolationException e) {
+        log.warn("{} 발생!", e.getClass().getSimpleName(), e);
+        return ResponseEntity.badRequest()
+                .body(fail(INVALID_REQUEST_PARAMETER));
     }
 
     @ExceptionHandler
