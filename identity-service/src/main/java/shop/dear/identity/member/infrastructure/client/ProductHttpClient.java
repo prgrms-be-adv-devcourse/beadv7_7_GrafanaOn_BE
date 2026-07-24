@@ -5,10 +5,9 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import shop.dear.common.response.ApiResponse;
+import shop.dear.identity.member.application.dto.external.ExistsProduct;
 import shop.dear.identity.member.application.port.ProductPort;
 import shop.dear.identity.member.infrastructure.client.dto.ProductApiData;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -17,15 +16,15 @@ public class ProductHttpClient implements ProductPort {
     private final RestClient productRestClient;
 
     @Override
-    public boolean hasProduct() {
-        ApiResponse<List<ProductApiData>> body = productRestClient.get()
-            .uri("/api/products/me")
+    public ExistsProduct existsProduct() {
+        ApiResponse<ProductApiData> body = productRestClient.get()
+            .uri("/api/products/me/exists")
             .retrieve()
             .body(new ParameterizedTypeReference<>() {
             });
 
-        List<ProductApiData> data = body.getData();
+        ProductApiData data = body.getData();
 
-        return data != null && !data.isEmpty();
+        return new ExistsProduct(data.exists());
     }
 }

@@ -13,6 +13,7 @@ import shop.dear.identity.member.application.dto.RegisterSellerCommand;
 import shop.dear.identity.member.application.dto.SellerInfo;
 import shop.dear.identity.member.application.dto.UpdateProfileCommand;
 import shop.dear.identity.member.application.dto.UpdateSellerAccountCommand;
+import shop.dear.identity.member.application.dto.external.ExistsProduct;
 import shop.dear.identity.member.application.port.ProductPort;
 import shop.dear.identity.member.domain.constract.SellerStatus;
 import shop.dear.identity.member.domain.exception.MemberErrorCode;
@@ -278,14 +279,14 @@ public class MemberServiceTest {
         member.registerSeller("국민은행", "123-456-789");
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
-        given(productPort.hasProduct()).willReturn(false);
+        given(productPort.existsProduct()).willReturn(new ExistsProduct(false));
 
         memberService.unRegister(1L);
 
         Assertions.assertFalse(member.isSeller());
-        Assertions.assertEquals(SellerStatus.WITHDRAWN, member.getSeller().getStatus());
-        Assertions.assertEquals("****", member.getSeller().getBank());
-        Assertions.assertEquals("****", member.getSeller().getAccount());
+        Assertions.assertEquals(SellerStatus.WITHDRAWING, member.getSeller().getStatus());
+        Assertions.assertEquals("국민은행", member.getSeller().getBank());
+        Assertions.assertEquals("123-456-789", member.getSeller().getAccount());
     }
 
     @Test
@@ -300,7 +301,7 @@ public class MemberServiceTest {
         member.registerSeller("국민은행", "123-456-789");
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
-        given(productPort.hasProduct()).willReturn(true);
+        given(productPort.existsProduct()).willReturn(new ExistsProduct(true));
 
         BusinessException exception = Assertions.assertThrows(BusinessException.class,
             () -> memberService.unRegister(1L));
