@@ -23,7 +23,7 @@ public enum ProductErrorCode implements ErrorCode {
     INVALID_PRODUCT("PD-014", "존재하지 않는 상품입니다."),
     NOT_PRODUCT_SELLER("PD-015", "해당 상품의 판매자가 아닙니다."),
     INVALID_PRODUCT_STATUS_FOR_UPDATE("PD-016", "해당 상품을 수정할 수 있는 상태가 아닙니다."),
-    INVALID_PRODUCT_PRICE("PD-017", "유효하지 않은 상품 가격입니다."),
+    INVALID_PRODUCT_PRICE("PD-017", "상품 가격으로 null을 입력할 수 없습니다."),
     PRODUCT_PRICE_CANNOT_BE_NEGATIVE("PD-018", "상품 가격은 음수일 수 없습니다."),
     ;
 
