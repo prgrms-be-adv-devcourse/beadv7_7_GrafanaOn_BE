@@ -59,7 +59,7 @@ public class ProductService {
             command.modelNumber(),
             command.category(),
             command.releaseDate(),
-            command.price(),
+            Price.from(command.price()),
             command.saleType(),
             command.description()
         );
@@ -93,7 +93,7 @@ public class ProductService {
 
     private void validateSeller(final Long memberId) {
         if (!memberPort.isSeller(memberId).isSeller()) {
-            throw new BusinessException(ProductErrorCode.SELLER_ROLE_REQUIRED);
+            throw new BusinessException(ProductErrorCode.REQUIRED_SELLER_ROLE);
         }
     }
 

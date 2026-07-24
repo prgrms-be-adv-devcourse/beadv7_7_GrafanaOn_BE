@@ -7,14 +7,24 @@ import shop.dear.common.response.ErrorCode;
 @Getter
 @RequiredArgsConstructor
 public enum ProductErrorCode implements ErrorCode {
-    SELLER_ROLE_REQUIRED("PD-001", "판매자가 아닌 사용자는 판매 상품을 등록할 수 없습니다."),
+    REQUIRED_SELLER_ROLE("PD-001", "판매자가 아닌 사용자는 판매 상품을 등록할 수 없습니다."),
     INVALID_UPLOAD_FILE_TYPE("PD-002", "지원하지 않는 이미지 확장자입니다."),
-    PRODUCT_IMAGE_LIMIT_EXCEEDED("PD-003", "상품 이미지 등록 가능 개수를 초과했습니다."),
-    INVALID_PRODUCT("PD-004", "존재하지 않는 상품입니다."),
-    NOT_PRODUCT_SELLER("PD-005", "해당 상품의 판매자가 아닙니다."),
-    INVALID_PRODUCT_STATUS_FOR_UPDATE("PD-006", "해당 상품을 수정할 수 있는 상태가 아닙니다."),
-    INVALID_PRODUCT_PRICE("PD-007", "유효하지 않은 상품 가격입니다."),
-    PRODUCT_PRICE_CANNOT_BE_NEGATIVE("PD-008", "상품 가격은 음수일 수 없습니다."),
+    INVALID_NAME("PD-003", "상품 이름으로 null 혹은 공백을 입력할 수 없습니다."),
+    EXCEEDED_NAME_LENGTH_LIMIT("PD-004", "상품 이름이 최대 글자수를 초과했습니다."),
+    INVALID_BRAND("PD-005", "상품 브랜드로 null 혹은 공백을 입력할 수 없습니다."),
+    EXCEEDED_BRAND_LENGTH_LIMIT("PD-006", "상품 브랜드가 최대 글자수를 초과했습니다."),
+    INVALID_MODEL_NUMBER("PD-007", "상품 모델번호로 null 혹은 공백을 입력할 수 없습니다."),
+    EXCEEDED_MODEL_NUMBER_LENGTH_LIMIT("PD-008", "상품 모델번호가 최대 글자수를 초과했습니다."),
+    INVALID_PRODUCT_CATEGORY("PD-009", "상품 카테고리로 null을 입력할 수 없습니다."),
+    INVALID_RELEASE_DATE("PD-010", "발매일은 미래 날짜로 설정할 수 없습니다."),
+    INVALID_PRODUCT_SALE_TYPE("PD-011", "상품 판매방식으로 null을 입력할 수 없습니다."),
+    EXCEEDED_DESCRIPTION_LENGTH_LIMIT("PD-010", "상품 상세설명이 최대 글자수를 초과했습니다."),
+    EXCEEDED_PRODUCT_IMAGE_COUNT_LIMIT("PD-012", "상품 이미지 등록 가능 개수를 초과했습니다."),
+    INVALID_PRODUCT("PD-013", "존재하지 않는 상품입니다."),
+    NOT_PRODUCT_SELLER("PD-014", "해당 상품의 판매자가 아닙니다."),
+    INVALID_PRODUCT_STATUS_FOR_UPDATE("PD-015", "해당 상품을 수정할 수 있는 상태가 아닙니다."),
+    INVALID_PRODUCT_PRICE("PD-016", "유효하지 않은 상품 가격입니다."),
+    PRODUCT_PRICE_CANNOT_BE_NEGATIVE("PD-017", "상품 가격은 음수일 수 없습니다."),
     ;
 
     private final String value;
