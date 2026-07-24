@@ -10,6 +10,7 @@ import shop.dear.identity.member.application.dto.RegisterSellerCommand;
 import shop.dear.identity.member.application.dto.SellerInfo;
 import shop.dear.identity.member.application.dto.UpdateProfileCommand;
 import shop.dear.identity.member.application.dto.UpdateSellerAccountCommand;
+import shop.dear.identity.member.application.dto.external.ExistsProduct;
 import shop.dear.identity.member.domain.exception.MemberErrorCode;
 import shop.dear.identity.member.domain.model.Member;
 import shop.dear.identity.member.domain.model.Seller;
@@ -123,7 +124,9 @@ public class MemberService  {
             throw new BusinessException(MemberErrorCode.NOT_SELLER);
         }
 
-        if (productPort.hasProduct()){
+        ExistsProduct existsProduct = productPort.existsProduct();
+
+        if (existsProduct.exists()){
             throw new BusinessException(MemberErrorCode.WITHDRAWAL_FAILED);
         }
 
