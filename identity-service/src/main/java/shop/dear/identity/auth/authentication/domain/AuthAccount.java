@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import shop.dear.common.audit.BaseEntity;
+import shop.dear.common.exception.BusinessException;
+import shop.dear.identity.auth.authentication.domain.exception.AuthErrorCode;
 import shop.dear.identity.auth.authorization.domain.Role;
 
 import java.util.Locale;
@@ -82,6 +84,11 @@ public class AuthAccount extends BaseEntity {
 
     // 회원 탈퇴
     public void withdraw() {
+        if (!isActive()) {
+            throw new BusinessException(
+                    AuthErrorCode.INACTIVE_ACCOUNT
+            );
+        }
         this.status = AuthAccountStatus.WITHDRAWN;
     }
 

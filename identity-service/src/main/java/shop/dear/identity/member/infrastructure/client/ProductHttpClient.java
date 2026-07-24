@@ -14,14 +14,17 @@ import shop.dear.identity.member.infrastructure.client.dto.ProductApiData;
 public class ProductHttpClient implements ProductPort {
 
     private final RestClient productRestClient;
+    // @AuthUser의 AuthUserArgumentResolver가 읽는 것과 같다.
+    private static final String MEMBER_ID_HEADER = "X-Authenticated-Member-Id";
 
     @Override
-    public ExistsProduct existsProduct() {
+    public ExistsProduct existsProduct(final Long memberId) {
         ApiResponse<ProductApiData> body = productRestClient.get()
-            .uri("/api/products/me/exists")
-            .retrieve()
-            .body(new ParameterizedTypeReference<>() {
-            });
+                .uri("/api/products/me/exists")
+                .header(MEMBER_ID_HEADER, memberId.toString())
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {
+                });
 
         ProductApiData data = body.getData();
 

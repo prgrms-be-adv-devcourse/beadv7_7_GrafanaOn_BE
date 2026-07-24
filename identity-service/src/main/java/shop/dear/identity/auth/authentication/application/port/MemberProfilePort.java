@@ -9,4 +9,6 @@ public interface MemberProfilePort {
             String defaultShippingAddress,
             String phoneNumber
     );
+
+    void withdrawProfile(Long memberId); // Member 프로필의 개인정보 처리 요청
 }

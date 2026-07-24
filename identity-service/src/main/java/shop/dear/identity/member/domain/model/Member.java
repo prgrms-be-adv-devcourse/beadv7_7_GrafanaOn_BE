@@ -102,4 +102,17 @@ public class Member extends BaseEntity {
     public void completeSellerWithdrawal(){
         this.seller.withdraw();
     }
+
+    public void anonymizeProfile() {
+        if (seller != null && seller.getStatus() != SellerStatus.WITHDRAWN) {
+            throw new BusinessException(
+                    MemberErrorCode.SELLER_WITHDRAWAL_REQUIRED
+            );
+        }
+
+        this.name = "탈퇴한 회원";
+        this.defaultShippingAddress = "";
+        this.phoneNumber = "";
+        this.nickname = "withdrawn_" + this.id;
+    }
 }

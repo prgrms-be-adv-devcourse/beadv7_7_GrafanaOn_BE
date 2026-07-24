@@ -13,12 +13,15 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import shop.dear.identity.auth.authentication.application.AuthService;
 import shop.dear.identity.auth.authentication.application.dto.TokenResult;
+import shop.dear.identity.auth.authentication.application.dto.WithdrawCommand;
 import shop.dear.identity.auth.authentication.presentation.dto.LoginRequest;
 import tools.jackson.databind.ObjectMapper;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -108,5 +111,47 @@ class AuthControllerTest {
                                 containsString("Path=/api/auth")
                         )
                 );
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴에 성공하면 인증 계정을 탈퇴 처리하고 Refresh Token 쿠키를 삭제한다")
+    void withdrawSuccess() throws Exception {
+        // when & then
+        mockMvc.perform(
+                        delete("/api/auth/withdraw")
+                                .header(
+                                        "X-Authenticated-Member-Id",
+                                        "1"
+                                )
+                )
+                .andExpect(status().isOk())
+                .andExpect(
+                        header().string(
+                                HttpHeaders.SET_COOKIE,
+                                containsString("refreshToken=")
+                        )
+                )
+                .andExpect(
+                        header().string(
+                                HttpHeaders.SET_COOKIE,
+                                containsString("Max-Age=0")
+                        )
+                )
+                .andExpect(
+                        header().string(
+                                HttpHeaders.SET_COOKIE,
+                                containsString("HttpOnly")
+                        )
+                )
+                .andExpect(
+                        header().string(
+                                HttpHeaders.SET_COOKIE,
+                                containsString("Path=/api/auth")
+                        )
+                );
+
+        verify(authService).withdraw(
+                new WithdrawCommand(1L)
+        );
     }
 }

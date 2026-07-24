@@ -129,6 +129,30 @@ public class AuthService {
         );
     }
 
+    /**
+     * [회원 탈퇴 흐름]
+     * 1. memberId로 AuthAccount 조회
+     * 2. Member 프로필 개인정보 익명화 (공백 처리)
+     * 2.1 정산 완료가 되지 않은 판매자는 MB-007 예외
+     * 3. AuthAccount를 WITHDRAWN 상태로 변경
+     * 4. Refresh Token 폐기
+     */
+    @Transactional
+    public void withdraw(final WithdrawCommand command) {
+        AuthAccount authAccount = authAccountRepository
+                .findByMemberId(command.memberId())
+                .orElseThrow(() -> new BusinessException(
+                        AuthErrorCode.AUTH_ACCOUNT_NOT_FOUND
+                ));
+
+        memberProfilePort.withdrawProfile(command.memberId());
+
+        authAccount.withdraw();
+        authAccountRepository.save(authAccount);
+
+        refreshTokenStorePort.deleteByMemberId(command.memberId());
+    }
+
     private TokenResult issueAndStoreTokens(AuthAccount authAccount) {
         if (!authAccount.isActive()) {
             throw new BusinessException(
