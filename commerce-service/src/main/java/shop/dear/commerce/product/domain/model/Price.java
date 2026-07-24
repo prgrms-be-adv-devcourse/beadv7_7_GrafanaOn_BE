@@ -20,14 +20,14 @@ public class Price {
     @Column(name = "price", precision = 15, scale = 2, nullable = false)
     private BigDecimal value;
 
+    public static Price from(final BigDecimal value) {
+        return new Price(value);
+    }
+
     private Price(final BigDecimal value) {
         validate(value);
 
         this.value = value;
-    }
-
-    public static Price from(final BigDecimal value) {
-        return new Price(value);
     }
 
     private void validate(final BigDecimal value) {

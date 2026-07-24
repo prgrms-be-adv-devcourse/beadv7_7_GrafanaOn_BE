@@ -3,7 +3,6 @@ package shop.dear.commerce.product.presentation.dto.request;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
 import shop.dear.commerce.product.domain.constant.ProductCategory;
 import shop.dear.commerce.product.domain.constant.ProductSaleType;
-import shop.dear.commerce.product.domain.model.Price;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -41,7 +40,7 @@ public record CreateProductRequest(
             productImageContents,
             this.brand,
             this.name,
-            Price.from(this.price),
+            this.price,
             this.modelNumber,
             this.category,
             this.releaseDate,
