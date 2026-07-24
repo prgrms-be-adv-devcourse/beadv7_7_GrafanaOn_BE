@@ -4,11 +4,12 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import shop.dear.commerce.financial.wallet.domain.costant.WalletLogType;
 import shop.dear.common.audit.BaseEntity;
+import shop.dear.common.exception.BusinessException;
+import shop.dear.commerce.financial.wallet.domain.exception.WalletErrorCode;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "wallet")
@@ -23,11 +24,11 @@ public class Wallet extends BaseEntity {
     @Column(name = "member_id", nullable = false)
     private Long memberId;
 
+    @Version
+    private Long version;
+
     @Column(name = "balance", precision = 15, scale = 2, nullable = false)
     private BigDecimal balance;
-
-    @OneToMany(mappedBy = "wallet", cascade = CascadeType.PERSIST)
-    private List<WalletLog> logs = new ArrayList<>();
 
     private Wallet(final Long memberId) {
         this.memberId = memberId;
@@ -38,4 +39,42 @@ public class Wallet extends BaseEntity {
         return new Wallet(memberId);
     }
 
+    public WalletLog pay(final BigDecimal amount, final Long referenceId) {
+        if (this.balance.compareTo(amount) < 0) {
+            throw new BusinessException(WalletErrorCode.INSUFFICIENT_BALANCE);
+        }
+        this.balance = this.balance.subtract(amount);
+        return WalletLog.create(this, WalletLogType.PAYMENT, amount, referenceId);
+    }
+
+    public WalletLog settle(final BigDecimal amount, final Long referenceId) {
+        if (this.balance.compareTo(amount) < 0) {
+            throw new BusinessException(WalletErrorCode.INSUFFICIENT_BALANCE);
+        }
+        this.balance = this.balance.subtract(amount);
+        return WalletLog.create(this, WalletLogType.SETTLEMENT, amount, referenceId);
+    }
+
+    public WalletLog topup(final BigDecimal amount, final Long referenceId) {
+        this.balance = this.balance.add(amount);
+        return WalletLog.create(this, WalletLogType.TOPUP, amount, referenceId);
+    }
+
+    public WalletLog hold(final BigDecimal amount, final Long referenceId) {
+        if (this.balance.compareTo(amount) < 0) {
+            throw new BusinessException(WalletErrorCode.INSUFFICIENT_BALANCE);
+        }
+        this.balance = this.balance.subtract(amount); // 릴리즈 시 반환
+        return WalletLog.create(this, WalletLogType.HOLD, amount, referenceId);
+    }
+
+    public WalletLog release(final BigDecimal amount, final Long referenceId) {
+        this.balance = this.balance.add(amount);
+        return WalletLog.create(this, WalletLogType.RELEASE, amount, referenceId);
+    }
+
+    public WalletLog earn(final BigDecimal amount, final Long referenceId) {
+        this.balance = this.balance.add(amount);
+        return WalletLog.create(this, WalletLogType.PROCEEDS, amount, referenceId);
+    }
 }
