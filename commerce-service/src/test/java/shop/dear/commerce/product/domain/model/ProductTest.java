@@ -452,6 +452,21 @@ class ProductTest {
             .hasMessage("상품 이미지 등록 가능 개수를 초과했습니다.");
     }
 
+    @DisplayName("상품 이미지 정렬 순서가 중복되면 예외가 발생한다.")
+    @Test
+    void givenDuplicateImageSortOrder_whenAddImages_thenThrowException() {
+        //Given
+        final Product product = createProduct();
+
+        //Then
+        assertThatThrownBy(() -> {
+            product.addImage("https://dear.shop/test1.png", 1);
+            product.addImage("https://dear.shop/test2.png", 1);
+        })
+            .isInstanceOf(BusinessException.class)
+            .hasMessage("이미 동일한 순서의 상품 이미지가 존재합니다.");
+    }
+
     @DisplayName("입력된 값(memberId)이 해당 상품의 판매자가 아니면 예외가 발생한다.")
     @Test
     void givenMemberId_whenValidateOwner_thenSuccess() {
