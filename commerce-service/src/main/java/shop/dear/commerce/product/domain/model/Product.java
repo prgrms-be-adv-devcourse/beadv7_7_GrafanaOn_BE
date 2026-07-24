@@ -251,4 +251,12 @@ public class Product extends BaseEntity {
     public boolean isUpdatable() {
         return this.status == ProductStatus.PREPARING || this.status == ProductStatus.ON_SALE;
     }
+
+    public void changeStatusToSoldOut() {
+        this.status = ProductStatus.SOLD_OUT;
+    }
+
+    public void changeStatusToOnSale() {
+        this.status = ProductStatus.ON_SALE;
+    }
 }
