@@ -25,16 +25,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static shop.dear.commerce.product.domain.exception.ProductErrorCode.ALREADY_EXISTS_SORT_ORDER_NUMBER;
-import static shop.dear.commerce.product.domain.exception.ProductErrorCode.EXCEEDED_BRAND_LENGTH_LIMIT;
-import static shop.dear.commerce.product.domain.exception.ProductErrorCode.EXCEEDED_MODEL_NUMBER_LENGTH_LIMIT;
-import static shop.dear.commerce.product.domain.exception.ProductErrorCode.INVALID_BRAND;
-import static shop.dear.commerce.product.domain.exception.ProductErrorCode.INVALID_MODEL_NUMBER;
-import static shop.dear.commerce.product.domain.exception.ProductErrorCode.INVALID_NAME;
-import static shop.dear.commerce.product.domain.exception.ProductErrorCode.EXCEEDED_NAME_LENGTH_LIMIT;
-import static shop.dear.commerce.product.domain.exception.ProductErrorCode.INVALID_RELEASE_DATE;
-import static shop.dear.commerce.product.domain.exception.ProductErrorCode.NOT_PRODUCT_SELLER;
-
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "product")
@@ -140,11 +130,11 @@ public class Product extends BaseEntity {
 
     private String validateName(final String name) {
         if (name == null || name.isBlank()) {
-            throw new BusinessException(INVALID_NAME);
+            throw new BusinessException(ProductErrorCode.INVALID_NAME);
         }
 
         if (name.length() > MAX_NAME_LENGTH) {
-            throw new BusinessException(EXCEEDED_NAME_LENGTH_LIMIT);
+            throw new BusinessException(ProductErrorCode.EXCEEDED_NAME_LENGTH_LIMIT);
         }
 
         return name;
@@ -152,11 +142,11 @@ public class Product extends BaseEntity {
 
     private String validateBrand(final String brand) {
         if (brand == null || brand.isBlank()) {
-            throw new BusinessException(INVALID_BRAND);
+            throw new BusinessException(ProductErrorCode.INVALID_BRAND);
         }
 
         if (brand.length() > MAX_BRAND_LENGTH) {
-            throw new BusinessException(EXCEEDED_BRAND_LENGTH_LIMIT);
+            throw new BusinessException(ProductErrorCode.EXCEEDED_BRAND_LENGTH_LIMIT);
         }
 
         return brand;
@@ -164,11 +154,11 @@ public class Product extends BaseEntity {
 
     private String validateModelNumber(final String modelNumber) {
         if (modelNumber == null || modelNumber.isBlank()) {
-            throw new BusinessException(INVALID_MODEL_NUMBER);
+            throw new BusinessException(ProductErrorCode.INVALID_MODEL_NUMBER);
         }
 
         if (modelNumber.length() > MAX_MODEL_NUMBER_LENGTH) {
-            throw new BusinessException(EXCEEDED_MODEL_NUMBER_LENGTH_LIMIT);
+            throw new BusinessException(ProductErrorCode.EXCEEDED_MODEL_NUMBER_LENGTH_LIMIT);
         }
 
         return modelNumber;
@@ -184,7 +174,7 @@ public class Product extends BaseEntity {
 
     private LocalDate validateReleaseDate(final LocalDate releaseDate) {
         if (releaseDate != null && releaseDate.isAfter(LocalDate.now())) {
-            throw new BusinessException(INVALID_RELEASE_DATE);
+            throw new BusinessException(ProductErrorCode.INVALID_RELEASE_DATE);
         }
 
         return releaseDate;
@@ -247,14 +237,14 @@ public class Product extends BaseEntity {
     private void validateDuplicateImageSortOrder(final int sortOrder) {
         for (ProductImage pi : this.images) {
             if (pi.getSortOrder() == sortOrder) {
-                throw new BusinessException(ALREADY_EXISTS_SORT_ORDER_NUMBER);
+                throw new BusinessException(ProductErrorCode.ALREADY_EXISTS_SORT_ORDER_NUMBER);
             }
         }
     }
 
     public void validateOwner(final Long memberId) {
         if (!this.sellerId.equals(memberId)) {
-            throw new BusinessException(NOT_PRODUCT_SELLER);
+            throw new BusinessException(ProductErrorCode.NOT_PRODUCT_SELLER);
         }
     }
 
