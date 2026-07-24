@@ -5,6 +5,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.dear.common.audit.BaseEntity;
+import shop.dear.common.exception.BusinessException;
+import shop.dear.identity.member.domain.constract.SellerStatus;
+import shop.dear.identity.member.domain.exception.MemberErrorCode;
 
 @Entity
 @Table(name = "member")
@@ -27,6 +30,9 @@ public class Member extends BaseEntity {
 
     @Column(name = "nickname", nullable = false, unique = true)
     private String nickname;
+
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Seller seller;
 
     private Member(
         final String name,
@@ -62,5 +68,38 @@ public class Member extends BaseEntity {
         this.defaultShippingAddress = defaultShippingAddress;
         this.phoneNumber = phoneNumber;
         this.nickname = nickname;
+    }
+
+    public boolean isSeller(){
+        return this.seller != null && this.seller.getStatus() == SellerStatus.ACTIVE;
+    }
+
+    public void registerSeller(final String bank, final String account) {
+        if (this.isSeller()) {
+            throw new BusinessException(MemberErrorCode.ALREADY_SELLER);
+        }
+        this.seller = new Seller(
+            bank,
+            account,
+            this
+        );
+    }
+
+    public void updateSellerAccount(String bank, String account){
+        if (!this.isSeller()) {
+            throw new BusinessException(MemberErrorCode.NOT_SELLER);
+        }
+        this.seller.changeAccount(bank,account);
+    }
+
+    public void requestSellerWithdrawal() {
+        if (!this.isSeller()) {
+            throw new BusinessException(MemberErrorCode.NOT_SELLER);
+        }
+        this.seller.withdrawing();
+    }
+
+    public void completeSellerWithdrawal(){
+        this.seller.withdraw();
     }
 }
