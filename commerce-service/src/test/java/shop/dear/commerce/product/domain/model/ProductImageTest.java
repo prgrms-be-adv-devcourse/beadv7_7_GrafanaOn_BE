@@ -61,6 +61,20 @@ class ProductImageTest {
             .hasMessage("URL이 최대 글자수를 초과했습니다.");
     }
 
+    @DisplayName("이미지 정렬 순서가 최소 이미지 등록 가능 개수 미만이면 예외가 발생한다.")
+    @Test
+    void givenMinimumSortOrderLimit_whenCreateProductImage_thenThrowException() {
+        // Given
+        final Product product = mock(Product.class);
+        final String url = "https://dear.shop/test.png";
+        final int exceededSortOrder = Product.PRODUCT_IMAGE_COUNT_LIMIT + 1;
+
+        // When & Then
+        assertThatThrownBy(() -> ProductImage.create(product, url, exceededSortOrder))
+            .isInstanceOf(BusinessException.class)
+            .hasMessage("이미지 정렬 순서가 최대 이미지 개수를 초과했습니다.");
+    }
+
     @DisplayName("이미지 정렬 순서가 최대 이미지 등록 가능 개수를 초과하면 예외가 발생한다.")
     @Test
     void givenSortOrderExceedsLimit_whenCreateProductImage_thenThrowException() {
