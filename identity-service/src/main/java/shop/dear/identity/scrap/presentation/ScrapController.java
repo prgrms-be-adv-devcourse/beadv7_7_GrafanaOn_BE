@@ -1,16 +1,20 @@
 package shop.dear.identity.scrap.presentation;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
 import shop.dear.identity.scrap.application.ScrapService;
+import shop.dear.identity.scrap.application.dto.ScrapInfo;
+import shop.dear.identity.scrap.presentation.dto.ScrapPageResponse;
 import shop.dear.identity.scrap.presentation.dto.ScrapResponse;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/scraps")
+@Validated
 public class ScrapController {
 
     private final ScrapService scrapService;
@@ -18,7 +22,7 @@ public class ScrapController {
     @PostMapping("/{productId}")
     public ApiResponse<ScrapResponse> addScrap(
         @PathVariable final Long productId,
-        @RequestHeader("X-Member-Id") final Long memberId
+        @AuthUser final Long memberId
     ) {
 
         ScrapResponse scrap = ScrapResponse.from(scrapService.addScrap(memberId, productId));
@@ -27,19 +31,25 @@ public class ScrapController {
     }
 
     @GetMapping
-    public ApiResponse<List<ScrapResponse>> getScrapList(@RequestHeader("X-Member-Id") final Long memberId) {
+    public ApiResponse<ScrapPageResponse> getScrapList(
+        @AuthUser final Long memberId,
+        @RequestParam(defaultValue = "0") final int page,
+        @RequestParam(defaultValue = "10") final int size
+    ) {
 
-        List<ScrapResponse> scraps = scrapService.getScrapList(memberId).stream()
-            .map(ScrapResponse::from)
-            .toList();
+        Page<ScrapInfo> scraps = scrapService.getScrapList(
+            memberId,
+            page,
+            size
+        );
 
-        return ApiResponse.successWithData(scraps);
+        return ApiResponse.successWithData(ScrapPageResponse.from(scraps));
     }
 
     @DeleteMapping("/{productId}")
     public ApiResponse<Void> deleteScrap(
         @PathVariable final Long productId,
-        @RequestHeader("X-Member-Id") final Long memberId
+        @AuthUser final Long memberId
     ) {
 
         scrapService.deleteScrap(memberId, productId);

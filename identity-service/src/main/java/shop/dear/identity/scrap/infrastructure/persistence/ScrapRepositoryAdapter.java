@@ -1,12 +1,13 @@
 package shop.dear.identity.scrap.infrastructure.persistence;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import shop.dear.identity.scrap.domain.model.Scrap;
 import shop.dear.identity.scrap.domain.repository.ScrapRepository;
 import shop.dear.identity.scrap.infrastructure.persistence.jpa.ScrapJpaRepository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -31,7 +32,7 @@ public class ScrapRepositoryAdapter implements ScrapRepository {
     }
 
     @Override
-    public List<Scrap> findByMemberIdOrderByInsertedAt(Long memberId) {
-        return jpaRepository.findByMemberIdOrderByInsertedAt(memberId);
+    public Page<Scrap> findByMemberId(Long memberId, Pageable pageable) {
+        return jpaRepository.findByMemberId(memberId, pageable);
     }
 }
