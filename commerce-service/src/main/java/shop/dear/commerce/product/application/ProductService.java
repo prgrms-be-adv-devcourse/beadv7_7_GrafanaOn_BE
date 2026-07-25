@@ -25,8 +25,6 @@ import shop.dear.common.exception.BusinessException;
 
 import java.util.List;
 
-import static shop.dear.commerce.product.domain.exception.ProductErrorCode.INVALID_PRODUCT_STATUS_FOR_UPDATE;
-
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Service
@@ -145,14 +143,14 @@ public class ProductService {
 
     private void validateProductUpdatable(final Product originalProduct) {
         if (!originalProduct.isUpdatable()) {
-            throw new BusinessException(INVALID_PRODUCT_STATUS_FOR_UPDATE);
+            throw new BusinessException(ProductErrorCode.INVALID_PRODUCT_STATUS_FOR_UPDATE);
         }
 
         if (originalProduct.getSaleType() == ProductSaleType.OFFER) {
             final ExistsOffer existsOffer = offerPort.existsOffer(originalProduct.getId());
 
             if (existsOffer.exists()) {
-                throw new BusinessException(INVALID_PRODUCT_STATUS_FOR_UPDATE);
+                throw new BusinessException(ProductErrorCode.INVALID_PRODUCT_STATUS_FOR_UPDATE);
             }
         }
     }
