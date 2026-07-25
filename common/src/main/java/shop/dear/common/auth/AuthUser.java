@@ -6,4 +6,6 @@ import java.lang.annotation.*;
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AuthUser {
+
+  String MEMBER_ID_HEADER = "X-Authenticated-Member-Id";
 }
