@@ -17,6 +17,7 @@ import shop.dear.commerce.product.presentation.dto.request.CreateProductRequest;
 import shop.dear.commerce.product.presentation.dto.request.GeneratePresignedUrlsRequest;
 import shop.dear.commerce.product.presentation.dto.request.UpdateProductRequest;
 import shop.dear.commerce.product.presentation.dto.response.PresignedUrlsResponse;
+import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
 
 import java.util.List;
@@ -31,9 +32,8 @@ public class ProductController {
 
     private final ProductService productService;
 
-    // TODO: 추후 JWT 파싱 구현 완료 시 SecurityContext/Header 등에서 실제 memberId 추출하여 매핑해야 함
     @PostMapping("/images/presigned-urls")
-    public ResponseEntity<ApiResponse<PresignedUrlsResponse>> generatePresignedUrls(final Long memberId, @RequestBody GeneratePresignedUrlsRequest request) {
+    public ResponseEntity<ApiResponse<PresignedUrlsResponse>> generatePresignedUrls(@AuthUser final Long memberId, @RequestBody GeneratePresignedUrlsRequest request) {
         final GeneratePresignedUrlsCommand command = request.toCommand();
         final List<PresignedUrlInfo> presignedUrls = productService.generatePresignedUrls(memberId, command);
         final PresignedUrlsResponse response = PresignedUrlsResponse.of(presignedUrls);
@@ -41,19 +41,17 @@ public class ProductController {
         return ResponseEntity.ok(successWithData(response));
     }
 
-    // TODO: 추후 JWT 파싱 구현 완료 시 SecurityContext/Header 등에서 실제 memberId 추출하여 매핑해야 함
     @PostMapping
-    public ResponseEntity<ApiResponse<Void>> createProduct(final Long memberId, @RequestBody CreateProductRequest request) {
+    public ResponseEntity<ApiResponse<Void>> createProduct(@AuthUser final Long memberId, @RequestBody CreateProductRequest request) {
         final CreateProductCommand command = request.toCommand();
         productService.createProduct(memberId, command);
 
         return ResponseEntity.ok(success());
     }
 
-    // TODO: 추후 JWT 파싱 구현 완료 시 SecurityContext/Header 등에서 실제 memberId 추출하여 매핑해야 함
     @PatchMapping("/{productId}")
     public ResponseEntity<ApiResponse<Void>> updateProduct(
-        final Long sellerId,
+        @AuthUser final Long sellerId,
         @PathVariable Long productId,
         @RequestBody UpdateProductRequest request
     ) {
