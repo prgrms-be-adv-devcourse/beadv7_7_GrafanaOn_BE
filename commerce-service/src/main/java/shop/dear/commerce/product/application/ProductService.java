@@ -6,9 +6,9 @@ import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.product.application.dto.PresignedUrlInfo;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
 import shop.dear.commerce.product.application.dto.command.UpdateProductCommand;
+import shop.dear.commerce.product.application.dto.external.ExistsMember;
 import shop.dear.commerce.product.application.dto.external.ExistsOffer;
 import shop.dear.commerce.product.application.dto.external.GeneratePresignedUrlsCommand;
-import shop.dear.commerce.product.application.dto.external.MemberProfile;
 import shop.dear.commerce.product.application.port.MemberPort;
 import shop.dear.commerce.product.application.port.OfferPort;
 import shop.dear.commerce.product.application.port.PresignedUrlGenerator;
@@ -37,7 +37,7 @@ public class ProductService {
     private final PresignedUrlGenerator presignedUrlGenerator;
 
     public List<PresignedUrlInfo> generatePresignedUrls(final Long memberId, final GeneratePresignedUrlsCommand generatePresignedUrlsCommand) {
-        final MemberProfile memberProfile = memberPort.getMemberProfile(memberId);
+        validateMember(memberId);
 
         return generatePresignedUrlsCommand.files().stream()
             .map(imageInfo -> new PresignedUrlInfo(
@@ -47,8 +47,17 @@ public class ProductService {
             .toList();
     }
 
+    private void validateMember(final Long memberId) {
+        final ExistsMember existsMember = memberPort.existsMember(memberId);
+
+        if (!existsMember.exists()) {
+            throw new BusinessException(ProductErrorCode.INVALID_MEMBER);
+        }
+    }
+
     @Transactional
     public void createProduct(final Long sellerId, final CreateProductCommand command) {
+        validateMember(sellerId);
         validateSeller(sellerId);
 
         final Product product = Product.create(
@@ -98,6 +107,7 @@ public class ProductService {
 
     @Transactional
     public void updateProduct(final Long sellerId, final Long productId, final UpdateProductCommand command) {
+        validateMember(sellerId);
         validateSeller(sellerId);
 
         final Product originalProduct = productRepository.findById(productId);
@@ -156,6 +166,7 @@ public class ProductService {
     }
 
     public void deleteProduct(final Long sellerId, final Long productId) {
+        validateMember(sellerId);
         validateSeller(sellerId);
 
         final Product product = productRepository.findById(productId);
