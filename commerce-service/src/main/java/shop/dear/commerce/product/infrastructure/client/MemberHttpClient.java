@@ -1,6 +1,7 @@
 package shop.dear.commerce.product.infrastructure.client;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import shop.dear.commerce.product.infrastructure.client.dto.IsSellerBody;
 import shop.dear.commerce.product.infrastructure.client.dto.MemberProfileApiData;
 import shop.dear.common.response.ApiResponse;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class MemberHttpClient implements MemberPort {
@@ -21,6 +23,8 @@ public class MemberHttpClient implements MemberPort {
 
     @Override
     public MemberProfile getMemberProfile(final Long memberId) {
+        log.info("[MemberHttpClient] member - 프로필 조회 요청. memberId={}", memberId);
+
         final ApiResponse<MemberProfileApiData> body = productRestClient.get()
             .uri("/api/members/profile?memberId=" + memberId)
             .retrieve()
@@ -28,6 +32,8 @@ public class MemberHttpClient implements MemberPort {
             });
 
         final MemberProfileApiData data = body.getData();
+
+        log.info("[MemberHttpClient] member 프로필 조회 요청 성공. memberId={}", memberId);
 
         return new MemberProfile(
             data.name(),
@@ -40,6 +46,8 @@ public class MemberHttpClient implements MemberPort {
 
     @Override
     public IsSeller isSeller(final Long memberId) {
+        log.info("[MemberHttpClient] member - 판매자 등록 여부 조회 요청. memberId={}", memberId);
+
         final ApiResponse<IsSellerApiData> body = productRestClient.post()
             .uri("/api/members/seller")
             .contentType(MediaType.APPLICATION_JSON)
@@ -49,6 +57,8 @@ public class MemberHttpClient implements MemberPort {
             });
 
         final IsSellerApiData data = body.getData();
+
+        log.info("[MemberHttpClient] member - 판매자 등록 여부 조회 요청 성공. memberId={} isSeller={}", memberId, data.isSeller());
 
         return new IsSeller(data.isSeller());
     }
