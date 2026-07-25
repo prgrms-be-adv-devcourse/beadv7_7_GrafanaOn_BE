@@ -75,13 +75,30 @@ class ScrapControllerTest {
 
         result
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data.content.length()").value(2))
-            .andExpect(jsonPath("$.data.content[0].productId").value(200))
+            .andExpect(jsonPath("$.data.scrapList.length()").value(2))
+            .andExpect(jsonPath("$.data.scrapList[0].productId").value(200))
             .andExpect(jsonPath("$.data.page").value(0))
             .andExpect(jsonPath("$.data.size").value(10))
             .andExpect(jsonPath("$.data.totalElements").value(2))
             .andExpect(jsonPath("$.data.totalPages").value(1))
             .andExpect(jsonPath("$.data.hasNext").value(false));
+    }
+
+    @Test
+    @DisplayName("이미 스크랩한 상품을 다시 스크랩하면 상태코드 400과 SC-002 에러코드를 반환한다")
+    void addScrap_duplicate() throws Exception {
+
+        willThrow(new BusinessException(ScrapErrorCode.DUPLICATE_SCRAP))
+            .given(scrapService).addScrap(eq(1L), eq(100L));
+
+        final ResultActions result = mockMvc
+            .perform(post("/api/scraps/100")
+                .header(MEMBER_ID_HEADER, "1"));
+
+        result
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(ScrapErrorCode.DUPLICATE_SCRAP.getValue()))
+            .andExpect(jsonPath("$.message").value(ScrapErrorCode.DUPLICATE_SCRAP.getMessage()));
     }
 
     @Test

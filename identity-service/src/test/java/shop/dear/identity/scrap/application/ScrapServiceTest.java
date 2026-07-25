@@ -8,6 +8,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +26,8 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,6 +43,8 @@ class ScrapServiceTest {
     @DisplayName("스크랩 생성 성공")
     void addScrapTest() {
 
+        given(scrapRepository.existsByMemberIdAndProductId(1L, 2L))
+            .willReturn(false);
         given(scrapRepository.save(any()))
             .willAnswer(invocation -> invocation.getArgument(0));
 
@@ -48,6 +53,35 @@ class ScrapServiceTest {
         Assertions.assertEquals(1L, result.memberId());
         Assertions.assertEquals(2L, result.productId());
         verify(scrapRepository).save(any());
+    }
+
+    @Test
+    @DisplayName("스크랩 생성 실패 (이미 스크랩한 상품)")
+    void addScrap_duplicate() {
+
+        given(scrapRepository.existsByMemberIdAndProductId(1L, 2L))
+            .willReturn(true);
+
+        BusinessException exception = Assertions.assertThrows(BusinessException.class,
+            () -> scrapService.addScrap(1L, 2L));
+
+        Assertions.assertEquals(ScrapErrorCode.DUPLICATE_SCRAP, exception.getErrorCode());
+        verify(scrapRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("스크랩 생성 실패 (동시 요청으로 인한 유니크 제약조건 위반)")
+    void addScrap_concurrentDuplicate() {
+
+        given(scrapRepository.existsByMemberIdAndProductId(1L, 2L))
+            .willReturn(false);
+        willThrow(new DataIntegrityViolationException("duplicate key"))
+            .given(scrapRepository).save(any());
+
+        BusinessException exception = Assertions.assertThrows(BusinessException.class,
+            () -> scrapService.addScrap(1L, 2L));
+
+        Assertions.assertEquals(ScrapErrorCode.DUPLICATE_SCRAP, exception.getErrorCode());
     }
 
     @Test

@@ -35,4 +35,9 @@ public class ScrapRepositoryAdapter implements ScrapRepository {
     public Page<Scrap> findByMemberId(Long memberId, Pageable pageable) {
         return jpaRepository.findByMemberId(memberId, pageable);
     }
+
+    @Override
+    public boolean existsByMemberIdAndProductId(Long memberId, Long productId) {
+        return jpaRepository.existsByMemberIdAndProductId(memberId, productId);
+    }
 }

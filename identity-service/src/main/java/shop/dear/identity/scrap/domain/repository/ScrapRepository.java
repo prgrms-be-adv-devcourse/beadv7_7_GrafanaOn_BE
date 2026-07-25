@@ -11,4 +11,5 @@ public interface ScrapRepository {
     void deleteById(Long id);
     Optional<Scrap> findByMemberIdAndProductId(Long memberId, Long productId);
     Page<Scrap> findByMemberId(Long memberId, Pageable pageable);
+    boolean existsByMemberIdAndProductId(Long memberId, Long productId);
 }

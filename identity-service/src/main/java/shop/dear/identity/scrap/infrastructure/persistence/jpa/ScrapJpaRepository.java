@@ -11,4 +11,5 @@ public interface ScrapJpaRepository extends JpaRepository<Scrap, Long> {
 
     Optional<Scrap> findByMemberIdAndProductId(Long memberId, Long productId);
     Page<Scrap> findByMemberId(Long memberId, Pageable pageable);
+    boolean existsByMemberIdAndProductId(Long memberId, Long productId);
 }

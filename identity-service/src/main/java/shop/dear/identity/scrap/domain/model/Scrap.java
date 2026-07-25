@@ -7,7 +7,10 @@ import lombok.NoArgsConstructor;
 import shop.dear.common.audit.BaseEntity;
 
 @Entity
-@Table(name = "scrap")
+@Table(
+    name = "scrap",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"member_id", "product_id"})
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Scrap extends BaseEntity {

@@ -1,6 +1,7 @@
 package shop.dear.identity.scrap.application;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -22,9 +23,17 @@ public class ScrapService {
     @Transactional
     public ScrapInfo addScrap(final Long memberId, final Long productId){
 
+        if (scrapRepository.existsByMemberIdAndProductId(memberId, productId)) {
+            throw new BusinessException(ScrapErrorCode.DUPLICATE_SCRAP);
+        }
+
         Scrap scrap = Scrap.create(memberId, productId);
 
-        return ScrapInfo.from(scrapRepository.save(scrap));
+        try {
+            return ScrapInfo.from(scrapRepository.save(scrap));
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException(ScrapErrorCode.DUPLICATE_SCRAP);
+        }
     }
 
     public Page<ScrapInfo> getScrapList(
