@@ -3,7 +3,6 @@ package shop.dear.commerce.product.infrastructure.client;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import shop.dear.commerce.product.application.dto.external.ExistsMember;
@@ -12,7 +11,6 @@ import shop.dear.commerce.product.application.dto.external.MemberProfile;
 import shop.dear.commerce.product.application.port.MemberPort;
 import shop.dear.commerce.product.infrastructure.client.dto.ExistsMemberApiData;
 import shop.dear.commerce.product.infrastructure.client.dto.IsSellerApiData;
-import shop.dear.commerce.product.infrastructure.client.dto.IsSellerBody;
 import shop.dear.commerce.product.infrastructure.client.dto.MemberProfileApiData;
 import shop.dear.common.response.ApiResponse;
 
@@ -67,10 +65,8 @@ public class MemberHttpClient implements MemberPort {
     public IsSeller isSeller(final Long memberId) {
         log.info("[MemberHttpClient] member - 판매자 등록 여부 조회 요청. memberId={}", memberId);
 
-        final ApiResponse<IsSellerApiData> body = productRestClient.post()
+        final ApiResponse<IsSellerApiData> body = productRestClient.get()
             .uri("/api/members/seller")
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(new IsSellerBody(memberId))
             .retrieve()
             .body(new ParameterizedTypeReference<>() {
             });
