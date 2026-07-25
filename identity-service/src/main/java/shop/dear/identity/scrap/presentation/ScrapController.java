@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
 import shop.dear.identity.scrap.application.ScrapService;
-import shop.dear.identity.scrap.application.dto.ScrapInfo;
+import shop.dear.identity.scrap.application.dto.ScrapDetail;
 import shop.dear.identity.scrap.presentation.dto.ScrapPageResponse;
 import shop.dear.identity.scrap.presentation.dto.ScrapResponse;
 
@@ -37,7 +37,7 @@ public class ScrapController {
         @RequestParam(defaultValue = "10") final int size
     ) {
 
-        Page<ScrapInfo> scraps = scrapService.getScrapList(
+        Page<ScrapDetail> scraps = scrapService.getScrapList(
             memberId,
             page,
             size
