@@ -32,4 +32,9 @@ public class ProductRepositoryAdapter implements ProductRepository {
         return productRepository.findById(productId)
             .orElseThrow(() -> new BusinessException(INVALID_PRODUCT));
     }
+
+    @Override
+    public void delete(final Product product) {
+        productRepository.delete(product);
+    }
 }

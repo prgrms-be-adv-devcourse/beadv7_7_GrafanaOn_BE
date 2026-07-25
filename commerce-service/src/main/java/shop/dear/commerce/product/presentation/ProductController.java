@@ -2,6 +2,7 @@ package shop.dear.commerce.product.presentation;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -57,6 +58,13 @@ public class ProductController {
     ) {
         final UpdateProductCommand command = request.toCommand();
         productService.updateProduct(sellerId, productId, command);
+
+        return ResponseEntity.ok(success());
+    }
+
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<ApiResponse<Void>> updateProduct(@AuthUser final Long sellerId, @PathVariable Long productId) {
+        productService.deleteProduct(sellerId, productId);
 
         return ResponseEntity.ok(success());
     }
