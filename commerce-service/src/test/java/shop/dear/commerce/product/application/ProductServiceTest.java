@@ -186,4 +186,20 @@ class ProductServiceTest {
         assertThat(savedProduct.getImages()).hasSize(2);
         assertThat(fakeProductEventPublisher.getEvents()).hasSize(1);
     }
+
+    @DisplayName("유효한 값(sellerId, productId)이 들어오면 해당 상품을 DB에서 삭제한다.")
+    @Test
+    void givenSellerIdAndProductId_whenDeleteProduct_thenSuccess() {
+        //Given
+        final Long sellerId = 1L;
+        final Product product = createProduct(1L);
+        final Product savedProduct = productRepository.save(product);
+
+        //When
+        productService.deleteProduct(savedProduct.getSellerId(), savedProduct.getId());
+
+        //Then
+        final List<Product> products = productRepository.findAll();
+        assertThat(products.size()).isEqualTo(0);
+    }
 }
