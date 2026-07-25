@@ -8,10 +8,18 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.common.exception.BusinessException;
+import shop.dear.identity.scrap.application.dto.ScrapDetail;
 import shop.dear.identity.scrap.application.dto.ScrapInfo;
+import shop.dear.identity.scrap.application.dto.external.ProductSummary;
+import shop.dear.identity.scrap.application.port.ProductPort;
 import shop.dear.identity.scrap.domain.exception.ScrapErrorCode;
 import shop.dear.identity.scrap.domain.model.Scrap;
 import shop.dear.identity.scrap.domain.repository.ScrapRepository;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +27,7 @@ import shop.dear.identity.scrap.domain.repository.ScrapRepository;
 public class ScrapService {
 
     private final ScrapRepository scrapRepository;
+    private final ProductPort productPort;
 
     @Transactional
     public ScrapInfo addScrap(final Long memberId, final Long productId){
@@ -36,7 +45,7 @@ public class ScrapService {
         }
     }
 
-    public Page<ScrapInfo> getScrapList(
+    public Page<ScrapDetail> getScrapList(
         final Long memberId,
         final int page,
         final int size
@@ -49,8 +58,19 @@ public class ScrapService {
                 .descending()
         );
 
-        return scrapRepository.findByMemberId(memberId, pageRequest)
-            .map(ScrapInfo::from);
+        Page<Scrap> scraps = scrapRepository.findByMemberId(memberId, pageRequest);
+
+        List<Long> productIds = scraps.getContent().stream()
+            .map(Scrap::getProductId)
+            .distinct()
+            .toList();
+
+        Map<Long, ProductSummary> productsById = productPort.findProducts(productIds)
+            .stream()
+            .collect(Collectors.toMap(ProductSummary::productId,
+                Function.identity()));
+
+        return scraps.map(scrap -> ScrapDetail.of(scrap, productsById.get(scrap.getProductId())));
     }
 
     @Transactional

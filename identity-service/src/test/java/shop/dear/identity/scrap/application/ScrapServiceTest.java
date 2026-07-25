@@ -15,11 +15,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import shop.dear.common.exception.BusinessException;
+import shop.dear.identity.scrap.application.dto.ScrapDetail;
 import shop.dear.identity.scrap.application.dto.ScrapInfo;
+import shop.dear.identity.scrap.application.dto.external.ProductSummary;
+import shop.dear.identity.scrap.application.port.ProductPort;
 import shop.dear.identity.scrap.domain.exception.ScrapErrorCode;
 import shop.dear.identity.scrap.domain.model.Scrap;
 import shop.dear.identity.scrap.domain.repository.ScrapRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +39,9 @@ class ScrapServiceTest {
 
     @Mock
     private ScrapRepository scrapRepository;
+
+    @Mock
+    private ProductPort productPort;
 
     @InjectMocks
     private ScrapService scrapService;
@@ -99,12 +106,18 @@ class ScrapServiceTest {
 
         given(scrapRepository.findByMemberId(eq(1L), any()))
             .willReturn(scrapPage);
+        given(productPort.findProducts(any()))
+            .willReturn(List.of(
+                new ProductSummary(200L, "상품200", "브랜드", BigDecimal.valueOf(10000), "thumb200.png", "ON_SALE"),
+                new ProductSummary(100L, "상품100", "브랜드", BigDecimal.valueOf(20000), "thumb100.png", "ON_SALE")
+            ));
 
-        Page<ScrapInfo> result = scrapService.getScrapList(1L, 0, 10);
+        Page<ScrapDetail> result = scrapService.getScrapList(1L, 0, 10);
 
         Assertions.assertEquals(2, result.getTotalElements());
         Assertions.assertEquals(1, result.getTotalPages());
         Assertions.assertEquals(200L, result.getContent().get(0).productId());
+        Assertions.assertEquals("상품200", result.getContent().get(0).productName());
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(scrapRepository).findByMemberId(eq(1L), pageableCaptor.capture());
@@ -116,6 +129,29 @@ class ScrapServiceTest {
             Sort.Direction.DESC,
             captured.getSort().getOrderFor("insertedAt").getDirection()
         );
+    }
+
+    @Test
+    @DisplayName("스크랩 목록 조회 시 삭제된 상품이 있으면 상품 정보는 null로 채워진다")
+    void getScrapListTest_productNotFound() {
+
+        Scrap scrap = Scrap.create(1L, 100L);
+
+        Page<Scrap> scrapPage = new PageImpl<>(
+            List.of(scrap),
+            PageRequest.of(0, 10),
+            1
+        );
+
+        given(scrapRepository.findByMemberId(eq(1L), any()))
+            .willReturn(scrapPage);
+        given(productPort.findProducts(any()))
+            .willReturn(List.of());
+
+        Page<ScrapDetail> result = scrapService.getScrapList(1L, 0, 10);
+
+        Assertions.assertEquals(100L, result.getContent().get(0).productId());
+        Assertions.assertNull(result.getContent().get(0).productName());
     }
 
     @Test

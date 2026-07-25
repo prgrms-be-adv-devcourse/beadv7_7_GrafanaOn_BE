@@ -12,9 +12,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.identity.scrap.application.ScrapService;
+import shop.dear.identity.scrap.application.dto.ScrapDetail;
 import shop.dear.identity.scrap.application.dto.ScrapInfo;
 import shop.dear.identity.scrap.domain.exception.ScrapErrorCode;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.eq;
@@ -58,8 +60,11 @@ class ScrapControllerTest {
     @DisplayName("스크랩 목록 조회에 성공하면 페이지 메타데이터와 함께 목록을 반환한다")
     void getScrapList_success() throws Exception {
 
-        Page<ScrapInfo> scrapPage = new PageImpl<>(
-            List.of(new ScrapInfo(1L, 200L), new ScrapInfo(1L, 100L)),
+        Page<ScrapDetail> scrapPage = new PageImpl<>(
+            List.of(
+                new ScrapDetail(200L, "상품200", "브랜드", BigDecimal.valueOf(10000), "thumb200.png", "ON_SALE"),
+                new ScrapDetail(100L, "상품100", "브랜드", BigDecimal.valueOf(20000), "thumb100.png", "ON_SALE")
+            ),
             PageRequest.of(0, 10),
             2
         );
@@ -77,6 +82,7 @@ class ScrapControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.scrapList.length()").value(2))
             .andExpect(jsonPath("$.data.scrapList[0].productId").value(200))
+            .andExpect(jsonPath("$.data.scrapList[0].productName").value("상품200"))
             .andExpect(jsonPath("$.data.page").value(0))
             .andExpect(jsonPath("$.data.size").value(10))
             .andExpect(jsonPath("$.data.totalElements").value(2))
