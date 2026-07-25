@@ -124,7 +124,12 @@ public class MemberService  {
             throw new BusinessException(MemberErrorCode.NOT_SELLER);
         }
 
-        validateNoRegisteredProduct(memberId);
+        ExistsProduct existsProduct = productPort.existsProduct();
+
+        if (existsProduct.exists()) {
+            throw new BusinessException(MemberErrorCode.WITHDRAWAL_FAILED);
+        }
+
         member.requestSellerWithdrawal();
     }
 
@@ -136,16 +141,6 @@ public class MemberService  {
                 ));
 
         member.anonymizeProfile();
-    }
-
-    private void validateNoRegisteredProduct(final Long memberId) {
-        ExistsProduct existsProduct = productPort.existsProduct(memberId);
-
-        if (existsProduct.exists()) {
-            throw new BusinessException(
-                    MemberErrorCode.WITHDRAWAL_FAILED
-            );
-        }
     }
 
     private String createDefaultNickname() {
