@@ -279,7 +279,7 @@ public class MemberServiceTest {
         member.registerSeller("국민은행", "123-456-789");
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
-        given(productPort.existsProduct(1L)).willReturn(new ExistsProduct(false));
+        given(productPort.existsProduct()).willReturn(new ExistsProduct(false));
 
         memberService.unRegister(1L);
 
@@ -301,7 +301,7 @@ public class MemberServiceTest {
         member.registerSeller("국민은행", "123-456-789");
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
-        given(productPort.existsProduct(1L)).willReturn(new ExistsProduct(true));
+        given(productPort.existsProduct()).willReturn(new ExistsProduct(true));
 
         BusinessException exception = Assertions.assertThrows(BusinessException.class,
             () -> memberService.unRegister(1L));
