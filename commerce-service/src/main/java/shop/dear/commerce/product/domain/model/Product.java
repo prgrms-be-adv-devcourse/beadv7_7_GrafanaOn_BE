@@ -252,6 +252,10 @@ public class Product extends BaseEntity {
         return this.status == ProductStatus.PREPARING || this.status == ProductStatus.ON_SALE;
     }
 
+    public boolean isDeletable() {
+        return this.status == ProductStatus.PREPARING || this.status == ProductStatus.ON_SALE;
+    }
+
     public void changeStatusToSoldOut() {
         this.status = ProductStatus.SOLD_OUT;
     }

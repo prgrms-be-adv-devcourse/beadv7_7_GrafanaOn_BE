@@ -20,6 +20,7 @@ import shop.dear.commerce.product.domain.model.Product;
 import shop.dear.commerce.product.domain.model.ProductImage;
 import shop.dear.commerce.product.domain.repository.ProductRepository;
 import shop.dear.common.event.product.ProductChangedEvent;
+import shop.dear.common.event.product.ProductDeletedEvent;
 import shop.dear.common.exception.BusinessException;
 
 import java.util.List;
@@ -153,6 +154,24 @@ public class ProductService {
             if (existsOffer.exists()) {
                 throw new BusinessException(INVALID_PRODUCT_STATUS_FOR_UPDATE);
             }
+        }
+    }
+
+    public void deleteProduct(final Long sellerId, final Long productId) {
+        validateSeller(sellerId);
+
+        final Product product = productRepository.findById(productId);
+        product.validateOwner(sellerId);
+        validateProductDeletable(product);
+
+        productRepository.delete(product);
+
+        productEventPublisher.publish(new ProductDeletedEvent());
+    }
+
+    private void validateProductDeletable(final Product product) {
+        if (!product.isDeletable()) {
+            throw new BusinessException(ProductErrorCode.INVALID_PRODUCT_STATUS_FOR_DELETE);
         }
     }
 }
