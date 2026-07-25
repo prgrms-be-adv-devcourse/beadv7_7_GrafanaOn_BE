@@ -498,6 +498,24 @@ class ProductTest {
         assertThat(isUpdatable2).isEqualTo(false);
     }
 
+    @DisplayName("상품이 삭제 가능한 상태인지 여부를 반환한다.")
+    @Test
+    void whenIsDeletable_thenReturnResult() {
+        //Given
+        final Product product1 = createProduct();
+        final Product product2 = createProduct();
+
+        //When
+        final boolean isUpdatable1 = product1.isDeletable();  // status = PREPARING
+
+        product2.changeStatusToSoldOut();
+        final boolean isUpdatable2 = product2.isDeletable();  // status = SOLD_OUT
+
+        //Then
+        assertThat(isUpdatable1).isEqualTo(true);
+        assertThat(isUpdatable2).isEqualTo(false);
+    }
+
     @DisplayName("상품 상태가 sold out으로 변경된다.")
     @Test
     void whenChangeStatusToSoldOut_thenSuccess() {
