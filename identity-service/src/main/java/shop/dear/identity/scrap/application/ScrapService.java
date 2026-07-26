@@ -65,10 +65,9 @@ public class ScrapService {
             .distinct()
             .toList();
 
-        Map<Long, ProductSummary> productsById = productPort.findProducts(productIds)
+        Map<Long, ProductSummary> productsById = productPort.getProducts(productIds)
             .stream()
-            .collect(Collectors.toMap(ProductSummary::productId,
-                Function.identity()));
+            .collect(Collectors.toMap(ProductSummary::id, Function.identity()));
 
         return scraps.map(scrap -> ScrapDetail.of(scrap, productsById.get(scrap.getProductId())));
     }

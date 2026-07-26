@@ -5,21 +5,21 @@ import shop.dear.identity.scrap.application.dto.ScrapDetail;
 import java.math.BigDecimal;
 
 public record ScrapListItemResponse(
-    Long productId,
-    String productName,
+    Long id,
+    String name,
     String brand,
     BigDecimal price,
-    String thumbnailUrl,
-    String productStatus
+    String imageUrl,
+    String status
 ) {
     public static ScrapListItemResponse from(final ScrapDetail detail) {
         return new ScrapListItemResponse(
-            detail.productId(),
-            detail.productName(),
+            detail.id(),
+            detail.name(),
             detail.brand(),
             detail.price(),
-            detail.thumbnailUrl(),
-            detail.productStatus()
+            detail.imageUrl(),
+            detail.status()
         );
     }
 }

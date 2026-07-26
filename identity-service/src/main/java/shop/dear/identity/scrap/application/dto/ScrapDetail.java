@@ -6,12 +6,12 @@ import shop.dear.identity.scrap.domain.model.Scrap;
 import java.math.BigDecimal;
 
 public record ScrapDetail(
-    Long productId,
-    String productName,
+    Long id,
+    String name,
     String brand,
     BigDecimal price,
-    String thumbnailUrl,
-    String productStatus
+    String imageUrl,
+    String status
 ) {
     public static ScrapDetail of(final Scrap scrap, final ProductSummary product) {
 
@@ -20,7 +20,7 @@ public record ScrapDetail(
             product.name(),
             product.brand(),
             product.price(),
-            product.thumbnailUrl(),
+            product.imageUrl(),
             product.status()
         );
     }

@@ -81,8 +81,8 @@ class ScrapControllerTest {
         result
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.scrapList.length()").value(2))
-            .andExpect(jsonPath("$.data.scrapList[0].productId").value(200))
-            .andExpect(jsonPath("$.data.scrapList[0].productName").value("상품200"))
+            .andExpect(jsonPath("$.data.scrapList[0].id").value(200))
+            .andExpect(jsonPath("$.data.scrapList[0].name").value("상품200"))
             .andExpect(jsonPath("$.data.page").value(0))
             .andExpect(jsonPath("$.data.size").value(10))
             .andExpect(jsonPath("$.data.totalElements").value(2))

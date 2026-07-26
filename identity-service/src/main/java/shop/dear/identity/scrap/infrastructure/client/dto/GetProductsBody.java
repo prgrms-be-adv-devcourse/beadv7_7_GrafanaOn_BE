@@ -2,7 +2,7 @@ package shop.dear.identity.scrap.infrastructure.client.dto;
 
 import java.util.List;
 
-public record ProductIdsRequest(
+public record GetProductsBody(
     List<Long> ids
 ) {
 }
