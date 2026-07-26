@@ -22,7 +22,7 @@ public class OfferController {
 
     @GetMapping("/{productId}/status")
     public ResponseEntity<ApiResponse<OfferStatusResponse>> getOfferStatus(
-        @Positive @PathVariable final Long productId
+            @Positive @PathVariable final Long productId
     ) {
         final boolean exists = offerService.existsActiveOfferByProductId(productId);
         return ResponseEntity.ok(successWithData(OfferStatusResponse.from(exists)));
@@ -30,8 +30,8 @@ public class OfferController {
 
     @PatchMapping("/{offerId}/accept")
     public ResponseEntity<ApiResponse<Void>> acceptOffer(
-        @Positive @PathVariable final Long offerId,
-        @AuthUser final Long memberId
+            @Positive @PathVariable final Long offerId,
+            @AuthUser final Long memberId
     ) {
         offerService.acceptOffer(offerId, memberId);
         return ResponseEntity.ok(successWithData(null));

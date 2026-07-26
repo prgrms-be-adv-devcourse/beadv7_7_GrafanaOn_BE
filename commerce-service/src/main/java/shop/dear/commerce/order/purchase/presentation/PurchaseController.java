@@ -53,8 +53,8 @@ public class PurchaseController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<PurchaseResponse>> createPurchase(
-        @Valid @RequestBody final CreatePurchaseRequest request,
-        @AuthUser final Long buyerId
+            @Valid @RequestBody final CreatePurchaseRequest request,
+            @AuthUser final Long buyerId
     ) {
         final Purchase purchase = purchaseService.createPurchase(request.toCommand(buyerId));
         final PurchaseResponse response = PurchaseResponse.from(purchase);
@@ -63,8 +63,8 @@ public class PurchaseController {
 
     @DeleteMapping("/{purchaseId}/cancel")
     public ResponseEntity<ApiResponse<Void>> cancelPurchase(
-        @Positive @PathVariable final Long purchaseId,
-        @AuthUser final Long buyerId
+            @Positive @PathVariable final Long purchaseId,
+            @AuthUser final Long buyerId
     ) {
         purchaseService.cancelPurchase(purchaseId, buyerId);
         return ResponseEntity.ok(success());

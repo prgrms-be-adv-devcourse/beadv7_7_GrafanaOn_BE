@@ -20,8 +20,8 @@ import java.util.List;
 public class OfferService {
 
     private static final List<OfferStatus> ACTIVE_STATUSES = List.of(
-        OfferStatus.PENDING,
-        OfferStatus.ACCEPTED
+            OfferStatus.PENDING,
+            OfferStatus.ACCEPTED
     );
 
     private final OfferRepository offerRepository;
@@ -37,18 +37,18 @@ public class OfferService {
                 .orElseThrow(() -> new BusinessException(OfferErrorCode.OFFER_NOT_FOUND));
 
         if (!offer.isSeller(memberId)) {
-          throw new BusinessException(OfferErrorCode.NOT_OFFER_SELLER);
+            throw new BusinessException(OfferErrorCode.NOT_OFFER_SELLER);
         }
 
         offer.accept();
 
         offerEventPublisher.publish(new FinishedOrderEvent(
-            offer.getId(),
-            offer.getBuyerId(),
-            offer.getSellerId(),
-            offer.getProductId(),
-            offer.getAmount(),
-            OrderType.OFFER
+                offer.getId(),
+                offer.getBuyerId(),
+                offer.getSellerId(),
+                offer.getProductId(),
+                offer.getAmount(),
+                OrderType.OFFER
         ));
     }
 }

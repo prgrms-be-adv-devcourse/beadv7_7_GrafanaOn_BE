@@ -49,12 +49,12 @@ public class PurchaseService {
         final OffsetDateTime paymentDueAt = OffsetDateTime.now().plusMinutes(PAYMENT_DUE_MINUTES);
 
         final Purchase purchase = Purchase.create(
-            command.buyerId(),
-            product.sellerId(),
-            product.productId(),
-            product.price(),
-            command.delivery(),
-            paymentDueAt
+                command.buyerId(),
+                product.sellerId(),
+                product.productId(),
+                product.price(),
+                command.delivery(),
+                paymentDueAt
         );
 
         return purchaseRepository.save(purchase);
