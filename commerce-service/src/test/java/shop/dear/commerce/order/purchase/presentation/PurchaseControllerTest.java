@@ -9,6 +9,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import shop.dear.commerce.order.purchase.application.PurchaseService;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
+import shop.dear.common.auth.AuthUser;
 import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
@@ -48,7 +49,7 @@ class PurchaseControllerTest {
         given(purchaseService.createPurchase(any())).willReturn(purchase);
 
         mockMvc.perform(post("/api/purchases")
-                .header("X-Member-Id", "1")
+                .header(AuthUser.MEMBER_ID_HEADER, "1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(new Request(10L, "서울시 강남구"))))
             .andExpect(status().isCreated())
