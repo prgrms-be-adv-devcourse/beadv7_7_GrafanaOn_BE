@@ -5,11 +5,15 @@ spring:
   application:
     name: gateway-service
 
-  management:
-    endpoints:
-      web:
-        exposure:
-          include: health,info
-
   profiles:
     active: local
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+
+  endpoint:
+    gateway:
+      access: read-only
