@@ -28,7 +28,7 @@ public class OfferService {
     private final OfferEventPublisher offerEventPublisher;
 
     public boolean existsActiveOfferByProductId(final Long productId) {
-      return offerRepository.existsByProductIdAndStatusIn(productId, ACTIVE_STATUSES);
+        return offerRepository.existsByProductIdAndStatusIn(productId, ACTIVE_STATUSES);
     }
 
     @Transactional
