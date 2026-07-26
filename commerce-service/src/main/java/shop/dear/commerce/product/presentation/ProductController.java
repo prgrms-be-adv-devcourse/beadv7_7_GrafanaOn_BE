@@ -63,7 +63,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{productId}")
-    public ResponseEntity<ApiResponse<Void>> updateProduct(@AuthUser final Long sellerId, @PathVariable Long productId) {
+    public ResponseEntity<ApiResponse<Void>> deleteProduct(@AuthUser final Long sellerId, @PathVariable Long productId) {
         productService.deleteProduct(sellerId, productId);
 
         return ResponseEntity.ok(success());
