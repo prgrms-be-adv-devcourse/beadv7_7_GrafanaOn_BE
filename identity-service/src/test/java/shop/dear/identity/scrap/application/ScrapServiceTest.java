@@ -106,7 +106,7 @@ class ScrapServiceTest {
 
         given(scrapRepository.findByMemberId(eq(1L), any()))
             .willReturn(scrapPage);
-        given(productPort.findProducts(any()))
+        given(productPort.getProducts(any()))
             .willReturn(List.of(
                 new ProductSummary(200L, "상품200", "브랜드", BigDecimal.valueOf(10000), "thumb200.png", "ON_SALE"),
                 new ProductSummary(100L, "상품100", "브랜드", BigDecimal.valueOf(20000), "thumb100.png", "ON_SALE")
@@ -116,8 +116,8 @@ class ScrapServiceTest {
 
         Assertions.assertEquals(2, result.getTotalElements());
         Assertions.assertEquals(1, result.getTotalPages());
-        Assertions.assertEquals(200L, result.getContent().get(0).productId());
-        Assertions.assertEquals("상품200", result.getContent().get(0).productName());
+        Assertions.assertEquals(200L, result.getContent().get(0).id());
+        Assertions.assertEquals("상품200", result.getContent().get(0).name());
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(scrapRepository).findByMemberId(eq(1L), pageableCaptor.capture());
@@ -145,13 +145,13 @@ class ScrapServiceTest {
 
         given(scrapRepository.findByMemberId(eq(1L), any()))
             .willReturn(scrapPage);
-        given(productPort.findProducts(any()))
+        given(productPort.getProducts(any()))
             .willReturn(List.of());
 
         Page<ScrapDetail> result = scrapService.getScrapList(1L, 0, 10);
 
-        Assertions.assertEquals(100L, result.getContent().get(0).productId());
-        Assertions.assertNull(result.getContent().get(0).productName());
+        Assertions.assertEquals(100L, result.getContent().get(0).id());
+        Assertions.assertNull(result.getContent().get(0).name());
     }
 
     @Test

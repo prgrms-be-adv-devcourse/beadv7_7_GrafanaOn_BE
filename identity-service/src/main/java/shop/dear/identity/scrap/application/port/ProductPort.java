@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface ProductPort {
 
-    List<ProductSummary> findProducts(List<Long> productIds);
+    List<ProductSummary> getProducts(List<Long> productIds);
 }

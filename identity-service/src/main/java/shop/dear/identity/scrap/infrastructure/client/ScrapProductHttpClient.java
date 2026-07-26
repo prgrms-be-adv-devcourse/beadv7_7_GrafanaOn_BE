@@ -9,8 +9,8 @@ import org.springframework.web.client.RestClient;
 import shop.dear.common.response.ApiResponse;
 import shop.dear.identity.scrap.application.dto.external.ProductSummary;
 import shop.dear.identity.scrap.application.port.ProductPort;
-import shop.dear.identity.scrap.infrastructure.client.dto.ProductIdsRequest;
-import shop.dear.identity.scrap.infrastructure.client.dto.ProductSummariesApiData;
+import shop.dear.identity.scrap.infrastructure.client.dto.GetProductsBody;
+import shop.dear.identity.scrap.infrastructure.client.dto.ProductApiData;
 
 import java.util.List;
 
@@ -21,23 +21,23 @@ public class ScrapProductHttpClient implements ProductPort {
     private final RestClient productRestClient;
 
     @Override
-    public List<ProductSummary> findProducts(final List<Long> productIds) {
+    public List<ProductSummary> getProducts(final List<Long> productIds) {
 
         if (productIds.isEmpty()) {
             return List.of();
         }
 
-        final ApiResponse<ProductSummariesApiData> body = productRestClient.method(HttpMethod.GET)
-            .uri("/internal/products/scrap/me")
+        final ApiResponse<ProductApiData> body = productRestClient.method(HttpMethod.GET)
+            .uri("/internal/products/me/scraps")
             .contentType(MediaType.APPLICATION_JSON)
-            .body(new ProductIdsRequest(productIds))
+            .body(new GetProductsBody(productIds))
             .retrieve()
             .body(new ParameterizedTypeReference<>() {
             });
 
         return body.getData().products().stream()
             .map(product -> new ProductSummary(
-                product.productId(),
+                product.id(),
                 product.name(),
                 product.brand(),
                 product.price(),
