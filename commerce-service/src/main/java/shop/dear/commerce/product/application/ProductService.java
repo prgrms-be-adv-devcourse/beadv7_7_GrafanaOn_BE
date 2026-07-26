@@ -167,6 +167,7 @@ public class ProductService {
         }
     }
 
+    @Transactional
     public void deleteProduct(final Long sellerId, final Long productId) {
         validateMember(sellerId);
         validateSeller(sellerId);
