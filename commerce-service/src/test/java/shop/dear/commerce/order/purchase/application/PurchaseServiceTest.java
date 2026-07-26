@@ -23,12 +23,11 @@ import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
@@ -50,88 +49,94 @@ class PurchaseServiceTest {
     @InjectMocks
     private PurchaseService purchaseService;
 
-    private ProductInfo product(
-        final Long productId,
-        final Long sellerId,
-        final ProductSaleType saleType,
-        final ProductStatus status
-    ) {
-        return new ProductInfo(productId, sellerId, new BigDecimal("10000"), saleType, status);
-    }
+    @Nested
+    @DisplayName("createPurchase")
+    class CreatePurchase {
 
-    private void assertPurchaseError(final ProductInfo product, final PurchaseErrorCode errorCode) {
-        given(productPort.getProduct(10L)).willReturn(product);
+        @Test
+        @DisplayName("판매 중인 즉시구매 상품이면 상품 응답 정보로 구매를 생성한다")
+        void createsPurchase_whenProductIsOnSaleAndImmediate() {
+            // given
+            final CreatePurchaseCommand command = createCommand(1L, 10L);
+            final ProductInfo product = productInfo(10L, 2L, ProductSaleType.IMMEDIATE, ProductStatus.ON_SALE);
+            given(productPort.getProduct(10L)).willReturn(product);
+            given(purchaseRepository.save(any(Purchase.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-        final BusinessException exception = assertThrows(
-                BusinessException.class,
-                () -> purchaseService.createPurchase(command(1L, 10L))
-        );
+            // when
+            final Purchase purchase = purchaseService.createPurchase(command);
 
-        assertEquals(errorCode, exception.getErrorCode());
-        verify(purchaseRepository, never()).save(any(Purchase.class));
-    }
+            // then
+            assertThat(purchase.getBuyerId()).isEqualTo(1L);
+            assertThat(purchase.getSellerId()).isEqualTo(2L);
+            assertThat(purchase.getProductId()).isEqualTo(10L);
+            assertThat(purchase.getAmount()).isEqualTo(new BigDecimal("10000"));
+            verify(purchaseRepository).save(any(Purchase.class));
+        }
 
-    private CreatePurchaseCommand command(final Long buyerId, final Long productId) {
-        return new CreatePurchaseCommand(buyerId, productId, "서울시 강남구");
-    }
+        @Test
+        @DisplayName("판매 중이 아닌 상품은 구매할 수 없다")
+        void rejectsProductNotOnSale() {
+            assertCreatePurchaseError(
+                    productInfo(10L, 2L, ProductSaleType.IMMEDIATE, ProductStatus.SOLD_OUT),
+                    PurchaseErrorCode.PRODUCT_NOT_ON_SALE
+            );
+        }
 
-    @Test
-    @DisplayName("판매 중인 즉시구매 상품이면 상품 응답 정보로 구매를 생성한다")
-    void createPurchaseSuccess() {
-        final CreatePurchaseCommand command = command(1L, 10L);
-        final ProductInfo product = product(10L, 2L, ProductSaleType.IMMEDIATE, ProductStatus.ON_SALE);
-        given(productPort.getProduct(10L)).willReturn(product);
-        given(purchaseRepository.save(any(Purchase.class))).willAnswer(invocation -> invocation.getArgument(0));
+        @Test
+        @DisplayName("가격 제안 상품은 즉시구매할 수 없다")
+        void rejectsOfferProduct() {
+            assertCreatePurchaseError(
+                    productInfo(10L, 2L, ProductSaleType.OFFER, ProductStatus.ON_SALE),
+                    PurchaseErrorCode.PRODUCT_NOT_FOR_IMMEDIATE_PURCHASE
+            );
+        }
 
-        final Purchase purchase = purchaseService.createPurchase(command);
+        @Test
+        @DisplayName("판매자는 본인 상품을 구매할 수 없다")
+        void rejectsOwnProduct() {
+            assertCreatePurchaseError(
+                    productInfo(10L, 1L, ProductSaleType.IMMEDIATE, ProductStatus.ON_SALE),
+                    PurchaseErrorCode.CANNOT_PURCHASE_OWN_PRODUCT
+            );
+        }
 
-        assertEquals(1L, purchase.getBuyerId());
-        assertEquals(2L, purchase.getSellerId());
-        assertEquals(10L, purchase.getProductId());
-        assertEquals(new BigDecimal("10000"), purchase.getAmount());
-        verify(purchaseRepository).save(any(Purchase.class));
-    }
+        @Test
+        @DisplayName("요청 상품과 응답 상품 식별자가 다르면 구매하지 않는다")
+        void rejectsMismatchedProductResponse() {
+            assertCreatePurchaseError(
+                    productInfo(11L, 2L, ProductSaleType.IMMEDIATE, ProductStatus.ON_SALE),
+                    PurchaseErrorCode.INVALID_PRODUCT_RESPONSE
+            );
+        }
 
-    @Test
-    @DisplayName("판매 중이 아닌 상품은 구매할 수 없다")
-    void rejectProductNotOnSale() {
-        assertPurchaseError(
-            product(10L, 2L, ProductSaleType.IMMEDIATE, ProductStatus.SOLD_OUT),
-            PurchaseErrorCode.PRODUCT_NOT_ON_SALE
-        );
-    }
+        @Test
+        @DisplayName("상품 응답이 없으면 구매하지 않는다")
+        void rejectsEmptyProductResponse() {
+            assertCreatePurchaseError(null, PurchaseErrorCode.INVALID_PRODUCT_RESPONSE);
+        }
 
-    @Test
-    @DisplayName("가격 제안 상품은 즉시구매할 수 없다")
-    void rejectOfferProduct() {
-        assertPurchaseError(
-            product(10L, 2L, ProductSaleType.OFFER, ProductStatus.ON_SALE),
-            PurchaseErrorCode.PRODUCT_NOT_FOR_IMMEDIATE_PURCHASE
-        );
-    }
+        private ProductInfo productInfo(
+                final Long productId,
+                final Long sellerId,
+                final ProductSaleType saleType,
+                final ProductStatus status
+        ) {
+            return new ProductInfo(productId, sellerId, new BigDecimal("10000"), saleType, status);
+        }
 
-    @Test
-    @DisplayName("판매자는 본인 상품을 구매할 수 없다")
-    void rejectOwnProduct() {
-        assertPurchaseError(
-            product(10L, 1L, ProductSaleType.IMMEDIATE, ProductStatus.ON_SALE),
-            PurchaseErrorCode.CANNOT_PURCHASE_OWN_PRODUCT
-        );
-    }
+        private CreatePurchaseCommand createCommand(final Long buyerId, final Long productId) {
+            return new CreatePurchaseCommand(buyerId, productId, "서울시 강남구");
+        }
 
-    @Test
-    @DisplayName("요청 상품과 응답 상품 식별자가 다르면 구매하지 않는다")
-    void rejectMismatchedProductResponse() {
-        assertPurchaseError(
-            product(11L, 2L, ProductSaleType.IMMEDIATE, ProductStatus.ON_SALE),
-            PurchaseErrorCode.INVALID_PRODUCT_RESPONSE
-        );
-    }
+        private void assertCreatePurchaseError(final ProductInfo product, final PurchaseErrorCode errorCode) {
+            given(productPort.getProduct(10L)).willReturn(product);
 
-    @Test
-    @DisplayName("상품 응답이 없으면 구매하지 않는다")
-    void rejectEmptyProductResponse() {
-        assertPurchaseError(null, PurchaseErrorCode.INVALID_PRODUCT_RESPONSE);
+            assertThatThrownBy(() -> purchaseService.createPurchase(createCommand(1L, 10L)))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(throwable -> assertThat(((BusinessException) throwable).getErrorCode()).isEqualTo(errorCode));
+
+            verify(purchaseRepository, never()).save(any(Purchase.class));
+        }
     }
 
     @Nested
@@ -212,6 +217,170 @@ class PurchaseServiceTest {
                     "delivery",
                     null
             );
+        }
+    }
+
+    @Nested
+    @DisplayName("cancelPurchase")
+    class CancelPurchase {
+
+        @Test
+        @DisplayName("PENDING_PAYMENT 상태인 구매를 취소하면 상태가 CANCELLED로 변경된다")
+        void cancelsPurchaseWhenPendingPayment() {
+            // given
+            final Purchase purchase = createPendingPaymentPurchase();
+            when(purchaseRepository.findById(1L)).thenReturn(Optional.of(purchase));
+
+            // when
+            purchaseService.cancelPurchase(1L, 1L);
+
+            // then
+            assertThat(purchase.getStatus()).isEqualTo(PurchaseStatus.CANCELLED);
+        }
+
+        @Test
+        @DisplayName("PAID 상태인 구매를 취소하면 상태가 CANCELLED로 변경된다")
+        void cancelsPurchaseWhenPaid() {
+            // given
+            final Purchase purchase = createPaidPurchase();
+            when(purchaseRepository.findById(1L)).thenReturn(Optional.of(purchase));
+
+            // when
+            purchaseService.cancelPurchase(1L, 1L);
+
+            // then
+            assertThat(purchase.getStatus()).isEqualTo(PurchaseStatus.CANCELLED);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 구매를 취소하면 예외를 던진다")
+        void throwsException_whenPurchaseNotFound() {
+            // given
+            when(purchaseRepository.findById(1L)).thenReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> purchaseService.cancelPurchase(1L, 1L))
+                    .isInstanceOf(BusinessException.class);
+        }
+
+        @Test
+        @DisplayName("다른 사용자의 구매를 취소하려 하면 예외를 던진다")
+        void throwsException_whenBuyerMismatch() {
+            // given
+            final Purchase purchase = createPendingPaymentPurchase();
+            when(purchaseRepository.findById(1L)).thenReturn(Optional.of(purchase));
+
+            // when & then
+            assertThatThrownBy(() -> purchaseService.cancelPurchase(1L, 999L))
+                    .isInstanceOf(BusinessException.class);
+        }
+
+        private Purchase createPaidPurchase() {
+            final Purchase purchase = Purchase.create(
+                    1L,
+                    2L,
+                    3L,
+                    BigDecimal.valueOf(10000),
+                    "delivery",
+                    null
+            );
+            purchase.pay();
+            return purchase;
+        }
+
+        private Purchase createPendingPaymentPurchase() {
+            return Purchase.create(
+                    1L,
+                    2L,
+                    3L,
+                    BigDecimal.valueOf(10000),
+                    "delivery",
+                    null
+            );
+        }
+    }
+
+    @Nested
+    @DisplayName("getPurchase")
+    class GetPurchase {
+
+        @Test
+        @DisplayName("구매 식별자로 구매를 조회하면 구매 정보를 반환한다")
+        void returnsPurchase_whenPurchaseExists() {
+            // given
+            final Purchase purchase = Purchase.create(
+                    1L,
+                    2L,
+                    3L,
+                    BigDecimal.valueOf(10000),
+                    "delivery",
+                    null
+            );
+            when(purchaseRepository.findById(1L)).thenReturn(Optional.of(purchase));
+
+            // when
+            final Purchase result = purchaseService.getPurchase(1L);
+
+            // then
+            assertThat(result).isEqualTo(purchase);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 구매를 조회하면 예외를 던진다")
+        void throwsException_whenPurchaseNotFound() {
+            // given
+            when(purchaseRepository.findById(1L)).thenReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> purchaseService.getPurchase(1L))
+                    .isInstanceOf(BusinessException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("getPurchasesByBuyerId")
+    class GetPurchasesByBuyerId {
+
+        @Test
+        @DisplayName("구매자 식별자로 구매 목록을 조회하면 구매 목록을 반환한다")
+        void returnsPurchases_whenBuyerHasPurchases() {
+            // given
+            final Purchase purchase1 = Purchase.create(
+                    1L,
+                    2L,
+                    3L,
+                    BigDecimal.valueOf(10000),
+                    "delivery1",
+                    null
+            );
+            final Purchase purchase2 = Purchase.create(
+                    1L,
+                    3L,
+                    4L,
+                    BigDecimal.valueOf(20000),
+                    "delivery2",
+                    null
+            );
+            when(purchaseRepository.findByBuyerId(1L)).thenReturn(List.of(purchase1, purchase2));
+
+            // when
+            final List<Purchase> result = purchaseService.getPurchasesByBuyerId(1L);
+
+            // then
+            assertThat(result).hasSize(2).containsExactly(purchase1, purchase2);
+        }
+
+        @Test
+        @DisplayName("구매 기록이 없으면 빈 목록을 반환한다")
+        void returnsEmptyList_whenBuyerHasNoPurchases() {
+            // given
+            when(purchaseRepository.findByBuyerId(1L)).thenReturn(List.of());
+
+            // when
+            final List<Purchase> result = purchaseService.getPurchasesByBuyerId(1L);
+
+            // then
+            assertThat(result).isEmpty();
         }
     }
 }
