@@ -8,6 +8,7 @@ import shop.dear.commerce.financial.wallet.domain.exception.WalletErrorCode;
 import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,17 +18,22 @@ public class WalletTest {
     @BeforeEach
     void setUp() {
         wallet = Wallet.create(1L);
-        assertEquals(0, BigDecimal.ZERO.compareTo(wallet.getBalance()));
+        assertEquals(0, BigDecimal.ZERO.compareTo(wallet.getAvailableBalance()));
+    }
+
+    private WalletLog lastLog() {
+        List<WalletLog> logs = wallet.getWalletLogs();
+        return logs.get(logs.size() - 1);
     }
 
     @Test
     @DisplayName("충전하면 잔액이 증가하고 TOPUP 로그가 생성된다")
     void topup_success() {
-        WalletLog log = wallet.topup(BigDecimal.valueOf(10000), 100L);
+        wallet.topup(BigDecimal.valueOf(10000), 100L);
 
-        assertEquals(0, BigDecimal.valueOf(10000).compareTo(wallet.getBalance()));
-        assertEquals(WalletLogType.TOPUP, log.getType());
-        assertEquals(100L, log.getReferenceId());
+        assertEquals(0, BigDecimal.valueOf(10000).compareTo(wallet.getAvailableBalance()));
+        assertEquals(WalletLogType.TOPUP, lastLog().getType());
+        assertEquals(100L, lastLog().getReferenceId());
     }
 
     @Test
@@ -35,12 +41,12 @@ public class WalletTest {
     void hold_success() {
         wallet.topup(BigDecimal.valueOf(10000), 100L);
 
-        WalletLog log = wallet.hold(BigDecimal.valueOf(6000), 200L);
+        wallet.hold(BigDecimal.valueOf(6000), 200L);
 
-        assertEquals(0, BigDecimal.valueOf(4000).compareTo(wallet.getBalance()));
+        assertEquals(0, BigDecimal.valueOf(4000).compareTo(wallet.getAvailableBalance()));
         assertEquals(0, BigDecimal.valueOf(6000).compareTo(wallet.getHeldBalance()));
-        assertEquals(WalletLogType.HOLD, log.getType());
-        assertEquals(200L, log.getReferenceId());
+        assertEquals(WalletLogType.HOLD, lastLog().getType());
+        assertEquals(200L, lastLog().getReferenceId());
     }
 
     @Test
@@ -59,12 +65,12 @@ public class WalletTest {
         wallet.topup(BigDecimal.valueOf(10000), 100L);
         wallet.hold(BigDecimal.valueOf(6000), 200L);
 
-        WalletLog log = wallet.release(BigDecimal.valueOf(6000), 200L);
+        wallet.release(BigDecimal.valueOf(6000), 200L);
 
-        assertEquals(0, BigDecimal.valueOf(10000).compareTo(wallet.getBalance()));
+        assertEquals(0, BigDecimal.valueOf(10000).compareTo(wallet.getAvailableBalance()));
         assertEquals(0, BigDecimal.ZERO.compareTo(wallet.getHeldBalance()));
-        assertEquals(WalletLogType.RELEASE, log.getType());
-        assertEquals(200L, log.getReferenceId());
+        assertEquals(WalletLogType.RELEASE, lastLog().getType());
+        assertEquals(200L, lastLog().getReferenceId());
     }
 
     @Test
@@ -72,11 +78,11 @@ public class WalletTest {
     void pay_success() {
         wallet.topup(BigDecimal.valueOf(10000), 100L);
 
-        WalletLog log = wallet.pay(BigDecimal.valueOf(7000), 300L);
+        wallet.payAvailable(BigDecimal.valueOf(7000), 300L);
 
-        assertEquals(0, BigDecimal.valueOf(3000).compareTo(wallet.getBalance()));
-        assertEquals(WalletLogType.PAYMENT, log.getType());
-        assertEquals(300L, log.getReferenceId());
+        assertEquals(0, BigDecimal.valueOf(3000).compareTo(wallet.getAvailableBalance()));
+        assertEquals(WalletLogType.PAYMENT, lastLog().getType());
+        assertEquals(300L, lastLog().getReferenceId());
     }
 
     @Test
@@ -85,18 +91,18 @@ public class WalletTest {
         wallet.topup(BigDecimal.valueOf(1000), 100L);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> wallet.pay(BigDecimal.valueOf(5000), 300L));
+                () -> wallet.payAvailable(BigDecimal.valueOf(5000), 300L));
         assertEquals(WalletErrorCode.INSUFFICIENT_BALANCE, e.getErrorCode());
     }
 
     @Test
     @DisplayName("판매 대금이 적립되면 잔액이 증가하고 PROCEEDS 로그가 생성된다")
     void earn_success() {
-        WalletLog log = wallet.earn(BigDecimal.valueOf(50000), 400L);
+        wallet.earn(BigDecimal.valueOf(50000), 400L);
 
-        assertEquals(0, BigDecimal.valueOf(50000).compareTo(wallet.getBalance()));
-        assertEquals(WalletLogType.PROCEEDS, log.getType());
-        assertEquals(400L, log.getReferenceId());
+        assertEquals(0, BigDecimal.valueOf(50000).compareTo(wallet.getAvailableBalance()));
+        assertEquals(WalletLogType.PROCEEDS, lastLog().getType());
+        assertEquals(400L, lastLog().getReferenceId());
     }
 
     @Test
@@ -104,11 +110,11 @@ public class WalletTest {
     void settle_success() {
         wallet.earn(BigDecimal.valueOf(50000), 400L);
 
-        WalletLog log = wallet.settle(BigDecimal.valueOf(30000), 500L);
+        wallet.settle(BigDecimal.valueOf(30000), 500L);
 
-        assertEquals(0, BigDecimal.valueOf(20000).compareTo(wallet.getBalance()));
-        assertEquals(WalletLogType.SETTLEMENT, log.getType());
-        assertEquals(500L, log.getReferenceId());
+        assertEquals(0, BigDecimal.valueOf(20000).compareTo(wallet.getAvailableBalance()));
+        assertEquals(WalletLogType.SETTLEMENT, lastLog().getType());
+        assertEquals(500L, lastLog().getReferenceId());
     }
 
     @Test
@@ -129,7 +135,7 @@ public class WalletTest {
         wallet.topup(BigDecimal.valueOf(1000), 100L);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> wallet.pay(null, 300L));
+                () -> wallet.payAvailable(null, 300L));
         assertEquals(WalletErrorCode.INVALID_AMOUNT, e.getErrorCode());
     }
 
@@ -139,7 +145,7 @@ public class WalletTest {
         wallet.topup(BigDecimal.valueOf(1000), 100L);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> wallet.pay(BigDecimal.ZERO, 300L));
+                () -> wallet.payAvailable(BigDecimal.ZERO, 300L));
         assertEquals(WalletErrorCode.INVALID_AMOUNT, e.getErrorCode());
     }
 
@@ -149,9 +155,9 @@ public class WalletTest {
         wallet.topup(BigDecimal.valueOf(1000), 100L);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> wallet.pay(BigDecimal.valueOf(-100), 300L));
+                () -> wallet.payAvailable(BigDecimal.valueOf(-100), 300L));
         assertEquals(WalletErrorCode.INVALID_AMOUNT, e.getErrorCode());
-        assertEquals(0, BigDecimal.valueOf(1000).compareTo(wallet.getBalance()));
+        assertEquals(0, BigDecimal.valueOf(1000).compareTo(wallet.getAvailableBalance()));
     }
 
     @Test
@@ -160,7 +166,7 @@ public class WalletTest {
         wallet.topup(BigDecimal.valueOf(1000), 100L);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> wallet.pay(new BigDecimal("100.123"), 300L));
+                () -> wallet.payAvailable(new BigDecimal("100.123"), 300L));
         assertEquals(WalletErrorCode.INVALID_AMOUNT, e.getErrorCode());
     }
 
@@ -170,7 +176,7 @@ public class WalletTest {
         wallet.topup(BigDecimal.valueOf(1000), 100L);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> wallet.pay(BigDecimal.valueOf(100), null));
+                () -> wallet.payAvailable(BigDecimal.valueOf(100), null));
         assertEquals(WalletErrorCode.INVALID_REFERENCE_ID, e.getErrorCode());
     }
 
@@ -182,7 +188,7 @@ public class WalletTest {
         BusinessException e = assertThrows(BusinessException.class,
                 () -> wallet.topup(BigDecimal.valueOf(-500), 200L));
         assertEquals(WalletErrorCode.INVALID_AMOUNT, e.getErrorCode());
-        assertEquals(0, BigDecimal.valueOf(1000).compareTo(wallet.getBalance()));
+        assertEquals(0, BigDecimal.valueOf(1000).compareTo(wallet.getAvailableBalance()));
     }
 
     @Test
@@ -235,5 +241,40 @@ public class WalletTest {
         BusinessException e = assertThrows(BusinessException.class,
                 () -> wallet.release(BigDecimal.valueOf(500), 200L));
         assertEquals(WalletErrorCode.INSUFFICIENT_HELD_BALANCE, e.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("홀드된 금액으로 결제하면 heldBalance만 차감되고 availableBalance는 변하지 않으며 PAYMENT 로그가 생성된다")
+    void payHeld_success() {
+        wallet.topup(BigDecimal.valueOf(10000), 100L);
+        wallet.hold(BigDecimal.valueOf(6000), 200L);
+
+        wallet.payHeld(BigDecimal.valueOf(6000), 200L);
+
+        assertEquals(0, BigDecimal.valueOf(4000).compareTo(wallet.getAvailableBalance()));
+        assertEquals(0, BigDecimal.ZERO.compareTo(wallet.getHeldBalance()));
+        assertEquals(WalletLogType.PAYMENT, lastLog().getType());
+    }
+
+    @Test
+    @DisplayName("홀드된 금액보다 큰 금액을 payHeld 하면 예외가 발생한다")
+    void payHeld_exceedsHeldBalance_throwsException() {
+        wallet.topup(BigDecimal.valueOf(10000), 100L);
+        wallet.hold(BigDecimal.valueOf(3000), 200L);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> wallet.payHeld(BigDecimal.valueOf(5000), 200L));
+        assertEquals(WalletErrorCode.INSUFFICIENT_HELD_BALANCE, e.getErrorCode());
+    }
+
+    // 읽기 전용 컬렉션 테스트
+
+    @Test
+    @DisplayName("walletLogs는 외부에서 수정할 수 없다")
+    void walletLogs_isUnmodifiable() {
+        wallet.topup(BigDecimal.valueOf(1000), 100L);
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> wallet.getWalletLogs().clear());
     }
 }

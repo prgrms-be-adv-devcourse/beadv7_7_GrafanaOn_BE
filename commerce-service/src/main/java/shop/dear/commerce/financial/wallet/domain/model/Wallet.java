@@ -10,6 +10,9 @@ import shop.dear.common.exception.BusinessException;
 import shop.dear.commerce.financial.wallet.domain.exception.WalletErrorCode;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Entity
 @Table(name = "wallet")
@@ -23,6 +26,11 @@ public class Wallet extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @OneToMany(mappedBy = "wallet",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE}
+    )
+    private List<WalletLog> walletLogs = new ArrayList<>();
+
     @Column(name = "member_id", nullable = false)
     private Long memberId;
 
@@ -30,21 +38,30 @@ public class Wallet extends BaseEntity {
     private Long version;
 
     @Column(name = "balance", precision = 15, scale = 2, nullable = false)
-    private BigDecimal balance;
+    private BigDecimal availableBalance;
 
     @Column(name = "held_balance", precision = 15, scale = 2, nullable = false)
     private BigDecimal heldBalance;
 
     private Wallet(final Long memberId) {
         this.memberId = memberId;
-        this.balance = BigDecimal.ZERO;
+        this.availableBalance = BigDecimal.ZERO;
         this.heldBalance = BigDecimal.ZERO;
+    }
+
+    private void record(
+            final WalletLogType type,
+            final BigDecimal amount,
+            final Long referenceId
+    ) {
+        this.walletLogs.add(WalletLog.create(this, type, amount, referenceId));
     }
 
     private void validate(final BigDecimal amount, final Long referenceId) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0 || amount.scale() > MAX_SCALE) {
             throw new BusinessException(WalletErrorCode.INVALID_AMOUNT);
         }
+
         if (referenceId == null) {
             throw new BusinessException(WalletErrorCode.INVALID_REFERENCE_ID);
         }
@@ -54,53 +71,78 @@ public class Wallet extends BaseEntity {
         return new Wallet(memberId);
     }
 
-    public WalletLog pay(final BigDecimal amount, final Long referenceId) {
+    public List<WalletLog> getWalletLogs() {
+        return Collections.unmodifiableList(this.walletLogs);
+    }
+
+    public void payAvailable(final BigDecimal amount, final Long referenceId) {
         validate(amount, referenceId);
-        if (this.balance.compareTo(amount) < 0) {
+
+        if (this.availableBalance.compareTo(amount) < 0) {
             throw new BusinessException(WalletErrorCode.INSUFFICIENT_BALANCE);
         }
-        this.balance = this.balance.subtract(amount);
-        return WalletLog.create(this, WalletLogType.PAYMENT, amount, referenceId);
+
+        this.availableBalance = this.availableBalance.subtract(amount);
+        record(WalletLogType.PAYMENT, amount, referenceId);
     }
 
-    public WalletLog settle(final BigDecimal amount, final Long referenceId) {
+    public void payHeld(final BigDecimal amount, final Long referenceId) {
         validate(amount, referenceId);
-        if (this.balance.compareTo(amount) < 0) {
-            throw new BusinessException(WalletErrorCode.INSUFFICIENT_BALANCE);
-        }
-        this.balance = this.balance.subtract(amount);
-        return WalletLog.create(this, WalletLogType.SETTLEMENT, amount, referenceId);
-    }
 
-    public WalletLog topup(final BigDecimal amount, final Long referenceId) {
-        validate(amount, referenceId);
-        this.balance = this.balance.add(amount);
-        return WalletLog.create(this, WalletLogType.TOPUP, amount, referenceId);
-    }
-
-    public WalletLog hold(final BigDecimal amount, final Long referenceId) {
-        validate(amount, referenceId);
-        if (this.balance.compareTo(amount) < 0) {
-            throw new BusinessException(WalletErrorCode.INSUFFICIENT_BALANCE);
-        }
-        this.balance = this.balance.subtract(amount); // 릴리즈 시 반환
-        this.heldBalance = this.heldBalance.add(amount);
-        return WalletLog.create(this, WalletLogType.HOLD, amount, referenceId);
-    }
-
-    public WalletLog release(final BigDecimal amount, final Long referenceId) {
-        validate(amount, referenceId);
         if (this.heldBalance.compareTo(amount) < 0) {
             throw new BusinessException(WalletErrorCode.INSUFFICIENT_HELD_BALANCE);
         }
+
         this.heldBalance = this.heldBalance.subtract(amount);
-        this.balance = this.balance.add(amount);
-        return WalletLog.create(this, WalletLogType.RELEASE, amount, referenceId);
+        record(WalletLogType.PAYMENT, amount, referenceId);
     }
 
-    public WalletLog earn(final BigDecimal amount, final Long referenceId) {
+    public void settle(final BigDecimal amount, final Long referenceId) {
         validate(amount, referenceId);
-        this.balance = this.balance.add(amount);
-        return WalletLog.create(this, WalletLogType.PROCEEDS, amount, referenceId);
+
+        if (this.availableBalance.compareTo(amount) < 0) {
+            throw new BusinessException(WalletErrorCode.INSUFFICIENT_BALANCE);
+        }
+
+        this.availableBalance = this.availableBalance.subtract(amount);
+        record(WalletLogType.SETTLEMENT, amount, referenceId);
+    }
+
+    public void topup(final BigDecimal amount, final Long referenceId) {
+        validate(amount, referenceId);
+
+        this.availableBalance = this.availableBalance.add(amount);
+        record(WalletLogType.TOPUP, amount, referenceId);
+    }
+
+    public void hold(final BigDecimal amount, final Long referenceId) {
+        validate(amount, referenceId);
+
+        if (this.availableBalance.compareTo(amount) < 0) {
+            throw new BusinessException(WalletErrorCode.INSUFFICIENT_BALANCE);
+        }
+
+        this.availableBalance = this.availableBalance.subtract(amount); // 릴리즈 시 반환
+        this.heldBalance = this.heldBalance.add(amount);
+        record(WalletLogType.HOLD, amount, referenceId);
+    }
+
+    public void release(final BigDecimal amount, final Long referenceId) {
+        validate(amount, referenceId);
+
+        if (this.heldBalance.compareTo(amount) < 0) {
+            throw new BusinessException(WalletErrorCode.INSUFFICIENT_HELD_BALANCE);
+        }
+
+        this.heldBalance = this.heldBalance.subtract(amount);
+        this.availableBalance = this.availableBalance.add(amount);
+        record(WalletLogType.RELEASE, amount, referenceId);
+    }
+
+    public void earn(final BigDecimal amount, final Long referenceId) {
+        validate(amount, referenceId);
+
+        this.availableBalance = this.availableBalance.add(amount);
+        record(WalletLogType.PROCEEDS, amount, referenceId);
     }
 }
