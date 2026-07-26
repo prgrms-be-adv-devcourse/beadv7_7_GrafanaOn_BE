@@ -175,7 +175,7 @@ public class ProductService {
 
         productRepository.delete(product);
 
-        productEventPublisher.publish(new ProductDeletedEvent());
+        productEventPublisher.publish(new ProductDeletedEvent(productId));
     }
 
     private void validateProductDeletable(final Product product) {
