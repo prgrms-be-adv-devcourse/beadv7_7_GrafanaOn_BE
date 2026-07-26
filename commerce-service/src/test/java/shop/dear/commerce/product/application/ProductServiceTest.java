@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.product.application.dto.MemberProductExistsDto;
-import shop.dear.commerce.product.application.dto.PresignedUrlInfo;
+import shop.dear.commerce.product.application.dto.PresignedUrlInfoDto;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
 import shop.dear.commerce.product.application.dto.command.UpdateProductCommand;
 import shop.dear.commerce.product.application.dto.external.GeneratePresignedUrlsCommand;
@@ -85,7 +85,7 @@ class ProductServiceTest {
         ));
 
         //When
-        final List<PresignedUrlInfo> result = productService.generatePresignedUrls(memberId, command);
+        final List<PresignedUrlInfoDto> result = productService.generatePresignedUrls(memberId, command);
 
         //Then
         assertThat(result).hasSize(2);

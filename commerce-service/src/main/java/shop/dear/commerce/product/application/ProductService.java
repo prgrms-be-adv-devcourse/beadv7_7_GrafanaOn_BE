@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.product.application.dto.MemberProductExistsDto;
-import shop.dear.commerce.product.application.dto.PresignedUrlInfo;
+import shop.dear.commerce.product.application.dto.PresignedUrlInfoDto;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
 import shop.dear.commerce.product.application.dto.command.UpdateProductCommand;
 import shop.dear.commerce.product.application.dto.external.ExistsMember;
@@ -38,11 +38,11 @@ public class ProductService {
     private final ProductEventPublisher productEventPublisher;
     private final PresignedUrlGenerator presignedUrlGenerator;
 
-    public List<PresignedUrlInfo> generatePresignedUrls(final Long memberId, final GeneratePresignedUrlsCommand generatePresignedUrlsCommand) {
+    public List<PresignedUrlInfoDto> generatePresignedUrls(final Long memberId, final GeneratePresignedUrlsCommand generatePresignedUrlsCommand) {
         validateMember(memberId);
 
         return generatePresignedUrlsCommand.files().stream()
-            .map(imageInfo -> new PresignedUrlInfo(
+            .map(imageInfo -> new PresignedUrlInfoDto(
                 imageInfo.sortOrder(),
                 presignedUrlGenerator.generate(imageInfo.sortOrder(), imageInfo.uploadFileType())
                 ))
