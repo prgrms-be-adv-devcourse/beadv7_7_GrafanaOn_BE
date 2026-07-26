@@ -1,6 +1,6 @@
 package shop.dear.commerce.product.presentation.dto.response;
 
-import shop.dear.commerce.product.application.dto.PresignedUrlInfo;
+import shop.dear.commerce.product.application.dto.PresignedUrlInfoDto;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ public record PresignedUrlsResponse(
     ) {
     }
 
-    public static PresignedUrlsResponse of(final List<PresignedUrlInfo> presignedUrls) {
+    public static PresignedUrlsResponse of(final List<PresignedUrlInfoDto> presignedUrls) {
         final List<PresignedUrl> urls = presignedUrls.stream()
             .map(url -> new PresignedUrlsResponse.PresignedUrl(
                 url.sortOrder(),

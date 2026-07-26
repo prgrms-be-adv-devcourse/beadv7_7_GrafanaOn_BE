@@ -1,6 +1,6 @@
 package shop.dear.commerce.product.application.dto;
 
-public record PresignedUrlInfo(
+public record PresignedUrlInfoDto(
     int sortOrder,
     String presignedUrl
 ) {

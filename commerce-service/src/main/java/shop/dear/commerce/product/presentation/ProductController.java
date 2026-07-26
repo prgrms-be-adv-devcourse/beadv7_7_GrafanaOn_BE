@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import shop.dear.commerce.product.application.ProductService;
-import shop.dear.commerce.product.application.dto.PresignedUrlInfo;
+import shop.dear.commerce.product.application.dto.PresignedUrlInfoDto;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
 import shop.dear.commerce.product.application.dto.command.UpdateProductCommand;
 import shop.dear.commerce.product.application.dto.external.GeneratePresignedUrlsCommand;
@@ -36,7 +36,7 @@ public class ProductController {
     @PostMapping("/images/presigned-urls")
     public ResponseEntity<ApiResponse<PresignedUrlsResponse>> generatePresignedUrls(@AuthUser final Long memberId, @RequestBody GeneratePresignedUrlsRequest request) {
         final GeneratePresignedUrlsCommand command = request.toCommand();
-        final List<PresignedUrlInfo> presignedUrls = productService.generatePresignedUrls(memberId, command);
+        final List<PresignedUrlInfoDto> presignedUrls = productService.generatePresignedUrls(memberId, command);
         final PresignedUrlsResponse response = PresignedUrlsResponse.of(presignedUrls);
 
         return ResponseEntity.ok(successWithData(response));
