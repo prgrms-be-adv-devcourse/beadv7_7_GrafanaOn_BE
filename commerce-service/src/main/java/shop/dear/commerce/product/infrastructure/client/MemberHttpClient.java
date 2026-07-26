@@ -66,7 +66,7 @@ public class MemberHttpClient implements MemberPort {
         log.info("[MemberHttpClient] member - 판매자 등록 여부 조회 요청. memberId={}", memberId);
 
         final ApiResponse<IsSellerApiData> body = productRestClient.get()
-            .uri("/api/members/seller")
+            .uri("/internal/members/seller")
             .retrieve()
             .body(new ParameterizedTypeReference<>() {
             });
