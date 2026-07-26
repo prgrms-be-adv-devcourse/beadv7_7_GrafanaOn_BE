@@ -3,6 +3,7 @@ package shop.dear.commerce.product.application;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import shop.dear.commerce.product.application.dto.MemberProductExistsDto;
 import shop.dear.commerce.product.application.dto.PresignedUrlInfo;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
 import shop.dear.commerce.product.application.dto.command.UpdateProductCommand;
@@ -14,6 +15,7 @@ import shop.dear.commerce.product.application.port.OfferPort;
 import shop.dear.commerce.product.application.port.PresignedUrlGenerator;
 import shop.dear.commerce.product.application.port.ProductEventPublisher;
 import shop.dear.commerce.product.domain.constant.ProductSaleType;
+import shop.dear.commerce.product.domain.constant.ProductStatus;
 import shop.dear.commerce.product.domain.exception.ProductErrorCode;
 import shop.dear.commerce.product.domain.model.Price;
 import shop.dear.commerce.product.domain.model.Product;
@@ -182,5 +184,15 @@ public class ProductService {
         if (!product.isDeletable()) {
             throw new BusinessException(ProductErrorCode.INVALID_PRODUCT_STATUS_FOR_DELETE);
         }
+    }
+
+    public MemberProductExistsDto getMemberProductExists(final Long sellerId) {
+        validateMember(sellerId);
+        validateSeller(sellerId);
+
+        final List<ProductStatus> statuses = List.of(ProductStatus.PREPARING, ProductStatus.ON_SALE);
+        final boolean exists = productRepository.existsBySellerIdAndStatusIn(sellerId, statuses);
+
+        return new MemberProductExistsDto(exists);
     }
 }

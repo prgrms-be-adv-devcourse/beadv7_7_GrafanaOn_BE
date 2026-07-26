@@ -2,6 +2,7 @@ package shop.dear.commerce.product.infrastructure.persistence;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import shop.dear.commerce.product.domain.constant.ProductStatus;
 import shop.dear.commerce.product.domain.model.Product;
 import shop.dear.commerce.product.domain.repository.ProductRepository;
 import shop.dear.commerce.product.infrastructure.persistence.jpa.ProductJpaRepository;
@@ -36,5 +37,10 @@ public class ProductRepositoryAdapter implements ProductRepository {
     @Override
     public void delete(final Product product) {
         productRepository.delete(product);
+    }
+
+    @Override
+    public boolean existsBySellerIdAndStatusIn(final Long sellerId, final List<ProductStatus> statuses) {
+        return productRepository.existsBySellerIdAndStatusIn(sellerId, statuses);
     }
 }
