@@ -9,7 +9,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.identity.member.application.dto.CreateProfileCommand;
+import shop.dear.identity.member.application.dto.RegisterSellerCommand;
+import shop.dear.identity.member.application.dto.SellerInfo;
 import shop.dear.identity.member.application.dto.UpdateProfileCommand;
+import shop.dear.identity.member.application.dto.UpdateSellerAccountCommand;
+import shop.dear.identity.member.application.dto.external.ExistsProduct;
+import shop.dear.identity.member.application.port.ProductPort;
+import shop.dear.identity.member.domain.constract.SellerStatus;
+import shop.dear.identity.member.domain.exception.MemberErrorCode;
 import shop.dear.identity.member.domain.model.Member;
 import shop.dear.identity.member.domain.repository.MemberRepository;
 
@@ -25,6 +32,12 @@ public class MemberServiceTest {
 
     @Mock
     private MemberRepository memberRepository;
+
+    @Mock
+    private Encryptor encryptor;
+
+    @Mock
+    private ProductPort productPort;
 
     @InjectMocks
     private MemberService memberService;
@@ -111,6 +124,191 @@ public class MemberServiceTest {
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
         given(memberRepository.existsByNickname("너구리")).willReturn(true);
 
-        Assertions.assertThrows(BusinessException.class, () -> memberService.updateProfile(command, 1L));
+        BusinessException exception = Assertions.assertThrows(BusinessException.class,
+            () -> memberService.updateProfile(command, 1L));
+
+        Assertions.assertEquals(MemberErrorCode.DUPLICATE_NICKNAME, exception.getErrorCode());
     }
+
+    @Test
+    @DisplayName("판매자 등록 성공")
+    void registerSellerTest(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+
+        RegisterSellerCommand command = new RegisterSellerCommand("국민은행", "123-456-789");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+        given(encryptor.encode("123-456-789")).willReturn("encrypted-123-456-789");
+
+        memberService.registerSeller(1L, command);
+
+        Assertions.assertTrue(member.isSeller());
+        Assertions.assertEquals(SellerStatus.ACTIVE, member.getSeller().getStatus());
+        Assertions.assertEquals("encrypted-123-456-789", member.getSeller().getAccount());
+    }
+
+    @Test
+    @DisplayName("판매자 계좌 수정 성공")
+    void updateSellerAccountTest(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+        member.registerSeller("국민은행", "123-456-789");
+
+        UpdateSellerAccountCommand command = new UpdateSellerAccountCommand("신한은행", "987-654-321");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+        given(encryptor.encode("987-654-321")).willReturn("encrypted-987-654-321");
+
+        memberService.updateSellerAccount(1L, command);
+
+        Assertions.assertEquals("신한은행", member.getSeller().getBank());
+        Assertions.assertEquals("encrypted-987-654-321", member.getSeller().getAccount());
+    }
+
+    @Test
+    @DisplayName("판매자 계좌 수정 실패 (판매자 아닌 경우)")
+    void updateSellerAccount_notSeller(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+
+        UpdateSellerAccountCommand command = new UpdateSellerAccountCommand("신한은행", "987-654-321");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+
+        BusinessException exception = Assertions.assertThrows(BusinessException.class,
+            () -> memberService.updateSellerAccount(1L, command));
+
+        Assertions.assertEquals(MemberErrorCode.NOT_SELLER, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("판매자 계좌 조회 성공")
+    void getMyAccountTest(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+        member.registerSeller("국민은행", "encrypted-123-456-789");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+        given(encryptor.decode("encrypted-123-456-789")).willReturn("123-456-789");
+
+        SellerInfo sellerInfo = memberService.getMyAccount(1L);
+
+        Assertions.assertEquals("국민은행", sellerInfo.bank());
+        Assertions.assertEquals("123*****789", sellerInfo.account());
+    }
+
+    @Test
+    @DisplayName("판매자 계좌 조회 실패 (판매자 아닌 경우)")
+    void getMyAccount_notSeller(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+
+        BusinessException exception = Assertions.assertThrows(BusinessException.class,
+            () -> memberService.getMyAccount(1L));
+
+        Assertions.assertEquals(MemberErrorCode.NOT_SELLER, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("판매자 여부 확인 (판매자)")
+    void isSeller_true(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+        member.registerSeller("국민은행", "123-456-789");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+
+        boolean isSeller = memberService.isSeller(1L);
+
+        Assertions.assertTrue(isSeller);
+    }
+
+    @Test
+    @DisplayName("판매자 여부 확인 (판매자 아닌 경우)")
+    void isSeller_false(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+
+        boolean isSeller = memberService.isSeller(1L);
+
+        Assertions.assertFalse(isSeller);
+    }
+
+    @Test
+    @DisplayName("판매자 등록 해지 성공")
+    void unRegisterTest(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+        member.registerSeller("국민은행", "123-456-789");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+        given(productPort.existsProduct()).willReturn(new ExistsProduct(false));
+
+        memberService.unRegister(1L);
+
+        Assertions.assertFalse(member.isSeller());
+        Assertions.assertEquals(SellerStatus.WITHDRAWING, member.getSeller().getStatus());
+        Assertions.assertEquals("국민은행", member.getSeller().getBank());
+        Assertions.assertEquals("123-456-789", member.getSeller().getAccount());
+    }
+
+    @Test
+    @DisplayName("판매자 등록 해지 실패 (등록된 판매상품 존재)")
+    void unRegister_hasProduct(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+        member.registerSeller("국민은행", "123-456-789");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+        given(productPort.existsProduct()).willReturn(new ExistsProduct(true));
+
+        BusinessException exception = Assertions.assertThrows(BusinessException.class,
+            () -> memberService.unRegister(1L));
+
+        Assertions.assertEquals(MemberErrorCode.WITHDRAWAL_FAILED, exception.getErrorCode());
+        Assertions.assertTrue(member.isSeller());
+        Assertions.assertEquals(SellerStatus.ACTIVE, member.getSeller().getStatus());
+    }
+
 }

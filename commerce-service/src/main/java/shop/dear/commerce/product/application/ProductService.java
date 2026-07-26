@@ -5,19 +5,26 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.product.application.dto.PresignedUrlInfo;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
+import shop.dear.commerce.product.application.dto.command.UpdateProductCommand;
+import shop.dear.commerce.product.application.dto.external.ExistsOffer;
 import shop.dear.commerce.product.application.dto.external.GeneratePresignedUrlsCommand;
 import shop.dear.commerce.product.application.dto.external.MemberProfile;
 import shop.dear.commerce.product.application.port.MemberPort;
+import shop.dear.commerce.product.application.port.OfferPort;
 import shop.dear.commerce.product.application.port.PresignedUrlGenerator;
 import shop.dear.commerce.product.application.port.ProductEventPublisher;
-import shop.dear.common.event.product.ProductChangedEvent;
+import shop.dear.commerce.product.domain.constant.ProductSaleType;
 import shop.dear.commerce.product.domain.exception.ProductErrorCode;
+import shop.dear.commerce.product.domain.model.Price;
 import shop.dear.commerce.product.domain.model.Product;
 import shop.dear.commerce.product.domain.model.ProductImage;
 import shop.dear.commerce.product.domain.repository.ProductRepository;
+import shop.dear.common.event.product.ProductChangedEvent;
 import shop.dear.common.exception.BusinessException;
 
 import java.util.List;
+
+import static shop.dear.commerce.product.domain.exception.ProductErrorCode.INVALID_PRODUCT_STATUS_FOR_UPDATE;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -26,6 +33,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final MemberPort memberPort;
+    private final OfferPort offerPort;
     private final ProductEventPublisher productEventPublisher;
     private final PresignedUrlGenerator presignedUrlGenerator;
 
@@ -42,7 +50,6 @@ public class ProductService {
 
     @Transactional
     public void createProduct(final Long sellerId, final CreateProductCommand command) {
-        final MemberProfile memberProfile = memberPort.getMemberProfile(sellerId);
         validateSeller(sellerId);
 
         final Product product = Product.create(
@@ -52,7 +59,7 @@ public class ProductService {
             command.modelNumber(),
             command.category(),
             command.releaseDate(),
-            command.price(),
+            Price.from(command.price()),
             command.saleType(),
             command.description()
         );
@@ -76,7 +83,7 @@ public class ProductService {
             savedProduct.getModelNumber(),
             savedProduct.getCategory().toString(),
             savedProduct.getReleaseDate(),
-            savedProduct.getPrice(),
+            savedProduct.getPrice().getValue(),
             savedProduct.getSaleType().toString(),
             savedProduct.getViewCount(),
             savedProduct.getDescription(),
@@ -86,7 +93,66 @@ public class ProductService {
 
     private void validateSeller(final Long memberId) {
         if (!memberPort.isSeller(memberId).isSeller()) {
-            throw new BusinessException(ProductErrorCode.SELLER_ROLE_REQUIRED);
+            throw new BusinessException(ProductErrorCode.REQUIRED_SELLER_ROLE);
+        }
+    }
+
+    @Transactional
+    public void updateProduct(final Long sellerId, final Long productId, final UpdateProductCommand command) {
+        validateSeller(sellerId);
+
+        final Product originalProduct = productRepository.findById(productId);
+        originalProduct.validateOwner(sellerId);
+        validateProductUpdatable(originalProduct);
+
+        final Product updatedProduct = originalProduct.update(
+            command.name(),
+            command.brand(),
+            command.modelNumber(),
+            command.category(),
+            command.releaseDate(),
+            Price.from(command.price()),
+            command.description()
+        );
+
+        final StringBuilder fullStory = new StringBuilder();
+
+        for (final UpdateProductCommand.ProductImageContentCommand content : command.productImageContents()) {
+            final ProductImage image = updatedProduct.addImage(content.url(), content.sortOrder());
+
+            if (content.story() != null) {
+                image.addStory(content.story());
+                fullStory.append(content.story()).append(" ");
+            }
+        }
+
+        final Product savedProduct = productRepository.save(updatedProduct);
+
+        productEventPublisher.publish(new ProductChangedEvent(
+            savedProduct.getId(),
+            savedProduct.getName(),
+            savedProduct.getModelNumber(),
+            savedProduct.getCategory().toString(),
+            savedProduct.getReleaseDate(),
+            savedProduct.getPrice().getValue(),
+            savedProduct.getSaleType().toString(),
+            savedProduct.getViewCount(),
+            savedProduct.getDescription(),
+            fullStory.toString()
+        ));
+    }
+
+    private void validateProductUpdatable(final Product originalProduct) {
+        if (!originalProduct.isUpdatable()) {
+            throw new BusinessException(INVALID_PRODUCT_STATUS_FOR_UPDATE);
+        }
+
+        if (originalProduct.getSaleType() == ProductSaleType.OFFER) {
+            final ExistsOffer existsOffer = offerPort.existsOffer(originalProduct.getId());
+
+            if (existsOffer.exists()) {
+                throw new BusinessException(INVALID_PRODUCT_STATUS_FOR_UPDATE);
+            }
         }
     }
 }

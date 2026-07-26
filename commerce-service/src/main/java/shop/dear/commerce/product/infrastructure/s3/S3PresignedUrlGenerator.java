@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import shop.dear.commerce.product.application.port.PresignedUrlGenerator;
+import shop.dear.commerce.product.domain.constant.UploadFileType;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -26,20 +27,18 @@ public class S3PresignedUrlGenerator implements PresignedUrlGenerator {
     private final S3Presigner s3Presigner;
 
     @Override
-    public String generate(final int sortOrder, final String uploadFileType) {
+    public String generate(final int sortOrder, final UploadFileType uploadFileType) {
         return s3Presigner.presignPutObject(buildPutObjectPresignRequest(sortOrder, uploadFileType))
             .url()
             .toExternalForm();
     }
 
-    private PutObjectPresignRequest buildPutObjectPresignRequest(final int sortOrder, final String uploadFileType) {
-        final S3UploadFileType s3UploadFileType = S3UploadFileType.from(uploadFileType);
-
+    private PutObjectPresignRequest buildPutObjectPresignRequest(final int sortOrder, final UploadFileType uploadFileType) {
         final String s3ObjectKey = String.format("%s/%s/%d.%s",
             PRODUCT_IMAGE_ROOT_DIR_NAME,
             UUID.randomUUID(),
             sortOrder,
-            s3UploadFileType.getExtension()
+            uploadFileType.getExtension()
         );
 
         log.info("generate s3 put object key: {}", s3ObjectKey);
@@ -47,7 +46,7 @@ public class S3PresignedUrlGenerator implements PresignedUrlGenerator {
         final PutObjectRequest putObjectRequest = PutObjectRequest.builder()
             .bucket(bucketName)
             .key(s3ObjectKey)
-            .contentType(s3UploadFileType.getContentType())
+            .contentType(uploadFileType.getContentType())
             .build();
 
         return PutObjectPresignRequest.builder()

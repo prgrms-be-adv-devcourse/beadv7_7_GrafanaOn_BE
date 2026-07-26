@@ -10,6 +10,8 @@ import shop.dear.common.response.ErrorCode;
 public enum OfferErrorCode implements ErrorCode {
     INVALID_OFFER_STATUS_TRANSITION("OF-001", "현재 오퍼 상태에서는 수행할 수 없는 작업입니다."),
     INVALID_OFFER_PAYMENT_STATUS_TRANSITION("OF-002", "현재 오퍼 결제 상태에서는 수행할 수 없는 작업입니다."),
+    OFFER_NOT_FOUND("OF-003", "해당 오퍼를 찾을 수 없습니다."),
+    NOT_OFFER_SELLER("OF-004", "해당 오퍼를 수락할 권한이 없습니다."),
     ;
 
     private final String value;

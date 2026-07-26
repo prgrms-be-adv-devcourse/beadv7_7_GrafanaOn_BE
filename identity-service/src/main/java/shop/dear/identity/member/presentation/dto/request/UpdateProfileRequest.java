@@ -1,4 +1,4 @@
-package shop.dear.identity.member.presentation.dto;
+package shop.dear.identity.member.presentation.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

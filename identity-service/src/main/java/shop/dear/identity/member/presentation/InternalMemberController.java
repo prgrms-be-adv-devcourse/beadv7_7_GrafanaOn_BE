@@ -2,16 +2,14 @@ package shop.dear.identity.member.presentation;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import shop.dear.common.response.ApiResponse;
 import shop.dear.identity.member.application.MemberService;
-import shop.dear.identity.member.presentation.dto.CreateProfileRequest;
-import shop.dear.identity.member.presentation.dto.CreateProfileResponse;
+import shop.dear.identity.member.presentation.dto.request.CreateProfileRequest;
+import shop.dear.identity.member.presentation.dto.response.CreateProfileResponse;
 
 @RestController
 @RequiredArgsConstructor

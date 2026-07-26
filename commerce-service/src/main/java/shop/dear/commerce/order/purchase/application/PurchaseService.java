@@ -2,13 +2,18 @@ package shop.dear.commerce.order.purchase.application;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.order.purchase.application.dto.CreatePurchaseCommand;
 import shop.dear.commerce.order.purchase.application.port.ProductPort;
+import shop.dear.commerce.order.purchase.application.port.PurchaseEventPublisher;
 import shop.dear.commerce.order.purchase.application.port.dto.ProductInfo;
 import shop.dear.commerce.order.purchase.application.port.dto.ProductSaleType;
 import shop.dear.commerce.order.purchase.application.port.dto.ProductStatus;
+import shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.commerce.order.purchase.domain.repository.PurchaseRepository;
+import shop.dear.common.event.order.FinishedOrderEvent;
+import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
@@ -22,11 +27,13 @@ import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCo
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PurchaseService {
 
     private static final long PAYMENT_DUE_MINUTES = 5;
 
     private final PurchaseRepository purchaseRepository;
+    private final PurchaseEventPublisher purchaseEventPublisher;
     private final ProductPort productPort;
 
     public Purchase createPurchase(final CreatePurchaseCommand command) {
@@ -35,12 +42,12 @@ public class PurchaseService {
         final OffsetDateTime paymentDueAt = OffsetDateTime.now().plusMinutes(PAYMENT_DUE_MINUTES);
 
         final Purchase purchase = Purchase.create(
-            command.buyerId(),
-            product.sellerId(),
-            product.productId(),
-            product.price(),
-            command.delivery(),
-            paymentDueAt
+           command.buyerId(),
+           product.sellerId(),
+           product.productId(),
+           product.price(),
+           command.delivery(),
+           paymentDueAt
         );
 
         return purchaseRepository.save(purchase);
@@ -84,11 +91,28 @@ public class PurchaseService {
     }
 
     private void validateProductOwner(
-        final Long buyerId,
-        final ProductInfo product
+            final Long buyerId,
+            final ProductInfo product
     ) {
         if (Objects.equals(buyerId, product.sellerId())) {
             throw new BusinessException(CANNOT_PURCHASE_OWN_PRODUCT);
         }
+    }
+
+    @Transactional
+    public void confirmPurchase(final Long purchaseId) {
+        final Purchase purchase = purchaseRepository.findById(purchaseId)
+                .orElseThrow(() -> new BusinessException(PurchaseErrorCode.PURCHASE_NOT_FOUND));
+
+        purchase.confirmPurchase();
+
+        purchaseEventPublisher.publish(new FinishedOrderEvent(
+            purchase.getId(),
+            purchase.getBuyerId(),
+            purchase.getSellerId(),
+            purchase.getProductId(),
+            purchase.getAmount(),
+            OrderType.PURCHASE
+        ));
     }
 }
