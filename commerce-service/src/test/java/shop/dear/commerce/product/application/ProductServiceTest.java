@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import shop.dear.commerce.product.application.dto.MemberProductExistsDto;
 import shop.dear.commerce.product.application.dto.PresignedUrlInfo;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
 import shop.dear.commerce.product.application.dto.command.UpdateProductCommand;
@@ -201,5 +202,34 @@ class ProductServiceTest {
         //Then
         final List<Product> products = productRepository.findAll();
         assertThat(products.size()).isEqualTo(0);
+    }
+
+    @DisplayName("유효한 값(sellerId)이 들어오면 해당 사용자가 등록한 판매 예정 및 판매중인 상품이 존재하는지 여부를 반환한다.")
+    @Test
+    void givenSellerId_whenGetMemberProductExists_thenReturnExists() {
+        //Given
+        final Long sellerId1 = 1L;
+        final Product product1 = createProduct(sellerId1);
+        productRepository.save(product1);
+
+        final Long sellerId2 = 2L;
+        final Product product2 = createProduct(sellerId2);
+        product2.changeStatusToOnSale();
+        productRepository.save(product2);
+
+        final Long sellerId3 = 3L;
+        final Product product3 = createProduct(sellerId3);
+        product3.changeStatusToSoldOut();
+        productRepository.save(product3);
+
+        //When
+        final MemberProductExistsDto result1 = productService.getMemberProductExists(sellerId1);
+        final MemberProductExistsDto result2 = productService.getMemberProductExists(sellerId2);
+        final MemberProductExistsDto result3 = productService.getMemberProductExists(sellerId3);
+
+        //Then
+        assertThat(result1.exists()).isEqualTo(true);
+        assertThat(result2.exists()).isEqualTo(true);
+        assertThat(result3.exists()).isEqualTo(false);
     }
 }
