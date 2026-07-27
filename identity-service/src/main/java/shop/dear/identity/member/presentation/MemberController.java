@@ -2,6 +2,7 @@ package shop.dear.identity.member.presentation;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
@@ -14,6 +15,9 @@ import shop.dear.identity.member.presentation.dto.request.UpdateSellerAccountReq
 
 import java.util.Objects;
 
+import static shop.dear.common.response.ApiResponse.success;
+import static shop.dear.common.response.ApiResponse.successWithData;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/members")
@@ -22,18 +26,18 @@ public class MemberController {
     private final MemberService memberService;
 
     @PatchMapping("/profile/me")
-    public ApiResponse<MemberResponse> updateProfile(
+    public ResponseEntity<ApiResponse<MemberResponse>> updateProfile(
         @Valid @RequestBody final UpdateProfileRequest request,
         @AuthUser Long memberId
     ){
 
         MemberResponse member = MemberResponse.from(memberService.updateProfile(request.toCommand(), memberId), true);
 
-        return ApiResponse.successWithData(member);
+        return ResponseEntity.ok(successWithData(member));
     }
 
     @GetMapping("/profile")
-    public ApiResponse<MemberResponse> getProfile(
+    public ResponseEntity<ApiResponse<MemberResponse>> getProfile(
         @AuthUser Long requesterId,
         @RequestParam(value = "memberId", required = false) final Long memberId
     ){
@@ -43,44 +47,44 @@ public class MemberController {
 
         MemberResponse member = MemberResponse.from(memberService.getProfile(searchId), isOwner);
 
-        return ApiResponse.successWithData(member);
+        return ResponseEntity.ok(successWithData(member));
     }
 
     @PostMapping("/me/seller")
-    public ApiResponse<Void> registerSeller(
+    public ResponseEntity<ApiResponse<Void>> registerSeller(
         @Valid @RequestBody final RegisterSellerRequest request,
         @AuthUser Long memberId
     ){
 
         memberService.registerSeller(memberId, request.toCommand());
 
-        return ApiResponse.success();
+        return ResponseEntity.ok(success());
     }
 
     @PatchMapping("/me/seller")
-    public ApiResponse<Void> updateSellerAccount(
+    public ResponseEntity<ApiResponse<Void>> updateSellerAccount(
         @Valid @RequestBody final UpdateSellerAccountRequest request,
         @AuthUser Long memberId
     ){
 
         memberService.updateSellerAccount(memberId, request.toCommand());
 
-        return ApiResponse.success();
+        return ResponseEntity.ok(success());
     }
 
     @DeleteMapping("/me/seller")
-    public ApiResponse<Void> unRegister(@AuthUser Long memberId){
+    public ResponseEntity<ApiResponse<Void>> unRegister(@AuthUser Long memberId){
 
         memberService.unRegister(memberId);
 
-        return ApiResponse.success();
+        return ResponseEntity.ok(success());
     }
 
     @GetMapping("/me/seller")
-    public ApiResponse<SellerAccountResponse> getMyAccount(@AuthUser Long memberId){
+    public ResponseEntity<ApiResponse<SellerAccountResponse>> getMyAccount(@AuthUser Long memberId){
 
         SellerAccountResponse account = SellerAccountResponse.from(memberService.getMyAccount(memberId));
 
-        return ApiResponse.successWithData(account);
+        return ResponseEntity.ok(successWithData(account));
     }
 }
