@@ -3,16 +3,19 @@ package shop.dear.commerce.product.presentation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import shop.dear.commerce.product.application.ProductService;
+import shop.dear.commerce.product.application.dto.GetProductDetailDto;
 import shop.dear.commerce.product.application.dto.MemberProductExistsDto;
 import shop.dear.commerce.product.application.dto.ScrapProductInfoDto;
 import shop.dear.commerce.product.application.dto.command.GetScrapProductCommand;
 import shop.dear.commerce.product.presentation.dto.request.GetScrapProductsRequest;
 import shop.dear.commerce.product.presentation.dto.response.GetMemberProductExistsResponse;
 import shop.dear.commerce.product.presentation.dto.response.GetScrapProductResponse;
+import shop.dear.commerce.product.presentation.dto.response.ProductDetailResponse;
 import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
 
@@ -42,6 +45,14 @@ public class InternalProductController {
         final List<GetScrapProductResponse> response = result.stream()
             .map(GetScrapProductResponse::of)
             .toList();
+
+        return ResponseEntity.ok(successWithData(response));
+    }
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductDetail(@AuthUser final Long memberId, @PathVariable final Long productId) {
+        final GetProductDetailDto result = productService.getProductDetailToInternal(memberId, productId);
+        final ProductDetailResponse response = ProductDetailResponse.of(result);
 
         return ResponseEntity.ok(successWithData(response));
     }
