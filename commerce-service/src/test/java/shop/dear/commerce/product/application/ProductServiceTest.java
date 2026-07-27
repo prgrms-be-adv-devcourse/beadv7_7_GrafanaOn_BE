@@ -12,7 +12,7 @@ import shop.dear.commerce.product.application.dto.ScrapProductInfoDto;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
 import shop.dear.commerce.product.application.dto.command.GetScrapProductCommand;
 import shop.dear.commerce.product.application.dto.command.UpdateProductCommand;
-import shop.dear.commerce.product.application.dto.external.GeneratePresignedUrlsCommand;
+import shop.dear.commerce.product.application.dto.command.GeneratePresignedUrlsCommand;
 import shop.dear.commerce.product.application.fake.FakeMemberPort;
 import shop.dear.commerce.product.application.fake.FakeOfferPort;
 import shop.dear.commerce.product.application.fake.FakePresignedUrlGenerator;

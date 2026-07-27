@@ -1,4 +1,4 @@
-package shop.dear.commerce.product.application.dto.external;
+package shop.dear.commerce.product.application.dto.command;
 
 import shop.dear.commerce.product.domain.constant.UploadFileType;
 
