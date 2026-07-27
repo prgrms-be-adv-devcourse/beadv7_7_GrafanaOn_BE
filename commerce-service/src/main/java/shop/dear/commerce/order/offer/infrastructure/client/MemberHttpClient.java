@@ -16,7 +16,7 @@ public class MemberHttpClient implements MemberPort {
 
     private final RestClient memberRestClient;
 
-    public MemberHttpClient(@Qualifier("memberRestClient") final RestClient memberRestClient) {
+    public MemberHttpClient(@Qualifier("offerMemberRestClient") final RestClient memberRestClient) {
         this.memberRestClient = memberRestClient;
     }
 
