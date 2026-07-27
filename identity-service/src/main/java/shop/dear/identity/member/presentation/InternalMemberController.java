@@ -33,6 +33,7 @@ public class InternalMemberController {
 
         return ApiResponse.successWithData(SellerCheckResponse.from(isSeller));
     }
+
     @GetMapping
     public ApiResponse<MemberCheckResponse> existsMember(@AuthUser final Long memberId) {
 

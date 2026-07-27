@@ -51,6 +51,7 @@ public class MemberService  {
     }
 
     public boolean existsMember(final Long memberId) {
+
         MemberInfo info = memberRepository.findById(memberId)
             .map(MemberInfo::from)
             .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
