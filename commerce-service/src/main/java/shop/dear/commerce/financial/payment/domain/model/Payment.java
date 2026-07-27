@@ -25,7 +25,10 @@ public class Payment extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(mappedBy = "payment", cascade = CascadeType.PERSIST)
+    @OneToOne(
+            mappedBy = "payment",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE}
+    )
     private PGPayment pgPayment;
 
     @Column(name = "wallet_id", nullable = false)
