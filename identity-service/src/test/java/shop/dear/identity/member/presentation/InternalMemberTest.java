@@ -12,7 +12,6 @@ import tools.jackson.databind.ObjectMapper;
 import org.springframework.test.web.servlet.MockMvc;
 import shop.dear.identity.member.application.dto.MemberInfo;
 import shop.dear.identity.member.domain.exception.MemberErrorCode;
-import shop.dear.common.exception.CommonErrorCode;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
