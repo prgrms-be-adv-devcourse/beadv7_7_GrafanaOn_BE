@@ -1,5 +1,6 @@
 package shop.dear.commerce.order.purchase.presentation;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import shop.dear.commerce.order.purchase.application.PurchaseService;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.common.auth.AuthUser;
-import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -33,8 +33,7 @@ class PurchaseControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @MockitoBean
     private PurchaseService purchaseService;
