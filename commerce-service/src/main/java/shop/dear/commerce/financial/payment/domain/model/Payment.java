@@ -31,8 +31,8 @@ public class Payment extends BaseEntity {
     )
     private PGPayment pgPayment;
 
-    @Column(name = "wallet_id", nullable = false)
-    private Long walletId;
+    @Column(name = "member_id", nullable = false)
+    private Long memberId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "purpose", nullable = false, length = 30)
@@ -53,15 +53,15 @@ public class Payment extends BaseEntity {
     private PaymentStatus state;
 
     private Payment(
-            final Long walletId,
+            final Long memberId,
             final PaymentPurpose purpose,
             final Long orderId,
             final OrderType orderType,
             final BigDecimal amount
     ) {
-        validate(walletId, purpose, orderId, orderType, amount);
+        validate(memberId, purpose, orderId, orderType, amount);
 
-        this.walletId = walletId;
+        this.memberId = memberId;
         this.purpose = purpose;
         this.orderId = orderId;
         this.orderType = orderType;
@@ -70,14 +70,14 @@ public class Payment extends BaseEntity {
     }
 
     private void validate(
-            final Long walletId,
+            final Long memberId,
             final PaymentPurpose purpose,
             final Long orderId,
             final OrderType orderType,
             final BigDecimal amount
     ) {
-        if (walletId == null) {
-            throw new BusinessException(PaymentErrorCode.INVALID_WALLET_ID);
+        if (memberId == null) {
+            throw new BusinessException(PaymentErrorCode.INVALID_MEMBER_ID);
         }
 
         if (purpose == null) {
@@ -114,11 +114,11 @@ public class Payment extends BaseEntity {
     }
 
     public static Payment createTopUp(
-            final Long walletId,
+            final Long memberId,
             final BigDecimal amount
     ) {
         return new Payment(
-                walletId,
+                memberId,
                 PaymentPurpose.TOPUP,
                 null,
                 null,
@@ -127,13 +127,13 @@ public class Payment extends BaseEntity {
     }
 
     public static Payment createOrderPayment(
-            final Long walletId,
+            final Long memberId,
             final Long orderId,
             final OrderType orderType,
             final BigDecimal amount
     ) {
         return new Payment(
-                walletId,
+                memberId,
                 PaymentPurpose.ORDER,
                 orderId,
                 orderType,

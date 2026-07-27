@@ -17,14 +17,14 @@ public class PaymentTest {
     @Test
     void createTopUp_success() {
         // given
-        Long walletId = 1L;
+        Long memberId = 1L;
         BigDecimal amount = new BigDecimal("10000.00");
 
         // when
-        Payment payment = Payment.createTopUp(walletId, amount);
+        Payment payment = Payment.createTopUp(memberId, amount);
 
         // then
-        assertEquals(walletId, payment.getWalletId());
+        assertEquals(memberId, payment.getMemberId());
         assertEquals(PaymentPurpose.TOPUP, payment.getPurpose());
         assertNull(payment.getOrderId());
         assertNull(payment.getOrderType());
@@ -35,20 +35,20 @@ public class PaymentTest {
     @Test
     void createOrderPayment_success() {
         // given
-        Long walletId = 1L;
+        Long memberId = 1L;
         Long orderId = 100L;
         BigDecimal amount = new BigDecimal("15000.00");
 
         // when
         Payment payment = Payment.createOrderPayment(
-                walletId,
+                memberId,
                 orderId,
                 OrderType.PURCHASE,
                 amount
         );
 
         // then
-        assertEquals(walletId, payment.getWalletId());
+        assertEquals(memberId, payment.getMemberId());
         assertEquals(PaymentPurpose.ORDER, payment.getPurpose());
         assertEquals(orderId, payment.getOrderId());
         assertEquals(OrderType.PURCHASE, payment.getOrderType());
@@ -59,20 +59,20 @@ public class PaymentTest {
     @Test
     void createOfferOrderPayment_success() {
         // given
-        Long walletId = 1L;
+        Long memberId = 1L;
         Long orderId = 200L;
         BigDecimal amount = new BigDecimal("15000.00");
 
         // when
         Payment payment = Payment.createOrderPayment(
-                walletId,
+                memberId,
                 orderId,
                 OrderType.OFFER,
                 amount
         );
 
         // then
-        assertEquals(walletId, payment.getWalletId());
+        assertEquals(memberId, payment.getMemberId());
         assertEquals(PaymentPurpose.ORDER, payment.getPurpose());
         assertEquals(orderId, payment.getOrderId());
         assertEquals(OrderType.OFFER, payment.getOrderType());
@@ -81,13 +81,13 @@ public class PaymentTest {
     }
 
     @Test
-    void createTopUp_withNullWalletId_throwsException() {
+    void createTopUp_withNullMemberId_throwsException() {
         BusinessException exception = assertThrows(
                 BusinessException.class,
                 () -> Payment.createTopUp(null, new BigDecimal("10000.00"))
         );
 
-        assertEquals(PaymentErrorCode.INVALID_WALLET_ID, exception.getErrorCode());
+        assertEquals(PaymentErrorCode.INVALID_MEMBER_ID, exception.getErrorCode());
     }
 
     @Test
@@ -171,9 +171,9 @@ public class PaymentTest {
     @Test
     void preparePgPayment_success() {
         // given
-        Long walletId = 1L;
+        Long memberId = 1L;
         BigDecimal amount = new BigDecimal("10000.00");
-        Payment payment = Payment.createTopUp(walletId, amount);
+        Payment payment = Payment.createTopUp(memberId, amount);
 
         // when
         payment.preparePgPayment();
