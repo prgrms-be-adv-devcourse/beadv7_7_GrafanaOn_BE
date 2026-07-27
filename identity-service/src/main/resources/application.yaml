@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: identity-service
+  profiles:
+    active: local
+
+# JWT
+auth:
+  jwt:
+    issuer: ${JWT_ISSUER:dear-identity-service}
+    secret: ${JWT_SECRET}
+    access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:60m}
+    refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:14d}
+
+  cookie:
+    name: ${AUTH_REFRESH_COOKIE_NAME:refreshToken}
+    secure: ${AUTH_COOKIE_SECURE:true} # HTTPS에서만 쿠키 전송, 테스트 시 false
+    same-site: ${AUTH_COOKIE_SAME_SITE:Strict}
+    path: ${AUTH_COOKIE_PATH:/api/auth}
+
+identity:
+  client:
+    commerce-base-url: ${COMMERCE_BASE_URL}
+  security:
+    account-key: ${AES_SECRET_KEY}
+    account-iv: ${AES_SECRET_IV}
+
+server:
+  port: 8081

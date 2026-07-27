@@ -1,0 +1,16 @@
+name: dear-postgres-local
+
+services:
+  commerce-postgres:
+    image: postgres:16-alpine
+    container_name: commerce-postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: dear
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      TZ: Asia/Seoul
+    volumes:
+      - ./data:/var/lib/postgresql/data

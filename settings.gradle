@@ -1,5 +1,5 @@
-rootProject.name = 'deal'
+rootProject.name = 'dear'
 
 include 'common'
-include 'member-service'
+include 'identity-service'
 include 'commerce-service'
