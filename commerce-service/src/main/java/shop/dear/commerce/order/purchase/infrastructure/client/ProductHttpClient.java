@@ -6,11 +6,11 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
-import shop.dear.commerce.order.purchase.application.port.dto.ProductInfo;
 import shop.dear.commerce.order.purchase.application.port.ProductPort;
+import shop.dear.commerce.order.purchase.application.port.dto.ProductInfo;
 import shop.dear.commerce.order.purchase.infrastructure.client.dto.ProductApiData;
-import shop.dear.commerce.order.purchase.infrastructure.client.dto.ProductApiResponse;
 import shop.dear.common.exception.BusinessException;
+import shop.dear.common.response.ApiResponse;
 
 import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.PRODUCT_LOOKUP_FAILED;
 import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.PRODUCT_NOT_FOUND;
@@ -18,7 +18,7 @@ import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCo
 @Component
 public class ProductHttpClient implements ProductPort {
 
-  private static final String PRODUCT_URI = "/api/products/{productId}";
+  private static final String PRODUCT_URI = "/internal/products/{productId}";
 
   private final RestClient restClient;
 
@@ -34,27 +34,34 @@ public class ProductHttpClient implements ProductPort {
 
   private ProductApiData requestProduct(final Long productId) {
     try {
-      final ProductApiResponse<ProductApiData> response = restClient.get()
-          .uri(PRODUCT_URI, productId)
-          .retrieve()
-          .onStatus(status -> status.value() == 404, (request, responseSpec) -> {
-            throw new BusinessException(PRODUCT_NOT_FOUND);
-          })
-          .onStatus(HttpStatusCode::isError, (request, responseSpec) -> {
-            throw new BusinessException(PRODUCT_LOOKUP_FAILED);
-          })
-          .body(new ParameterizedTypeReference<>() {});
+      final ApiResponse<ProductApiData> response = restClient.get()
+              .uri(PRODUCT_URI, productId)
+              .retrieve()
+              .onStatus(status -> status.value() == 404, (request, responseSpec) -> {
+                throw new BusinessException(PRODUCT_NOT_FOUND);
+              })
+              .onStatus(HttpStatusCode::isError, (request, responseSpec) -> {
+                throw new BusinessException(PRODUCT_LOOKUP_FAILED);
+              })
+              .body(new ParameterizedTypeReference<>() {});
 
-      if (response == null || response.data() == null) {
+      if (response == null || response.getData() == null) {
         throw new BusinessException(PRODUCT_LOOKUP_FAILED);
       }
-      return response.data();
+
+      return response.getData();
     } catch (final ResourceAccessException e) {
       throw new BusinessException(PRODUCT_LOOKUP_FAILED, e.getMessage());
     }
   }
 
   private ProductInfo toProductInfo(final ProductApiData data) {
-    return new ProductInfo(data.id(), data.sellerId(), data.price(), data.saleType(), data.status());
+    return new ProductInfo(
+            data.id(),
+            data.sellerId(),
+            data.price(),
+            data.saleType(),
+            data.status()
+    );
   }
 }

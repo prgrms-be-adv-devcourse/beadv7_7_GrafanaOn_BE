@@ -3,7 +3,7 @@ package shop.dear.commerce.order.purchase.application;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import shop.dear.commerce.order.common.application.port.MemberPort;
+import shop.dear.commerce.order.purchase.application.port.MemberPort;
 import shop.dear.commerce.order.purchase.application.dto.CreatePurchaseCommand;
 import shop.dear.commerce.order.purchase.application.port.ProductPort;
 import shop.dear.commerce.order.purchase.application.port.PurchaseEventPublisher;
