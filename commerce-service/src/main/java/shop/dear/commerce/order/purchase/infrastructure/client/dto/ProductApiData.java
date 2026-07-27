@@ -1,14 +1,21 @@
 package shop.dear.commerce.order.purchase.infrastructure.client.dto;
 
-import shop.dear.commerce.order.purchase.application.port.dto.ProductSaleType;
-import shop.dear.commerce.order.purchase.application.port.dto.ProductStatus;
-
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.List;
 
 public record ProductApiData(
-    Long id,
-    Long sellerId,
-    BigDecimal price,
-    ProductSaleType saleType,
-    ProductStatus status
-) {}
+        Long sellerId,
+        List<String> images,
+        String name,
+        String brand,
+        BigDecimal price,
+        String modelNumber,
+        String category,
+        LocalDate releaseDate,
+        Long viewCount,
+        String description,
+        OffsetDateTime insertedAt
+) {
+}
