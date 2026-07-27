@@ -1,4 +1,4 @@
-package shop.deal.commerce.search.application.dto;
+package shop.dear.commerce.search.application.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

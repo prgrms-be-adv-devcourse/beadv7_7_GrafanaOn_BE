@@ -1,4 +1,4 @@
-package shop.deal.commerce.search.domain;
+package shop.dear.commerce.search.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

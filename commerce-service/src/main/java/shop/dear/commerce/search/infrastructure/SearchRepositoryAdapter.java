@@ -1,11 +1,11 @@
-package shop.deal.commerce.search.infrastructure;
+package shop.dear.commerce.search.infrastructure;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import shop.deal.commerce.search.domain.SearchProduct;
-import shop.deal.commerce.search.domain.SearchRepository;
+import shop.dear.commerce.search.domain.SearchProduct;
+import shop.dear.commerce.search.domain.SearchRepository;
 
 // infrastructure에서 domain으로 참조. DIP 구현
 // SearchJpaRepository를 DI 하는 중.
