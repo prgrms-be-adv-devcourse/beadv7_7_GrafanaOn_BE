@@ -541,4 +541,18 @@ class ProductTest {
         //Then
         assertThat(product.getStatus()).isEqualTo(ProductStatus.ON_SALE);
     }
+
+    @DisplayName("상품의 조회수가 1 증가한다.")
+    @Test
+    void whenIncreaseViewCount_thenSuccess() {
+        //Given
+        final Product product = createProduct();  // view count = 0
+        final Long previousViewCount = product.getViewCount();
+
+        //When
+        product.increaseViewCount();
+
+        //Then
+        assertThat(product.getViewCount()).isEqualTo(previousViewCount + 1);
+    }
 }
