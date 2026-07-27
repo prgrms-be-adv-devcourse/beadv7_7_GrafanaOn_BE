@@ -296,6 +296,7 @@ class ProductServiceTest {
         );
         final ProductImage image = product.addImage(url, sortOrder);
         image.addStory(story);
+        product.changeStatusToOnSale();
         final Product savedProduct = productRepository.save(product);
 
         //When

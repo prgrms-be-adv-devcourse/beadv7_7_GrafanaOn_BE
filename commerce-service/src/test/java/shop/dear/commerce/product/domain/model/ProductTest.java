@@ -541,4 +541,36 @@ class ProductTest {
         //Then
         assertThat(product.getStatus()).isEqualTo(ProductStatus.ON_SALE);
     }
+
+    @DisplayName("상품 상태가 ON_SALE 또는 SOLD_OUT이면 isVisible은 true를 반환한다.")
+    @Test
+    void givenOnSaleOrSoldOutStatus_whenCheckIsVisible_thenReturnTrue() {
+        // Given
+        final Product onSaleProduct = createProduct();
+        onSaleProduct.changeStatusToOnSale();
+
+        final Product soldOutProduct = createProduct();
+        soldOutProduct.changeStatusToSoldOut();
+
+        // When
+        final boolean onSaleVisible = onSaleProduct.isVisible();
+        final boolean soldOutVisible = soldOutProduct.isVisible();
+
+        // Then
+        assertThat(onSaleVisible).isTrue();
+        assertThat(soldOutVisible).isTrue();
+    }
+
+    @DisplayName("상품 상태가 ON_SALE 또는 SOLD_OUT이 아니면 isVisible은 false를 반환한다.")
+    @Test
+    void givenNotVisibleStatus_whenCheckIsVisible_thenReturnFalse() {
+        // Given
+        final Product hiddenProduct = createProduct();
+
+        // When
+        final boolean isVisible = hiddenProduct.isVisible();
+
+        // Then
+        assertThat(isVisible).isFalse();
+    }
 }

@@ -27,6 +27,7 @@ public enum ProductErrorCode implements ErrorCode {
     PRODUCT_PRICE_CANNOT_BE_NEGATIVE("PD-018", "상품 가격은 음수일 수 없습니다."),
     INVALID_PRODUCT_STATUS_FOR_DELETE("PD-019", "해당 상품을 삭제할 수 있는 상태가 아닙니다."),
     INVALID_MEMBER("PD-020", "유효하지 않은 사용자입니다."),
+    INVALID_PRODUCT_VISIBLE("PD-021", "조회할 수 없는 상품입니다."),
     ;
 
     private final String value;

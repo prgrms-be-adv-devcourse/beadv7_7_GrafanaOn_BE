@@ -218,6 +218,8 @@ public class ProductService {
         productRepository.increaseViewCount(productId);
         final Product product = productRepository.findById(productId);
 
+        validateProductVisible(product);
+
         return GetProductDetailDto.of(product);
     }
 
@@ -227,10 +229,18 @@ public class ProductService {
         }
     }
 
+    private void validateProductVisible(final Product product) {
+        if (!product.isVisible()) {
+            throw new BusinessException(ProductErrorCode.INVALID_PRODUCT_VISIBLE);
+        }
+    }
+
     public GetProductDetailDto getProductDetailToInternal(final Long memberId, final Long productId) {
         validateMember(memberId);
 
         final Product product = productRepository.findById(productId);
+
+        validateProductVisible(product);
 
         return GetProductDetailDto.of(product);
     }
