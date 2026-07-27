@@ -11,6 +11,10 @@ order:
   client:
     base-url: ${ORDER_CLIENT_BASE_URL}
 
+member:
+  client:
+    base-url: ${MEMBER_CLIENT_BASE_URL:${order.client.base-url}}
+
 secret:
   aws:
     s3:

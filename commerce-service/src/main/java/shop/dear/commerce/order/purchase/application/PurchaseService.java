@@ -3,6 +3,7 @@ package shop.dear.commerce.order.purchase.application;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import shop.dear.commerce.order.common.application.port.MemberPort;
 import shop.dear.commerce.order.purchase.application.dto.CreatePurchaseCommand;
 import shop.dear.commerce.order.purchase.application.port.ProductPort;
 import shop.dear.commerce.order.purchase.application.port.PurchaseEventPublisher;
@@ -32,8 +33,11 @@ public class PurchaseService {
     private final PurchaseRepository purchaseRepository;
     private final PurchaseEventPublisher purchaseEventPublisher;
     private final ProductPort productPort;
+    private final MemberPort memberPort;
 
     public Purchase getPurchase(final Long purchaseId, final Long buyerId) {
+        validateMemberExists(buyerId);
+
         final Purchase purchase = purchaseRepository.findById(purchaseId)
                 .orElseThrow(() -> new BusinessException(PURCHASE_NOT_FOUND));
 
@@ -45,11 +49,15 @@ public class PurchaseService {
     }
 
     public List<Purchase> getPurchasesByBuyerId(final Long buyerId) {
+        validateMemberExists(buyerId);
+
         return purchaseRepository.findByBuyerId(buyerId);
     }
 
     @Transactional
     public Purchase createPurchase(final CreatePurchaseCommand command) {
+        validateMemberExists(command.buyerId());
+
         final ProductInfo product = productPort.getProduct(command.productId());
         validateProduct(command, product);
         final OffsetDateTime paymentDueAt = OffsetDateTime.now().plusMinutes(PAYMENT_DUE_MINUTES);
@@ -114,21 +122,29 @@ public class PurchaseService {
 
     @Transactional
     public void cancelPurchase(final Long purchaseId, final Long buyerId) {
+        validateMemberExists(buyerId);
+
         final Purchase purchase = purchaseRepository.findById(purchaseId)
                 .orElseThrow(() -> new BusinessException(PURCHASE_NOT_FOUND));
 
-        validateBuyer(purchaseId, buyerId, purchase);
+        validateBuyer(buyerId, purchase);
         purchase.cancel();
     }
 
-    private void validateBuyer(final Long purchaseId, final Long buyerId, final Purchase purchase) {
+    private void validateBuyer(final Long buyerId, final Purchase purchase) {
         if (!Objects.equals(buyerId, purchase.getBuyerId())) {
             throw new BusinessException(PURCHASE_NOT_FOUND);
         }
     }
 
+    private void validateMemberExists(final Long memberId) {
+        memberPort.validateMemberExists(memberId);
+    }
+
     @Transactional
     public void confirmPurchase(final Long purchaseId, final Long memberId) {
+        validateMemberExists(memberId);
+
         final Purchase purchase = purchaseRepository.findById(purchaseId)
                 .orElseThrow(() -> new BusinessException(PURCHASE_NOT_FOUND));
 

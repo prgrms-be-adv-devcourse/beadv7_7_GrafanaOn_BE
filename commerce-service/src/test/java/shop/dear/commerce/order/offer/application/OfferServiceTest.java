@@ -8,8 +8,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import shop.dear.commerce.order.common.application.port.MemberPort;
 import shop.dear.commerce.order.offer.application.port.OfferEventPublisher;
 import shop.dear.commerce.order.offer.domain.constant.OfferStatus;
+import shop.dear.commerce.order.offer.domain.exception.OfferErrorCode;
 import shop.dear.commerce.order.offer.domain.model.Offer;
 import shop.dear.commerce.order.offer.domain.repository.OfferRepository;
 import shop.dear.common.event.order.FinishedOrderEvent;
@@ -21,9 +23,13 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -35,6 +41,9 @@ class OfferServiceTest {
 
     @Mock
     private OfferEventPublisher offerEventPublisher;
+
+    @Mock
+    private MemberPort memberPort;
 
     @InjectMocks
     private OfferService offerService;
@@ -101,6 +110,7 @@ class OfferServiceTest {
         void acceptsOfferAndPublishesEvent() {
             // given
             final Offer offer = createPendingPaidOffer();
+            stubMemberExists(2L);
             given(offerRepository.findById(1L)).willReturn(Optional.of(offer));
 
             // when
@@ -108,6 +118,7 @@ class OfferServiceTest {
 
             // then
             assertThat(offer.getStatus()).isEqualTo(OfferStatus.ACCEPTED);
+            verifyMemberExists(2L);
 
             final ArgumentCaptor<FinishedOrderEvent> captor = ArgumentCaptor.forClass(FinishedOrderEvent.class);
             verify(offerEventPublisher).publish(captor.capture());
@@ -124,12 +135,14 @@ class OfferServiceTest {
         @DisplayName("존재하지 않는 오퍼면 예외를 던진다")
         void throwsException_whenOfferNotFound() {
             // given
+            stubMemberExists(2L);
             given(offerRepository.findById(1L)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> offerService.acceptOffer(1L, 2L))
                     .isInstanceOf(BusinessException.class);
 
+            verifyMemberExists(2L);
             verify(offerEventPublisher, never()).publish(new FinishedOrderEvent(
                     1L,
                     1L,
@@ -141,17 +154,34 @@ class OfferServiceTest {
         }
 
         @Test
+        @DisplayName("존재하지 않는 회원이면 예외를 던진다")
+        void throwsException_whenMemberNotFound() {
+            // given
+            willThrow(new BusinessException(OfferErrorCode.OFFER_NOT_FOUND))
+                    .given(memberPort).validateMemberExists(2L);
+
+            // when & then
+            assertThatThrownBy(() -> offerService.acceptOffer(1L, 2L))
+                    .isInstanceOf(BusinessException.class);
+
+            verify(offerRepository, never()).findById(anyLong());
+            verify(offerEventPublisher, never()).publish(any());
+        }
+
+        @Test
         @DisplayName("PENDING 상태가 아니면 예외를 던지고 이벤트를 발행하지 않는다")
         void throwsException_whenStatusIsNotPending() {
             // given
             final Offer offer = createPendingPaidOffer();
             offer.reject();
+            stubMemberExists(2L);
             given(offerRepository.findById(1L)).willReturn(Optional.of(offer));
 
             // when & then
             assertThatThrownBy(() -> offerService.acceptOffer(1L, 2L))
                     .isInstanceOf(BusinessException.class);
 
+            verifyMemberExists(2L);
             verify(offerEventPublisher, never()).publish(new FinishedOrderEvent(
                     1L,
                     1L,
@@ -169,5 +199,13 @@ class OfferServiceTest {
             offer.markPaid();
             return offer;
         }
+    }
+
+    private void stubMemberExists(final Long memberId) {
+        willDoNothing().given(memberPort).validateMemberExists(memberId);
+    }
+
+    private void verifyMemberExists(final Long memberId) {
+        verify(memberPort).validateMemberExists(memberId);
     }
 }
