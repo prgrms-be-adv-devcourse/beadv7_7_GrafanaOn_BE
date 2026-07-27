@@ -2,6 +2,7 @@ package shop.dear.common.event.product;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record ProductChangedEvent(
 
@@ -12,9 +13,10 @@ public record ProductChangedEvent(
     LocalDate releaseDate,
     BigDecimal price,
     String saleType,
+    String status,
     Long viewCount,
     String description,
-    String fullStory
-
+    String fullStory,
+    LocalDateTime productInsertedAt
 ) {
 }
