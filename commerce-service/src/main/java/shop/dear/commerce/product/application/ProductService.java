@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.product.application.dto.MemberProductExistsDto;
 import shop.dear.commerce.product.application.dto.PresignedUrlInfoDto;
+import shop.dear.commerce.product.application.dto.ScrapProductInfoDto;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
+import shop.dear.commerce.product.application.dto.command.GetScrapProductCommand;
 import shop.dear.commerce.product.application.dto.command.UpdateProductCommand;
 import shop.dear.commerce.product.application.dto.external.ExistsMember;
 import shop.dear.commerce.product.application.dto.external.ExistsOffer;
@@ -195,5 +197,15 @@ public class ProductService {
         final boolean exists = productRepository.existsBySellerIdAndStatusIn(sellerId, statuses);
 
         return new MemberProductExistsDto(exists);
+    }
+
+    public List<ScrapProductInfoDto> getScrapProducts(final Long memberId, final GetScrapProductCommand command) {
+        validateMember(memberId);
+
+        final List<Product> scrapProducts = productRepository.findByIds(command.ids());
+
+        return scrapProducts.stream()
+            .map(ScrapProductInfoDto::from)
+            .toList();
     }
 }

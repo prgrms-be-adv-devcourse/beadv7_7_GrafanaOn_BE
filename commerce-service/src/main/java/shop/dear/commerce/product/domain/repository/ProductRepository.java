@@ -11,4 +11,5 @@ public interface ProductRepository {
     Product findById(final Long productId);
     void delete(final Product product);
     boolean existsBySellerIdAndStatusIn(final Long sellerId, final List<ProductStatus> statuses);
+    List<Product> findByIds(final List<Long> ids);
 }
