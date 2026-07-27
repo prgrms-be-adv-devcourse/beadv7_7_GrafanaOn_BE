@@ -213,11 +213,18 @@ public class ProductService {
     @Transactional
     public GetProductDetailDto getProductDetail(final Long memberId, final Long productId) {
         validateMember(memberId);
+        validateProduct(productId);
 
+        productRepository.increaseViewCount(productId);
         final Product product = productRepository.findById(productId);
-        productRepository.increaseViewCount(product.getId());
 
         return GetProductDetailDto.of(product);
+    }
+
+    private void validateProduct(final Long productId) {
+        if (!productRepository.existsProduct(productId)) {
+            throw new BusinessException(ProductErrorCode.INVALID_PRODUCT);
+        }
     }
 
     public GetProductDetailDto getProductDetailToInternal(final Long memberId, final Long productId) {

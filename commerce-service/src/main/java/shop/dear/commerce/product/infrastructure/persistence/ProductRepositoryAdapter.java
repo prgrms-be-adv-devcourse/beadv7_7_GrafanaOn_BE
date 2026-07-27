@@ -53,4 +53,9 @@ public class ProductRepositoryAdapter implements ProductRepository {
     public void increaseViewCount(final Long productId) {
         productRepository.increaseViewCount(productId);
     }
+
+    @Override
+    public boolean existsProduct(final Long productId) {
+        return productRepository.existsById(productId);
+    }
 }
