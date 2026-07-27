@@ -1,5 +1,6 @@
 package shop.dear.identity.member.application.dto;
 
+import shop.dear.identity.member.domain.constract.MemberStatus;
 import shop.dear.identity.member.domain.model.Member;
 
 public record MemberInfo(
@@ -7,7 +8,8 @@ public record MemberInfo(
     String name,
     String defaultShippingAddress,
     String phoneNumber,
-    String nickname
+    String nickname,
+    MemberStatus status
 ){
     public static MemberInfo from(Member member){
         return new MemberInfo(
@@ -15,7 +17,8 @@ public record MemberInfo(
             member.getName(),
             member.getDefaultShippingAddress(),
             member.getPhoneNumber(),
-            member.getNickname()
+            member.getNickname(),
+            member.getStatus()
         );
     }
 }
