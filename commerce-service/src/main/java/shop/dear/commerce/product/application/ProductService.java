@@ -215,7 +215,7 @@ public class ProductService {
         validateMember(memberId);
 
         final Product product = productRepository.findById(productId);
-        product.increaseViewCount();
+        productRepository.increaseViewCount(product.getId());
 
         return GetProductDetailDto.of(product);
     }
