@@ -15,6 +15,7 @@ import shop.dear.identity.member.domain.exception.MemberErrorCode;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -84,6 +85,38 @@ class InternalMemberTest {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value(MemberErrorCode.INVALID_INPUT.getValue()))
             .andExpect(jsonPath("$.message").value(MemberErrorCode.INVALID_INPUT.getMessage()));
+    }
+
+    @Test
+    @DisplayName("판매자인 회원을 조회하면 true를 반환한다")
+    void isSeller_true() throws Exception {
+
+        given(memberService.isSeller(1L)).willReturn(true);
+
+        final ResultActions result = mockMvc
+            .perform(get("/internal/members/seller")
+                .header("X-Authenticated-Member-Id", "1"));
+
+        result
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value("success"))
+            .andExpect(jsonPath("$.data.isSeller").value(true));
+    }
+
+    @Test
+    @DisplayName("판매자가 아닌 회원을 조회하면 false를 반환한다")
+    void isSeller_false() throws Exception {
+
+        given(memberService.isSeller(1L)).willReturn(false);
+
+        final ResultActions result = mockMvc
+            .perform(get("/internal/members/seller")
+                .header("X-Authenticated-Member-Id", "1"));
+
+        result
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value("success"))
+            .andExpect(jsonPath("$.data.isSeller").value(false));
     }
 
 }
