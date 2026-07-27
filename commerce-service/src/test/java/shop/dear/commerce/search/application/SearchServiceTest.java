@@ -1,4 +1,4 @@
-package shop.deal.commerce.search.application;
+package shop.dear.commerce.search.application;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,12 +10,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import shop.deal.commerce.search.application.dto.SearchType;
-import shop.deal.commerce.search.application.dto.SearchQuery;
-import shop.deal.commerce.search.application.dto.SearchResult;
-import shop.deal.commerce.search.application.dto.SearchSort;
-import shop.deal.commerce.search.domain.SearchProduct;
-import shop.deal.commerce.search.domain.SearchRepository;
+import shop.dear.commerce.search.application.dto.SearchType;
+import shop.dear.commerce.search.application.dto.SearchQuery;
+import shop.dear.commerce.search.application.dto.SearchResult;
+import shop.dear.commerce.search.application.dto.SearchSort;
+import shop.dear.commerce.search.domain.SearchProduct;
+import shop.dear.commerce.search.domain.SearchRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

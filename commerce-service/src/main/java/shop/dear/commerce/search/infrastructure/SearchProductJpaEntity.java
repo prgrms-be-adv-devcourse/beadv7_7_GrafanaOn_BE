@@ -1,11 +1,11 @@
-package shop.deal.commerce.search.infrastructure;
+package shop.dear.commerce.search.infrastructure;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
-import shop.deal.commerce.search.domain.SearchProduct;
+import shop.dear.commerce.search.domain.SearchProduct;
 import shop.deal.common.audit.BaseEntity;
 
 import java.math.BigDecimal;

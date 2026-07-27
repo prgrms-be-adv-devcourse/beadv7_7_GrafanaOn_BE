@@ -1,4 +1,4 @@
-package shop.deal.commerce.search.presentation;
+package shop.dear.commerce.search.presentation;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -7,11 +7,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import shop.deal.commerce.search.application.SearchService;
-import shop.deal.commerce.search.application.dto.SearchQuery;
-import shop.deal.commerce.search.application.dto.SearchResult;
-import shop.deal.commerce.search.application.dto.SearchSort;
-import shop.deal.commerce.search.application.dto.SearchType;
+import shop.dear.commerce.search.application.SearchService;
+import shop.dear.commerce.search.application.dto.SearchQuery;
+import shop.dear.commerce.search.application.dto.SearchResult;
+import shop.dear.commerce.search.application.dto.SearchSort;
+import shop.dear.commerce.search.application.dto.SearchType;
 
 @RestController
 @RequiredArgsConstructor

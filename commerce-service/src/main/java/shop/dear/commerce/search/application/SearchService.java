@@ -1,4 +1,4 @@
-package shop.deal.commerce.search.application;
+package shop.dear.commerce.search.application;
 
 import lombok.RequiredArgsConstructor;
 
@@ -8,12 +8,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import shop.deal.commerce.search.application.dto.SearchQuery;
-import shop.deal.commerce.search.application.dto.SearchResult;
-import shop.deal.commerce.search.application.dto.SearchSort;
-import shop.deal.commerce.search.application.dto.SearchType;
-import shop.deal.commerce.search.domain.SearchProduct;
-import shop.deal.commerce.search.domain.SearchRepository;
+import shop.dear.commerce.search.application.dto.SearchQuery;
+import shop.dear.commerce.search.application.dto.SearchResult;
+import shop.dear.commerce.search.application.dto.SearchSort;
+import shop.dear.commerce.search.application.dto.SearchType;
+import shop.dear.commerce.search.domain.SearchProduct;
+import shop.dear.commerce.search.domain.SearchRepository;
 
 @Service
 @RequiredArgsConstructor

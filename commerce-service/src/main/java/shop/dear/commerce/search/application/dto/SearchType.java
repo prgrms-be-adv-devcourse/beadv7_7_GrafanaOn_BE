@@ -1,4 +1,4 @@
-package shop.deal.commerce.search.application.dto;
+package shop.dear.commerce.search.application.dto;
 
 // 검색 방법
 public enum SearchType {

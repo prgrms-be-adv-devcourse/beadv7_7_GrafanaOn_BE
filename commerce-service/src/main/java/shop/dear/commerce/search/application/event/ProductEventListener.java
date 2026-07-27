@@ -1,4 +1,4 @@
-package shop.deal.commerce.search.application.event;
+package shop.dear.commerce.search.application.event;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -6,8 +6,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import shop.deal.commerce.search.domain.SearchProduct;
-import shop.deal.commerce.search.domain.SearchRepository;
+import shop.dear.commerce.search.domain.SearchProduct;
+import shop.dear.commerce.search.domain.SearchRepository;
 
 @Component
 @RequiredArgsConstructor

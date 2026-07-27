@@ -1,4 +1,4 @@
-package shop.deal.commerce.search.domain;
+package shop.dear.commerce.search.domain;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
