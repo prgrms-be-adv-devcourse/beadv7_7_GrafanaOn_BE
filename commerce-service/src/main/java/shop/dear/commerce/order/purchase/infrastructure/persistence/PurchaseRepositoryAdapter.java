@@ -6,6 +6,7 @@ import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.commerce.order.purchase.domain.repository.PurchaseRepository;
 import shop.dear.commerce.order.purchase.infrastructure.persistence.jpa.PurchaseJpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -32,5 +33,10 @@ public class PurchaseRepositoryAdapter implements PurchaseRepository {
   @Override
   public void deleteById(final Long id) {
     purchaseJpaRepository.deleteById(id);
+  }
+
+  @Override
+  public List<Purchase> findByBuyerId(final Long buyerId) {
+    return purchaseJpaRepository.findByBuyerId(buyerId);
   }
 }
