@@ -4,8 +4,12 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import shop.dear.commerce.financial.payment.domain.constant.PaymentPurpose;
 import shop.dear.commerce.financial.payment.domain.constant.PaymentStatus;
+import shop.dear.commerce.financial.payment.domain.exception.PaymentErrorCode;
 import shop.dear.common.audit.BaseEntity;
+import shop.dear.common.event.order.OrderType;
+import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
 
@@ -14,6 +18,8 @@ import java.math.BigDecimal;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Payment extends BaseEntity {
+
+    private static final int MAX_SCALE = 2;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,12 +31,16 @@ public class Payment extends BaseEntity {
     @Column(name = "wallet_id", nullable = false)
     private Long walletId;
 
-    // 구매 상황 아니더라도 충전 가능
-    @Column(name = "purchase_id")
-    private Long purchaseId;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "purpose", nullable = false, length = 30)
+    private PaymentPurpose purpose;
 
-    @Column(name = "offer_id")
-    private Long offerId;
+    @Column(name = "order_id")
+    private Long orderId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_type", length = 30)
+    private OrderType orderType;
 
     @Column(name = "amount", precision = 15, scale = 2, nullable = false)
     private BigDecimal amount;
@@ -41,23 +51,78 @@ public class Payment extends BaseEntity {
 
     private Payment(
             final Long walletId,
-            final Long purchaseId,
-            final Long offerId,
+            final PaymentPurpose purpose,
+            final Long orderId,
+            final OrderType orderType,
             final BigDecimal amount
     ) {
-            this.walletId = walletId;
-            this.purchaseId = purchaseId;
-            this.offerId = offerId;
-            this.amount = amount;
-            this.state = PaymentStatus.PENDING;
+        validate(walletId, purpose, orderId, orderType, amount);
+
+        this.walletId = walletId;
+        this.purpose = purpose;
+        this.orderId = orderId;
+        this.orderType = orderType;
+        this.amount = amount;
+        this.state = PaymentStatus.PENDING;
     }
 
-    public static Payment create(
+    private void validate(
             final Long walletId,
-            final Long purchased,
-            final Long offerId,
+            final PaymentPurpose purpose,
+            final Long orderId,
+            final OrderType orderType,
             final BigDecimal amount
     ) {
-        return new Payment(walletId, purchased, offerId, amount);
+        if (walletId == null) {
+            throw new BusinessException(PaymentErrorCode.INVALID_WALLET_ID);
+        }
+
+        if (purpose == null) {
+            throw new BusinessException(PaymentErrorCode.INVALID_PAYMENT_PURPOSE);
+        }
+
+        if (amount == null
+                || amount.compareTo(BigDecimal.ZERO) <= 0
+                || amount.scale() > MAX_SCALE) {
+            throw new BusinessException(PaymentErrorCode.INVALID_AMOUNT);
+        }
+
+        if (purpose == PaymentPurpose.ORDER
+                && (orderId == null || orderType == null)) {
+            throw new BusinessException(PaymentErrorCode.INVALID_ORDER_REFERENCE);
+        }
+
+        if (purpose == PaymentPurpose.TOPUP
+                && (orderId != null || orderType != null)) {
+            throw new BusinessException(PaymentErrorCode.INVALID_ORDER_REFERENCE);
+        }
+    }
+
+    public static Payment createTopUp(
+            final Long walletId,
+            final BigDecimal amount
+    ) {
+        return new Payment(
+                walletId,
+                PaymentPurpose.TOPUP,
+                null,
+                null,
+                amount
+        );
+    }
+
+    public static Payment createOrderPayment(
+            final Long walletId,
+            final Long orderId,
+            final OrderType orderType,
+            final BigDecimal amount
+    ) {
+        return new Payment(
+                walletId,
+                PaymentPurpose.ORDER,
+                orderId,
+                orderType,
+                amount
+        );
     }
 }
