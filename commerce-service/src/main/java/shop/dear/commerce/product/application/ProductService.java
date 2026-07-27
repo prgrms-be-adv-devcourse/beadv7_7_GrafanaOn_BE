@@ -204,7 +204,7 @@ public class ProductService {
     public List<ScrapProductInfoDto> getScrapProducts(final Long memberId, final GetScrapProductCommand command) {
         validateMember(memberId);
 
-        final List<Product> scrapProducts = productRepository.findByIds(command.ids());
+        final List<Product> scrapProducts = productRepository.findAllById(command.ids());
 
         return scrapProducts.stream()
             .map(ScrapProductInfoDto::from)
@@ -223,7 +223,7 @@ public class ProductService {
     }
 
     private void validateProduct(final Long productId) {
-        if (!productRepository.existsProduct(productId)) {
+        if (!productRepository.existsById(productId)) {
             throw new BusinessException(ProductErrorCode.INVALID_PRODUCT);
         }
     }
