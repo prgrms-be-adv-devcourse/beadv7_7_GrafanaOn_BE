@@ -11,7 +11,7 @@ import shop.dear.commerce.product.application.dto.command.GetScrapProductCommand
 import shop.dear.commerce.product.application.dto.command.UpdateProductCommand;
 import shop.dear.commerce.product.application.dto.external.ExistsMember;
 import shop.dear.commerce.product.application.dto.external.ExistsOffer;
-import shop.dear.commerce.product.application.dto.external.GeneratePresignedUrlsCommand;
+import shop.dear.commerce.product.application.dto.command.GeneratePresignedUrlsCommand;
 import shop.dear.commerce.product.application.port.MemberPort;
 import shop.dear.commerce.product.application.port.OfferPort;
 import shop.dear.commerce.product.application.port.PresignedUrlGenerator;
