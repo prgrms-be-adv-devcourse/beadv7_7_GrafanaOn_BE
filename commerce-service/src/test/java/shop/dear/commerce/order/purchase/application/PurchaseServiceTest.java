@@ -13,8 +13,6 @@ import shop.dear.commerce.order.purchase.application.port.MemberPort;
 import shop.dear.commerce.order.purchase.application.port.ProductPort;
 import shop.dear.commerce.order.purchase.application.port.PurchaseEventPublisher;
 import shop.dear.commerce.order.purchase.application.port.dto.ProductInfo;
-import shop.dear.commerce.order.purchase.application.port.dto.ProductSaleType;
-import shop.dear.commerce.order.purchase.application.port.dto.ProductStatus;
 import shop.dear.commerce.order.purchase.domain.constant.PurchaseStatus;
 import shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
@@ -24,6 +22,8 @@ import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,7 +64,7 @@ class PurchaseServiceTest {
         void createsPurchase() {
             // given
             final CreatePurchaseCommand command = createCommand(1L, 10L);
-            final ProductInfo product = productInfo(10L, 2L);
+            final ProductInfo product = productInfo(2L);
 
             stubMemberExists(1L);
             given(productPort.getProduct(10L)).willReturn(product);
@@ -105,15 +105,20 @@ class PurchaseServiceTest {
         }
 
         private ProductInfo productInfo(
-                final Long productId,
                 final Long sellerId
         ) {
             return new ProductInfo(
-                    productId,
                     sellerId,
+                    List.of(),
+                    "상품명",
+                    "브랜드",
                     new BigDecimal("10000"),
-                    ProductSaleType.IMMEDIATE,
-                    ProductStatus.ON_SALE
+                    "MODEL-001",
+                    "카테고리",
+                    LocalDate.of(2026, 1, 1),
+                    0L,
+                    "상품 설명",
+                    OffsetDateTime.now()
             );
         }
 

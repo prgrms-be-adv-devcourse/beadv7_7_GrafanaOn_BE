@@ -57,11 +57,17 @@ public class ProductHttpClient implements ProductPort {
 
   private ProductInfo toProductInfo(final ProductApiData data) {
     return new ProductInfo(
-            data.id(),
             data.sellerId(),
+            data.images(),
+            data.name(),
+            data.brand(),
             data.price(),
-            data.saleType(),
-            data.status()
+            data.modelNumber(),
+            data.category(),
+            data.releaseDate(),
+            data.viewCount(),
+            data.description(),
+            data.insertedAt()
     );
   }
 }

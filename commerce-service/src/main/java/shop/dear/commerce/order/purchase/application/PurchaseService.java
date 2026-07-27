@@ -66,7 +66,7 @@ public class PurchaseService {
         final Purchase purchase = Purchase.create(
                 command.buyerId(),
                 product.sellerId(),
-                product.productId(),
+                command.productId(),
                 product.price(),
                 command.delivery(),
                 paymentDueAt
