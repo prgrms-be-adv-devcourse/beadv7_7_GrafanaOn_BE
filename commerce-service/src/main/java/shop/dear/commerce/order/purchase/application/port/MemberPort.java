@@ -1,4 +1,4 @@
-package shop.dear.commerce.order.common.application.port;
+package shop.dear.commerce.order.purchase.application.port;
 
 public interface MemberPort {
 
