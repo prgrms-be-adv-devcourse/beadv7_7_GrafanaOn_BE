@@ -12,6 +12,7 @@ import tools.jackson.databind.ObjectMapper;
 import org.springframework.test.web.servlet.MockMvc;
 import shop.dear.identity.member.application.dto.MemberInfo;
 import shop.dear.identity.member.domain.exception.MemberErrorCode;
+import shop.dear.common.exception.CommonErrorCode;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -88,6 +89,38 @@ class InternalMemberTest {
     }
 
     @Test
+    @DisplayName("유효한 회원을 조회하면 exists true를 반환한다")
+    void existsMember_true() throws Exception {
+
+        given(memberService.existsMember(1L)).willReturn(true);
+
+        final ResultActions result = mockMvc
+            .perform(get("/internal/members")
+                .header("X-Authenticated-Member-Id", "1"));
+
+        result
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value("success"))
+            .andExpect(jsonPath("$.data.exists").value(true));
+    }
+
+    @Test
+    @DisplayName("탈퇴한 회원을 조회하면 exists false를 반환한다")
+    void existsMember_false() throws Exception {
+
+        given(memberService.existsMember(1L)).willReturn(false);
+
+        final ResultActions result = mockMvc
+            .perform(get("/internal/members")
+                .header("X-Authenticated-Member-Id", "1"));
+
+        result
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value("success"))
+            .andExpect(jsonPath("$.data.exists").value(false));
+    }
+
+    @Test
     @DisplayName("판매자인 회원을 조회하면 true를 반환한다")
     void isSeller_true() throws Exception {
 
@@ -118,5 +151,4 @@ class InternalMemberTest {
             .andExpect(jsonPath("$.code").value("success"))
             .andExpect(jsonPath("$.data.isSeller").value(false));
     }
-
 }
