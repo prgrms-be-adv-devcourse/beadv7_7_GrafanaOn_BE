@@ -4,17 +4,21 @@ import shop.dear.commerce.product.application.dto.GetProductDetailDto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record ProductDetailResponse(
     Long sellerId,
     List<ImageInfo> images,
     String name,
+    String brand,
     BigDecimal price,
     String modelNumber,
     String category,
     LocalDate releaseDate,
-    String description
+    Long viewCount,
+    String description,
+    LocalDateTime insertedAt
 ) {
     public record ImageInfo(
         int sortOrder,
@@ -34,11 +38,14 @@ public record ProductDetailResponse(
                 ))
                 .toList(),
             dto.name(),
+            dto.brand(),
             dto.price(),
             dto.modelNumber(),
             dto.category(),
             dto.releaseDate(),
-            dto.description()
+            dto.viewCount(),
+            dto.description(),
+            dto.insertedAt()
         );
     }
 }

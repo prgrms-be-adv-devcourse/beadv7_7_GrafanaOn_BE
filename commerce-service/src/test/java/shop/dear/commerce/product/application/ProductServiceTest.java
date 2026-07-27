@@ -272,10 +272,10 @@ class ProductServiceTest {
         final Long sellerId = 2L;
         final String name = "Dear Sneakers";
         final String brand = "Dear";
+        final BigDecimal priceValue = BigDecimal.valueOf(150000);
         final String modelNumber = "DEAR-001";
         final ProductCategory category = ProductCategory.SNEAKERS;
         final LocalDate releaseDate = LocalDate.of(2026, 1, 1);
-        final BigDecimal priceValue = BigDecimal.valueOf(150000);
         final ProductSaleType saleType = ProductSaleType.OFFER;
         final String description = "상품 상세 설명입니다.";
 
@@ -296,7 +296,7 @@ class ProductServiceTest {
         );
         final ProductImage image = product.addImage(url, sortOrder);
         image.addStory(story);
-        productRepository.save(product);
+        final Product savedProduct = productRepository.save(product);
 
         //When
         final GetProductDetailDto result = productService.getProductDetail(memberId, product.getId());
@@ -304,11 +304,14 @@ class ProductServiceTest {
         //Then
         assertThat(result.sellerId()).isEqualTo(sellerId);
         assertThat(result.name()).isEqualTo(name);
-        assertThat(result.price()).isEqualByComparingTo(priceValue); // BigDecimal 비교는 isEqualByComparingTo 권장
+        assertThat(result.brand()).isEqualTo(brand);
+        assertThat(result.price()).isEqualByComparingTo(priceValue);
         assertThat(result.modelNumber()).isEqualTo(modelNumber);
         assertThat(result.category()).isEqualTo(category.toString());
         assertThat(result.releaseDate()).isEqualTo(releaseDate);
+        assertThat(result.viewCount()).isEqualTo(1);
         assertThat(result.description()).isEqualTo(description);
+        assertThat(result.insertedAt()).isEqualTo(savedProduct.getInsertedAt());
 
         assertThat(result.images().size()).isEqualTo(1);
         assertThat(result.images().getFirst().sortOrder()).isEqualTo(sortOrder);
