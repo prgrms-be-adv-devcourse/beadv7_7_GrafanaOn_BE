@@ -45,7 +45,7 @@ public class ProductRepositoryAdapter implements ProductRepository {
     }
 
     @Override
-    public List<Product> findByIds(final List<Long> productIds) {
+    public List<Product> findAllById(final List<Long> productIds) {
         return productRepository.findAllById(productIds);
     }
 
@@ -55,7 +55,7 @@ public class ProductRepositoryAdapter implements ProductRepository {
     }
 
     @Override
-    public boolean existsProduct(final Long productId) {
+    public boolean existsById(final Long productId) {
         return productRepository.existsById(productId);
     }
 
