@@ -22,7 +22,7 @@ public class OfferHttpClient implements OfferPort {
         log.info("[OfferHttpClient] offer - 오퍼 존재 여부 조회 요청. productId={}", productId);
 
         final ApiResponse<ExistsOfferApiData> body = productRestClient.get()
-            .uri("/offers/{productId}/status")
+            .uri("/internal/offers/{productId}/status", productId)
             .retrieve()
             .body(new ParameterizedTypeReference<>() {
             });
