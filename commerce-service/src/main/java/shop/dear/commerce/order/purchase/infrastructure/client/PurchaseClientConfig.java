@@ -13,6 +13,15 @@ public class PurchaseClientConfig {
 
   @Bean
   RestClient purchaseRestClient(@Value("${order.client.base-url}") String baseUrl) {
+    return createRestClient(baseUrl);
+  }
+
+  @Bean
+  RestClient memberRestClient(@Value("${member.client.base-url:${order.client.base-url}}") String baseUrl) {
+    return createRestClient(baseUrl);
+  }
+
+  private RestClient createRestClient(final String baseUrl) {
     final SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
     requestFactory.setConnectTimeout(Duration.ofSeconds(2));
     requestFactory.setReadTimeout(Duration.ofSeconds(3));

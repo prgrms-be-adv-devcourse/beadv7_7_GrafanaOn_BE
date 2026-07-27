@@ -3,6 +3,7 @@ package shop.dear.commerce.order.offer.application;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import shop.dear.commerce.order.common.application.port.MemberPort;
 import shop.dear.commerce.order.offer.application.port.OfferEventPublisher;
 import shop.dear.commerce.order.offer.domain.constant.OfferStatus;
 import shop.dear.commerce.order.offer.domain.model.Offer;
@@ -27,6 +28,7 @@ public class OfferService {
 
     private final OfferRepository offerRepository;
     private final OfferEventPublisher offerEventPublisher;
+    private final MemberPort memberPort;
 
     public boolean existsActiveOfferByProductId(final Long productId) {
         return offerRepository.existsByProductIdAndStatusIn(productId, ACTIVE_STATUSES);
@@ -34,6 +36,8 @@ public class OfferService {
 
     @Transactional
     public void acceptOffer(final Long offerId, final Long memberId) {
+        validateMemberExists(memberId);
+
         final Offer offer = offerRepository.findById(offerId)
                 .orElseThrow(() -> new BusinessException(OFFER_NOT_FOUND));
 
@@ -51,5 +55,9 @@ public class OfferService {
                 offer.getAmount(),
                 OrderType.OFFER
         ));
+    }
+
+    private void validateMemberExists(final Long memberId) {
+        memberPort.validateMemberExists(memberId);
     }
 }

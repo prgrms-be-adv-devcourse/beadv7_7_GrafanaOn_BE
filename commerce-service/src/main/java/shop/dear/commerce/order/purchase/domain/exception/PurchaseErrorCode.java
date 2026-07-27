@@ -18,6 +18,7 @@ public enum PurchaseErrorCode implements ErrorCode {
     PRODUCT_NOT_FOR_IMMEDIATE_PURCHASE("PC-008", "즉시구매할 수 없는 상품입니다."),
     CANNOT_PURCHASE_OWN_PRODUCT("PC-009", "본인이 판매하는 상품은 구매할 수 없습니다."),
     INVALID_PRODUCT_RESPONSE("PC-010", "상품 정보가 올바르지 않습니다."),
+    MEMBER_NOT_FOUND("PC-011", "회원을 찾을 수 없습니다."),
     ;
 
     private final String value;
