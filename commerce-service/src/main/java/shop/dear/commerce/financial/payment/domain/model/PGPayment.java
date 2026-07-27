@@ -19,8 +19,12 @@ public class PGPayment extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "payment_id", nullable = false)
+    @OneToOne(optional = false)
+    @JoinColumn(
+            name = "payment_id",
+            nullable = false,
+            unique = true
+    )
     private Payment payment;
 
     @Enumerated(EnumType.STRING)
