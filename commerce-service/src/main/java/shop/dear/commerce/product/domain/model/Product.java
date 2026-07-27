@@ -263,4 +263,8 @@ public class Product extends BaseEntity {
     public void changeStatusToOnSale() {
         this.status = ProductStatus.ON_SALE;
     }
+
+    public void increaseViewCount() {
+        this.viewCount += 1;
+    }
 }
