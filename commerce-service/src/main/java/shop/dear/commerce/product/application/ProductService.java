@@ -219,4 +219,12 @@ public class ProductService {
 
         return GetProductDetailDto.of(product);
     }
+
+    public GetProductDetailDto getProductDetailToInternal(final Long memberId, final Long productId) {
+        validateMember(memberId);
+
+        final Product product = productRepository.findById(productId);
+
+        return GetProductDetailDto.of(product);
+    }
 }
