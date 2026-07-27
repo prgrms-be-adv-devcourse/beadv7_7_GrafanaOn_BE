@@ -93,6 +93,7 @@ public class OfferService {
                 command.buyerId(),
                 snapshot.getSellerId(),
                 snapshot.getProductId(),
+                snapshot.getId(),
                 snapshot.getPriceSnapshot(),
                 command.title(),
                 command.story(),
