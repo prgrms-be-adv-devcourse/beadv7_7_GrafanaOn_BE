@@ -11,10 +11,7 @@ import shop.dear.common.auth.AuthUser;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.common.response.ApiResponse;
 import shop.dear.identity.auth.authentication.application.AuthService;
-import shop.dear.identity.auth.authentication.application.dto.LogoutCommand;
-import shop.dear.identity.auth.authentication.application.dto.ReissueTokenCommand;
-import shop.dear.identity.auth.authentication.application.dto.SignUpResult;
-import shop.dear.identity.auth.authentication.application.dto.TokenResult;
+import shop.dear.identity.auth.authentication.application.dto.*;
 import shop.dear.identity.auth.authentication.domain.exception.AuthErrorCode;
 import shop.dear.identity.auth.authentication.presentation.dto.LoginRequest;
 import shop.dear.identity.auth.authentication.presentation.dto.SignUpRequest;
@@ -114,6 +111,21 @@ public class AuthController {
                 .header(
                         HttpHeaders.SET_COOKIE,
                         deletedCookie.toString()
+                )
+                .body(success());
+    }
+
+    // 회원 탈퇴
+    @DeleteMapping("/withdraw")
+    public ResponseEntity<ApiResponse<Void>> withdraw(@AuthUser final Long memberId) {
+        authService.withdraw(new WithdrawCommand(memberId));
+
+        ResponseCookie deleteCookie = refreshTokenCookieProvider.delete();
+
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.SET_COOKIE,
+                        deleteCookie.toString()
                 )
                 .body(success());
     }

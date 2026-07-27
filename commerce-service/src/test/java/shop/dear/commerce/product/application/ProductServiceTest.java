@@ -6,8 +6,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-import shop.dear.commerce.product.application.dto.PresignedUrlInfo;
+import shop.dear.commerce.product.application.dto.MemberProductExistsDto;
+import shop.dear.commerce.product.application.dto.PresignedUrlInfoDto;
+import shop.dear.commerce.product.application.dto.ScrapProductInfoDto;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
+import shop.dear.commerce.product.application.dto.command.GetScrapProductCommand;
 import shop.dear.commerce.product.application.dto.command.UpdateProductCommand;
 import shop.dear.commerce.product.application.dto.external.GeneratePresignedUrlsCommand;
 import shop.dear.commerce.product.application.fake.FakeMemberPort;
@@ -84,7 +87,7 @@ class ProductServiceTest {
         ));
 
         //When
-        final List<PresignedUrlInfo> result = productService.generatePresignedUrls(memberId, command);
+        final List<PresignedUrlInfoDto> result = productService.generatePresignedUrls(memberId, command);
 
         //Then
         assertThat(result).hasSize(2);
@@ -185,5 +188,76 @@ class ProductServiceTest {
 
         assertThat(savedProduct.getImages()).hasSize(2);
         assertThat(fakeProductEventPublisher.getEvents()).hasSize(1);
+    }
+
+    @DisplayName("유효한 값(sellerId, productId)이 들어오면 해당 상품을 DB에서 삭제한다.")
+    @Test
+    void givenSellerIdAndProductId_whenDeleteProduct_thenSuccess() {
+        //Given
+        final Long sellerId = 1L;
+        final Product product = createProduct(1L);
+        final Product savedProduct = productRepository.save(product);
+
+        //When
+        productService.deleteProduct(savedProduct.getSellerId(), savedProduct.getId());
+
+        //Then
+        final List<Product> products = productRepository.findAll();
+        assertThat(products.size()).isEqualTo(0);
+    }
+
+    @DisplayName("유효한 값(sellerId)이 들어오면 해당 사용자가 등록한 판매 예정 및 판매중인 상품이 존재하는지 여부를 반환한다.")
+    @Test
+    void givenSellerId_whenGetMemberProductExists_thenReturnExists() {
+        //Given
+        final Long sellerId1 = 1L;
+        final Product product1 = createProduct(sellerId1);
+        productRepository.save(product1);
+
+        final Long sellerId2 = 2L;
+        final Product product2 = createProduct(sellerId2);
+        product2.changeStatusToOnSale();
+        productRepository.save(product2);
+
+        final Long sellerId3 = 3L;
+        final Product product3 = createProduct(sellerId3);
+        product3.changeStatusToSoldOut();
+        productRepository.save(product3);
+
+        //When
+        final MemberProductExistsDto result1 = productService.getMemberProductExists(sellerId1);
+        final MemberProductExistsDto result2 = productService.getMemberProductExists(sellerId2);
+        final MemberProductExistsDto result3 = productService.getMemberProductExists(sellerId3);
+
+        //Then
+        assertThat(result1.exists()).isEqualTo(true);
+        assertThat(result2.exists()).isEqualTo(true);
+        assertThat(result3.exists()).isEqualTo(false);
+    }
+
+    @DisplayName("유효한 값(memberId, product ids)이 들어오면 해당 id에 맞는 상품을 반환한다.")
+    @Test
+    void givenMemberIdAndProductIds_whenGetScrapProducts_thenReturnProducts() {
+        //Given
+        final Long memberId = 1L;
+
+        final Product product1 = createProduct(memberId);
+        product1.addImage("test1.png", 1);
+        final Product savedProduct1 = productRepository.save(product1);
+
+        final Product product2 = createProduct(memberId);
+        product2.addImage("test2.png", 1);
+        final Product savedProduct2 = productRepository.save(product2);
+
+        final List<Long> ids = List.of(savedProduct1.getId(), savedProduct2.getId());
+        final GetScrapProductCommand command = new GetScrapProductCommand(ids);
+
+        //When
+        final List<ScrapProductInfoDto> result = productService.getScrapProducts(memberId, command);
+
+        //Then
+        assertThat(result.size()).isEqualTo(2);
+        assertThat(result.get(0).id()).isEqualTo(savedProduct1.getId());
+        assertThat(result.get(1).id()).isEqualTo(savedProduct2.getId());
     }
 }

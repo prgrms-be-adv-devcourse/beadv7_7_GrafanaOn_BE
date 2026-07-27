@@ -23,12 +23,6 @@ public class WalletLog extends BaseEntity {
     @JoinColumn(name = "wallet_id", nullable = false)
     private Wallet wallet;
 
-    @Column(name = "settlement_id")
-    private Long settlementId;
-
-    @Column(name = "payment_id")
-    private Long paymentId;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 30)
     private WalletLogType type;
@@ -36,27 +30,27 @@ public class WalletLog extends BaseEntity {
     @Column(name = "amount", precision = 15, scale = 2, nullable = false)
     private BigDecimal amount;
 
+    @Column(name = "reference_id", nullable = false)
+    private Long referenceId;
+
     private WalletLog(
             final Wallet wallet,
             final WalletLogType type,
             final BigDecimal amount,
-            final Long settlementId,
-            final Long paymentId
+            final Long referenceId
     ) {
             this.wallet = wallet;
             this.type = type;
             this.amount = amount;
-            this.settlementId = settlementId;
-            this.paymentId = paymentId;
+            this.referenceId = referenceId;
     }
 
-    public static WalletLog create(
+    static WalletLog create(
             final Wallet wallet,
             final WalletLogType type,
             final BigDecimal amount,
-            final Long settlementId,
-            final Long paymentId
+            final Long referenceId
     ) {
-            return new WalletLog(wallet, type, amount, settlementId, paymentId);
+            return new WalletLog(wallet, type, amount, referenceId);
     }
 }

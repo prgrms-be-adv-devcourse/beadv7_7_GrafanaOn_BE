@@ -92,7 +92,6 @@ public class MemberService  {
         return new SellerInfo(seller.getBank(), maskAccount(decodedAccount));
     }
 
-    @Transactional
     public boolean isSeller(final Long memberId) {
 
         Member member = memberRepository.findById(memberId)
@@ -126,11 +125,21 @@ public class MemberService  {
 
         ExistsProduct existsProduct = productPort.existsProduct();
 
-        if (existsProduct.exists()){
+        if (existsProduct.exists()) {
             throw new BusinessException(MemberErrorCode.WITHDRAWAL_FAILED);
         }
 
         member.requestSellerWithdrawal();
+    }
+
+    @Transactional
+    public void withdrawProfile(final Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BusinessException(
+                        MemberErrorCode.MEMBER_NOT_FOUND
+                ));
+
+        member.anonymizeProfile();
     }
 
     private String createDefaultNickname() {

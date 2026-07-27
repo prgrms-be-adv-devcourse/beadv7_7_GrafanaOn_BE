@@ -6,13 +6,13 @@ import org.springframework.web.bind.annotation.*;
 import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
 import shop.dear.identity.member.application.MemberService;
-import shop.dear.identity.member.presentation.dto.request.SellerCheckRequest;
 import shop.dear.identity.member.presentation.dto.response.MemberResponse;
 import shop.dear.identity.member.presentation.dto.request.RegisterSellerRequest;
 import shop.dear.identity.member.presentation.dto.response.SellerAccountResponse;
-import shop.dear.identity.member.presentation.dto.response.SellerCheckResponse;
 import shop.dear.identity.member.presentation.dto.request.UpdateProfileRequest;
 import shop.dear.identity.member.presentation.dto.request.UpdateSellerAccountRequest;
+
+import java.util.Objects;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,23 +27,21 @@ public class MemberController {
         @AuthUser Long memberId
     ){
 
-        MemberResponse member = MemberResponse.from(memberService.updateProfile(request.toCommand(), memberId));
-
-        return ApiResponse.successWithData(member);
-    }
-
-    @GetMapping("/profile/me")
-    public ApiResponse<MemberResponse> getMyProfile(@AuthUser Long memberId){
-
-        MemberResponse member = MemberResponse.from(memberService.getProfile(memberId));
+        MemberResponse member = MemberResponse.from(memberService.updateProfile(request.toCommand(), memberId), true);
 
         return ApiResponse.successWithData(member);
     }
 
     @GetMapping("/profile")
-    public ApiResponse<MemberResponse> getProfile(@RequestParam(value = "memberId") final Long memberId){
+    public ApiResponse<MemberResponse> getProfile(
+        @AuthUser Long requesterId,
+        @RequestParam(value = "memberId", required = false) final Long memberId
+    ){
 
-        MemberResponse member = MemberResponse.from(memberService.getProfile(memberId));
+        Long searchId = Objects.requireNonNullElse(memberId, requesterId);
+        boolean isOwner = searchId.equals(requesterId);
+
+        MemberResponse member = MemberResponse.from(memberService.getProfile(searchId), isOwner);
 
         return ApiResponse.successWithData(member);
     }
@@ -84,13 +82,5 @@ public class MemberController {
         SellerAccountResponse account = SellerAccountResponse.from(memberService.getMyAccount(memberId));
 
         return ApiResponse.successWithData(account);
-    }
-
-    @GetMapping("/seller")
-    public ApiResponse<SellerCheckResponse> isSeller(@RequestBody final SellerCheckRequest request){
-
-        boolean isSeller = memberService.isSeller(request.memberId());
-
-        return ApiResponse.successWithData(SellerCheckResponse.from(isSeller));
     }
 }

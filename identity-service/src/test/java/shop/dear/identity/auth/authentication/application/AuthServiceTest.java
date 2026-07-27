@@ -15,6 +15,7 @@ import shop.dear.identity.auth.authentication.application.port.RefreshTokenStore
 import shop.dear.identity.auth.authentication.application.port.TokenProviderPort;
 import shop.dear.identity.auth.authentication.domain.AuthAccount;
 import shop.dear.identity.auth.authentication.domain.AuthAccountRepository;
+import shop.dear.identity.auth.authentication.domain.AuthAccountStatus;
 import shop.dear.identity.auth.authentication.domain.exception.AuthErrorCode;
 import shop.dear.identity.auth.authorization.domain.Role;
 
@@ -311,5 +312,34 @@ class AuthServiceTest {
                 .deleteByMemberId(1L);
     }
 
+    @Test
+    @DisplayName("회원 탈퇴에 성공하면 프로필을 익명화하고 인증 계정과 Refresh Token을 무효화한다")
+    void withdrawSuccess() {
+        // given
+        AuthAccount authAccount = createActiveAccount();
 
+        given(authAccountRepository.findByMemberId(1L))
+                .willReturn(Optional.of(authAccount));
+
+        WithdrawCommand command =
+                new WithdrawCommand(1L);
+
+        // when
+        authService.withdraw(command);
+
+        // then
+        assertEquals(
+                AuthAccountStatus.WITHDRAWN,
+                authAccount.getStatus()
+        );
+
+        verify(memberProfilePort)
+                .withdrawProfile(1L);
+
+        verify(authAccountRepository)
+                .save(authAccount);
+
+        verify(refreshTokenStorePort)
+                .deleteByMemberId(1L);
+    }
 }

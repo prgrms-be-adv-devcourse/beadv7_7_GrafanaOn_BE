@@ -2,14 +2,13 @@ package shop.dear.identity.member.presentation;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
 import shop.dear.identity.member.application.MemberService;
 import shop.dear.identity.member.presentation.dto.request.CreateProfileRequest;
 import shop.dear.identity.member.presentation.dto.response.CreateProfileResponse;
+import shop.dear.identity.member.presentation.dto.response.SellerCheckResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,4 +25,11 @@ public class InternalMemberController {
         return ApiResponse.successWithData(response);
     }
 
+    @GetMapping("/seller")
+    public ApiResponse<SellerCheckResponse> isSeller(@AuthUser final Long memberId){
+
+        boolean isSeller = memberService.isSeller(memberId);
+
+        return ApiResponse.successWithData(SellerCheckResponse.from(isSeller));
+    }
 }

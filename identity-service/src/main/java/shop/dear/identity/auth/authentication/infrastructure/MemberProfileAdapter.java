@@ -30,4 +30,10 @@ public class MemberProfileAdapter implements MemberProfilePort {
 
         return new MemberProfileResult(memberInfo.id(), memberInfo.nickname());
     }
+
+    // MemberProfilePort -> MemberProfileAdapter -> MemberService -> Member
+    @Override
+    public void withdrawProfile(Long memberId) {
+        memberService.withdrawProfile(memberId);
+    }
 }
