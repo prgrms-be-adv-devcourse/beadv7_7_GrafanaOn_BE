@@ -49,6 +49,14 @@ public class MemberService  {
             .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 
+    public boolean existsMember(final Long memberId) {
+
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        return member.isActive();
+    }
+
     @Transactional
     public MemberInfo updateProfile(final UpdateProfileCommand command, final Long memberId){
 

@@ -48,4 +48,14 @@ public class ProductRepositoryAdapter implements ProductRepository {
     public List<Product> findByIds(final List<Long> productIds) {
         return productRepository.findAllById(productIds);
     }
+
+    @Override
+    public void increaseViewCount(final Long productId) {
+        productRepository.increaseViewCount(productId);
+    }
+
+    @Override
+    public boolean existsProduct(final Long productId) {
+        return productRepository.existsById(productId);
+    }
 }

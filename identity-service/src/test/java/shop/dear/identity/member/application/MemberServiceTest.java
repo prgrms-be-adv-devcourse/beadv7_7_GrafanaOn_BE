@@ -130,6 +130,43 @@ public class MemberServiceTest {
         Assertions.assertEquals(MemberErrorCode.DUPLICATE_NICKNAME, exception.getErrorCode());
     }
 
+
+    @Test
+    @DisplayName("유효한 사용자 검증 (활성 회원)")
+    void existsMember_active(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+
+        boolean exists = memberService.existsMember(1L);
+
+        Assertions.assertTrue(exists);
+    }
+
+    @Test
+    @DisplayName("유효한 사용자 검증 (탈퇴한 회원)")
+    void existsMember_withdrawn(){
+
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+        ReflectionTestUtils.setField(member, "id", 1L);
+        member.anonymizeProfile();
+
+        given(memberRepository.findById(1L)).willReturn(Optional.of(member));
+
+        boolean exists = memberService.existsMember(1L);
+
+        Assertions.assertFalse(exists);
+    }
+
     @Test
     @DisplayName("판매자 등록 성공")
     void registerSellerTest(){

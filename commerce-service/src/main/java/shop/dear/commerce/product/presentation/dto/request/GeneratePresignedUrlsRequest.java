@@ -1,6 +1,6 @@
 package shop.dear.commerce.product.presentation.dto.request;
 
-import shop.dear.commerce.product.application.dto.external.GeneratePresignedUrlsCommand;
+import shop.dear.commerce.product.application.dto.command.GeneratePresignedUrlsCommand;
 import shop.dear.commerce.product.domain.constant.UploadFileType;
 
 import java.util.List;

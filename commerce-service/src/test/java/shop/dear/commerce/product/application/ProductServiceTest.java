@@ -6,13 +6,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import shop.dear.commerce.product.application.dto.GetProductDetailDto;
 import shop.dear.commerce.product.application.dto.MemberProductExistsDto;
 import shop.dear.commerce.product.application.dto.PresignedUrlInfoDto;
 import shop.dear.commerce.product.application.dto.ScrapProductInfoDto;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
 import shop.dear.commerce.product.application.dto.command.GetScrapProductCommand;
 import shop.dear.commerce.product.application.dto.command.UpdateProductCommand;
-import shop.dear.commerce.product.application.dto.external.GeneratePresignedUrlsCommand;
+import shop.dear.commerce.product.application.dto.command.GeneratePresignedUrlsCommand;
 import shop.dear.commerce.product.application.fake.FakeMemberPort;
 import shop.dear.commerce.product.application.fake.FakeOfferPort;
 import shop.dear.commerce.product.application.fake.FakePresignedUrlGenerator;
@@ -25,6 +26,7 @@ import shop.dear.commerce.product.domain.constant.ProductStatus;
 import shop.dear.commerce.product.domain.constant.UploadFileType;
 import shop.dear.commerce.product.domain.model.Price;
 import shop.dear.commerce.product.domain.model.Product;
+import shop.dear.commerce.product.domain.model.ProductImage;
 import shop.dear.commerce.product.domain.repository.ProductRepository;
 
 import java.math.BigDecimal;
@@ -259,5 +261,64 @@ class ProductServiceTest {
         assertThat(result.size()).isEqualTo(2);
         assertThat(result.get(0).id()).isEqualTo(savedProduct1.getId());
         assertThat(result.get(1).id()).isEqualTo(savedProduct2.getId());
+    }
+
+    @DisplayName("유효한 값(memberId, productId)이 들어오면 해당 id에 맞는 상품의 상세정보를 조회한다.")
+    @Test
+    void givenMemberIdAndProductId_whenGetProductDetail_thenReturnProductDetail() {
+        //Given
+        final Long memberId = 1L;
+
+        final Long sellerId = 2L;
+        final String name = "Dear Sneakers";
+        final String brand = "Dear";
+        final BigDecimal priceValue = BigDecimal.valueOf(150000);
+        final String modelNumber = "DEAR-001";
+        final ProductCategory category = ProductCategory.SNEAKERS;
+        final LocalDate releaseDate = LocalDate.of(2026, 1, 1);
+        final ProductSaleType saleType = ProductSaleType.OFFER;
+        final String description = "상품 상세 설명입니다.";
+
+        final int sortOrder = 1;
+        final String url = "test1.png";
+        final String story = "content1";
+
+        final Product product = Product.create(
+            sellerId,
+            name,
+            brand,
+            modelNumber,
+            category,
+            releaseDate,
+            Price.from(priceValue),
+            saleType,
+            description
+        );
+        final ProductImage image = product.addImage(url, sortOrder);
+        image.addStory(story);
+
+        product.changeStatusToOnSale();
+
+        final Product savedProduct = productRepository.save(product);
+
+        //When
+        final GetProductDetailDto result = productService.getProductDetail(memberId, product.getId());
+
+        //Then
+        assertThat(result.sellerId()).isEqualTo(sellerId);
+        assertThat(result.name()).isEqualTo(name);
+        assertThat(result.brand()).isEqualTo(brand);
+        assertThat(result.price()).isEqualByComparingTo(priceValue);
+        assertThat(result.modelNumber()).isEqualTo(modelNumber);
+        assertThat(result.category()).isEqualTo(category.toString());
+        assertThat(result.releaseDate()).isEqualTo(releaseDate);
+        assertThat(result.viewCount()).isEqualTo(1);
+        assertThat(result.description()).isEqualTo(description);
+        assertThat(result.insertedAt()).isEqualTo(savedProduct.getInsertedAt());
+
+        assertThat(result.images().size()).isEqualTo(1);
+        assertThat(result.images().getFirst().sortOrder()).isEqualTo(sortOrder);
+        assertThat(result.images().getFirst().url()).isEqualTo(url);
+        assertThat(result.images().getFirst().story()).isEqualTo(story);
     }
 }
