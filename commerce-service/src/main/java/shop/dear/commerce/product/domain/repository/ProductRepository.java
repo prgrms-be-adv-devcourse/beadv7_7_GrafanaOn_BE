@@ -14,4 +14,5 @@ public interface ProductRepository {
     List<Product> findByIds(final List<Long> ids);
     void increaseViewCount(final Long productId);
     boolean existsProduct(final Long productId);
+    List<Product> findAllBySellerId(final Long sellerId);
 }

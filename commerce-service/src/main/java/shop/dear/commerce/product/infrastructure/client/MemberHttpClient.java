@@ -16,7 +16,7 @@ import shop.dear.common.response.ApiResponse;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
+@Component("productMemberHttpClient")
 public class MemberHttpClient implements MemberPort {
 
     private final RestClient productRestClient;

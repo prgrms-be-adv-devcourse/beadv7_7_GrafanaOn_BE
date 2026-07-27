@@ -15,4 +15,6 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Product p SET p.viewCount = p.viewCount + 1 WHERE p.id = :productId")
     void increaseViewCount(@Param("productId") Long productId);
+
+    List<Product> findAllBySellerId(final Long sellerId);
 }
