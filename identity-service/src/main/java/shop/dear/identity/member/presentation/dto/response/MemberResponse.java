@@ -10,13 +10,37 @@ public record MemberResponse(
     String nickname
 ) {
 
-    public static MemberResponse from(MemberInfo info) {
+    public static MemberResponse from(MemberInfo info, boolean isOwner) {
+
+        String address = isOwner ? info.defaultShippingAddress() : maskAddress(info.defaultShippingAddress());
+        String phoneNumber = isOwner ? info.phoneNumber() : maskPhoneNumber(info.phoneNumber());
+
         return new MemberResponse(
             info.id(),
             info.name(),
-            info.defaultShippingAddress(),
-            info.phoneNumber(),
+            address,
+            phoneNumber,
             info.nickname()
         );
+    }
+
+    private static String maskAddress(final String address) {
+
+        if (address == null || address.isBlank()) {
+            return address;
+        }
+
+        return address.substring(0, 3);
+    }
+
+    private static String maskPhoneNumber(final String phoneNumber) {
+
+        if (phoneNumber == null || phoneNumber.isBlank()) {
+            return phoneNumber;
+        }
+
+        String[] parts = phoneNumber.split("-");
+
+        return parts[0] + "-" + "*".repeat(3) + "-" + parts[2];
     }
 }
