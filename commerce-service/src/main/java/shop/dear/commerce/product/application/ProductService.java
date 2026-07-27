@@ -90,16 +90,18 @@ public class ProductService {
         final Product savedProduct = productRepository.save(product);
 
         productEventPublisher.publish(new ProductChangedEvent(
-            savedProduct.getId(),
-            savedProduct.getName(),
-            savedProduct.getModelNumber(),
-            savedProduct.getCategory().toString(),
-            savedProduct.getReleaseDate(),
-            savedProduct.getPrice().getValue(),
-            savedProduct.getSaleType().toString(),
-            savedProduct.getViewCount(),
-            savedProduct.getDescription(),
-            fullStory.toString()
+                savedProduct.getId(),
+                savedProduct.getName(),
+                savedProduct.getModelNumber(),
+                savedProduct.getCategory().name(),
+                savedProduct.getReleaseDate(),
+                savedProduct.getPrice().getValue(),
+                savedProduct.getSaleType().name(),
+                savedProduct.getStatus().name(),
+                savedProduct.getViewCount(),
+                savedProduct.getDescription(),
+                fullStory.toString().trim(),
+                savedProduct.getInsertedAt()
         ));
     }
 
@@ -142,16 +144,18 @@ public class ProductService {
         final Product savedProduct = productRepository.save(updatedProduct);
 
         productEventPublisher.publish(new ProductChangedEvent(
-            savedProduct.getId(),
-            savedProduct.getName(),
-            savedProduct.getModelNumber(),
-            savedProduct.getCategory().toString(),
-            savedProduct.getReleaseDate(),
-            savedProduct.getPrice().getValue(),
-            savedProduct.getSaleType().toString(),
-            savedProduct.getViewCount(),
-            savedProduct.getDescription(),
-            fullStory.toString()
+                savedProduct.getId(),
+                savedProduct.getName(),
+                savedProduct.getModelNumber(),
+                savedProduct.getCategory().name(),
+                savedProduct.getReleaseDate(),
+                savedProduct.getPrice().getValue(),
+                savedProduct.getSaleType().name(),
+                savedProduct.getStatus().name(),
+                savedProduct.getViewCount(),
+                savedProduct.getDescription(),
+                fullStory.toString().trim(),
+                savedProduct.getInsertedAt()
         ));
     }
 

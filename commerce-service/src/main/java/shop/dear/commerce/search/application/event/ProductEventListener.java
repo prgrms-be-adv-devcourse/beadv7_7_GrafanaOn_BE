@@ -6,12 +6,17 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import shop.dear.common.event.product.ProductChangedEvent;
+import shop.dear.common.event.product.ProductDeletedEvent;
 import shop.dear.commerce.search.domain.SearchProduct;
 import shop.dear.commerce.search.domain.SearchRepository;
 
 @Component
 @RequiredArgsConstructor
 public class ProductEventListener {
+
+    private static final String SOLD_OUT_STATUS = "SOLD_OUT";
+
     private final SearchRepository searchRepository;
 
     // Product 저장 트랜잭션 속 새로운 트랜잭선 발생
@@ -19,32 +24,32 @@ public class ProductEventListener {
     // -> ProductEventListener 실행 -> 새로운 Tx: search_product 저장
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handle(ProductChangedEvent event) {
-        String storyContent = String.join(
-                " ",
-                event.storyContents()
-        ); // 스토리를 하나로 합친다.
+    public void handleProductChanged(final ProductChangedEvent event) {
+        if (SOLD_OUT_STATUS.equals(event.status())) {
+            searchRepository.deleteByProductId(event.id());
+            return;
+        }
 
-        SearchProduct product = new SearchProduct(
-                event.productId(),
-                event.productName(),
+        SearchProduct searchProduct = new SearchProduct(
+                event.id(),
+                event.name(),
                 event.modelNumber(),
                 event.category(),
                 event.releaseDate(),
-                event.productPrice(),
+                event.price(),
                 event.saleType(),
                 event.viewCount(),
                 event.description(),
-                storyContent,
-                event.insertedAt()
+                event.fullStory(),
+                event.productInsertedAt()
         );
 
-        searchRepository.save(product);
+        searchRepository.save(searchProduct);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handle(ProductDeletedEvent event) {
+    public void handleProductDeleted(final ProductDeletedEvent event) {
         searchRepository.deleteByProductId(event.productId());
     }
 }
