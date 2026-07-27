@@ -177,6 +177,7 @@ class OfferServiceTest {
                     1L,
                     2L,
                     3L,
+                    10L,
                     BigDecimal.valueOf(10000),
                     "title",
                     "story",

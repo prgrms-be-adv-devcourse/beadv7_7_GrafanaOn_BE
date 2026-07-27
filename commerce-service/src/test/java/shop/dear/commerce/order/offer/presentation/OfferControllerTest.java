@@ -70,7 +70,7 @@ class OfferControllerTest {
         // given
         final CreateOfferRequest request = new CreateOfferRequest(1L, 2L, "title", "story", "delivery");
         final Offer offer = Offer.create(
-                2L, 3L, 1L, new BigDecimal("10000"), "title", "story", "delivery"
+                2L, 3L, 1L, 10L, new BigDecimal("10000"), "title", "story", "delivery"
         );
         given(offerService.createOffer(any()))
                 .willReturn(offer);
