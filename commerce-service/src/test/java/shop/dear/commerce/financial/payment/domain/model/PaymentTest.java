@@ -1,6 +1,7 @@
 package shop.dear.commerce.financial.payment.domain.model;
 
 import org.junit.jupiter.api.Test;
+import shop.dear.commerce.financial.payment.domain.constant.PGPaymentStatus;
 import shop.dear.commerce.financial.payment.domain.constant.PaymentPurpose;
 import shop.dear.commerce.financial.payment.domain.constant.PaymentStatus;
 import shop.dear.commerce.financial.payment.domain.exception.PaymentErrorCode;
@@ -165,5 +166,70 @@ public class PaymentTest {
         );
 
         assertEquals(PaymentErrorCode.INVALID_ORDER_REFERENCE, exception.getErrorCode());
+    }
+
+    @Test
+    void preparePgPayment_success() {
+        // given
+        Long walletId = 1L;
+        BigDecimal amount = new BigDecimal("10000.00");
+        Payment payment = Payment.createTopUp(walletId, amount);
+
+        // when
+        payment.preparePgPayment();
+
+        // then
+        PGPayment pgPayment = payment.getPgPayment();
+        assertNotNull(pgPayment);
+        assertSame(payment, pgPayment.getPayment());
+        assertEquals(PGPaymentStatus.READY, pgPayment.getState());
+        assertNull(pgPayment.getTransactionKey());
+        assertNull(pgPayment.getApprovedAmount());
+    }
+
+    @Test
+    void preparePgPayment_forOrderPayment_throwsException() {
+        // given
+        Payment payment = Payment.createOrderPayment(
+                1L,
+                100L,
+                OrderType.PURCHASE,
+                new BigDecimal("10000.00")
+        );
+
+        // when
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                payment::preparePgPayment
+        );
+
+        // then
+        assertEquals(
+                PaymentErrorCode.INVALID_PAYMENT_PURPOSE,
+                exception.getErrorCode()
+        );
+        assertNull(payment.getPgPayment());
+    }
+
+    @Test
+    void preparePgPayment_twice_throwsException() {
+        // given
+        Payment payment = Payment.createTopUp(
+                1L,
+                new BigDecimal("10000.00")
+        );
+        payment.preparePgPayment();
+
+        // when
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                payment::preparePgPayment
+        );
+
+        // then
+        assertEquals(
+                PaymentErrorCode.PG_PAYMENT_ALREADY_PREPARED,
+                exception.getErrorCode()
+        );
     }
 }

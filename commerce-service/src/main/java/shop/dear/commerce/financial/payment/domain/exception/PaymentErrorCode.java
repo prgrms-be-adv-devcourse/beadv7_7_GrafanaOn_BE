@@ -13,8 +13,8 @@ public enum PaymentErrorCode implements ErrorCode {
     INVALID_AMOUNT("PM-003", "유효하지 않은 금액입니다."),
     INVALID_ORDER_REFERENCE("PM-004", "유효하지 않은 주문 참조입니다."),
     INVALID_WALLET_ID("PM-005", "유효하지 않은 지갑 ID입니다."),
-    INVALID_PAYMENT_PURPOSE("PM-006", "유효하지 않은 결제 목적입니다.")
-    ;
+    INVALID_PAYMENT_PURPOSE("PM-006", "유효하지 않은 결제 목적입니다."),
+    PG_PAYMENT_ALREADY_PREPARED("PM-007", "이미 준비된 PG 결제입니다.");
 
     private final String value;
     private final String message;
