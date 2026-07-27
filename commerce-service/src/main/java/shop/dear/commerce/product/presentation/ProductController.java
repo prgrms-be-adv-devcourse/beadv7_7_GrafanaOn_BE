@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import shop.dear.commerce.product.application.ProductService;
 import shop.dear.commerce.product.application.dto.GetProductDetailDto;
+import shop.dear.commerce.product.application.dto.GetSellerProductDto;
 import shop.dear.commerce.product.application.dto.PresignedUrlInfoDto;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
 import shop.dear.commerce.product.application.dto.command.GeneratePresignedUrlsCommand;
@@ -19,6 +20,7 @@ import shop.dear.commerce.product.application.dto.command.UpdateProductCommand;
 import shop.dear.commerce.product.presentation.dto.request.CreateProductRequest;
 import shop.dear.commerce.product.presentation.dto.request.GeneratePresignedUrlsRequest;
 import shop.dear.commerce.product.presentation.dto.request.UpdateProductRequest;
+import shop.dear.commerce.product.presentation.dto.response.GetSellerProductResponse;
 import shop.dear.commerce.product.presentation.dto.response.PresignedUrlsResponse;
 import shop.dear.commerce.product.presentation.dto.response.ProductDetailResponse;
 import shop.dear.common.auth.AuthUser;
@@ -76,6 +78,16 @@ public class ProductController {
     public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductDetail(@AuthUser final Long memberId, @PathVariable final Long productId) {
         final GetProductDetailDto result = productService.getProductDetail(memberId, productId);
         final ProductDetailResponse response = ProductDetailResponse.of(result);
+
+        return ResponseEntity.ok(successWithData(response));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<List<GetSellerProductResponse>>> getSellerProducts(@AuthUser final Long sellerId) {
+        final List<GetSellerProductDto> result = productService.getSellerProducts(sellerId);
+        final List<GetSellerProductResponse> response = result.stream()
+            .map(GetSellerProductResponse::of)
+            .toList();
 
         return ResponseEntity.ok(successWithData(response));
     }

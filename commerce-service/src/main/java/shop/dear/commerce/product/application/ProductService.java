@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.product.application.dto.GetProductDetailDto;
+import shop.dear.commerce.product.application.dto.GetSellerProductDto;
 import shop.dear.commerce.product.application.dto.MemberProductExistsDto;
 import shop.dear.commerce.product.application.dto.PresignedUrlInfoDto;
 import shop.dear.commerce.product.application.dto.ScrapProductInfoDto;
@@ -243,5 +244,16 @@ public class ProductService {
         validateProductVisible(product);
 
         return GetProductDetailDto.of(product);
+    }
+
+    public List<GetSellerProductDto> getSellerProducts(final Long sellerId) {
+        validateMember(sellerId);
+        validateSeller(sellerId);
+
+        final List<Product> products = productRepository.findAllBySellerId(sellerId);
+
+        return products.stream()
+            .map(GetSellerProductDto::of)
+            .toList();
     }
 }
