@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -109,7 +110,8 @@ class OfferServiceTest {
             // then
             assertThat(offer.getStatus()).isEqualTo(OfferStatus.ACCEPTED);
 
-            final ArgumentCaptor<FinishedOrderEvent> captor = ArgumentCaptor.forClass(FinishedOrderEvent.class);
+            final ArgumentCaptor<FinishedOrderEvent> captor =
+                    ArgumentCaptor.forClass(FinishedOrderEvent.class);
             verify(offerEventPublisher).publish(captor.capture());
 
             final FinishedOrderEvent event = captor.getValue();
@@ -130,14 +132,7 @@ class OfferServiceTest {
             assertThatThrownBy(() -> offerService.acceptOffer(1L, 2L))
                     .isInstanceOf(BusinessException.class);
 
-            verify(offerEventPublisher, never()).publish(new FinishedOrderEvent(
-                    1L,
-                    1L,
-                    2L,
-                    3L,
-                    BigDecimal.valueOf(10000),
-                    null
-            ));
+            verify(offerEventPublisher, never()).publish(any());
         }
 
         @Test
@@ -152,19 +147,18 @@ class OfferServiceTest {
             assertThatThrownBy(() -> offerService.acceptOffer(1L, 2L))
                     .isInstanceOf(BusinessException.class);
 
-            verify(offerEventPublisher, never()).publish(new FinishedOrderEvent(
-                    1L,
-                    1L,
-                    2L,
-                    3L,
-                    BigDecimal.valueOf(10000),
-                    null
-            ));
+            verify(offerEventPublisher, never()).publish(any());
         }
 
         private Offer createPendingPaidOffer() {
             final Offer offer = Offer.create(
-                    1L, 2L, 3L, BigDecimal.valueOf(10000), "title", "story", "delivery"
+                    1L,
+                    2L,
+                    3L,
+                    BigDecimal.valueOf(10000),
+                    "title",
+                    "story",
+                    "delivery"
             );
             offer.markPaid();
             return offer;

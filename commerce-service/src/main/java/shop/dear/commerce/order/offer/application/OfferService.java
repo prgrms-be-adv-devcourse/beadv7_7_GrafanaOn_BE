@@ -13,7 +13,8 @@ import shop.dear.common.exception.BusinessException;
 
 import java.util.List;
 
-import static shop.dear.commerce.order.offer.domain.exception.OfferErrorCode.*;
+import static shop.dear.commerce.order.offer.domain.exception.OfferErrorCode.NOT_OFFER_SELLER;
+import static shop.dear.commerce.order.offer.domain.exception.OfferErrorCode.OFFER_NOT_FOUND;
 
 @Service
 @Transactional(readOnly = true)

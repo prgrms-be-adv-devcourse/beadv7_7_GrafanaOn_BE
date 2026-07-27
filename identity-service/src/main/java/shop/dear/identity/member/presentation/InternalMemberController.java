@@ -2,6 +2,7 @@ package shop.dear.identity.member.presentation;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
@@ -9,6 +10,9 @@ import shop.dear.identity.member.application.MemberService;
 import shop.dear.identity.member.presentation.dto.request.CreateProfileRequest;
 import shop.dear.identity.member.presentation.dto.response.CreateProfileResponse;
 import shop.dear.identity.member.presentation.dto.response.SellerCheckResponse;
+import shop.dear.identity.member.presentation.dto.response.MemberCheckResponse;
+
+import static shop.dear.common.response.ApiResponse.successWithData;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,18 +22,27 @@ public class InternalMemberController {
     private final MemberService memberService;
 
     @PostMapping
-    public ApiResponse<CreateProfileResponse> createProfile(@Valid @RequestBody final CreateProfileRequest request){
+    public ResponseEntity<ApiResponse<CreateProfileResponse>> createProfile(@Valid @RequestBody final CreateProfileRequest request) {
 
         CreateProfileResponse response = CreateProfileResponse.from(memberService.createProfile(request.toCommand()));
 
-        return ApiResponse.successWithData(response);
+        return ResponseEntity.ok(successWithData(response));
     }
 
     @GetMapping("/seller")
-    public ApiResponse<SellerCheckResponse> isSeller(@AuthUser final Long memberId){
+    public ResponseEntity<ApiResponse<SellerCheckResponse>> isSeller(@AuthUser final Long memberId){
 
         boolean isSeller = memberService.isSeller(memberId);
 
-        return ApiResponse.successWithData(SellerCheckResponse.from(isSeller));
+        return ResponseEntity.ok(successWithData(SellerCheckResponse.from(isSeller)));
     }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<MemberCheckResponse>> existsMember(@AuthUser final Long memberId) {
+
+        boolean exists = memberService.existsMember(memberId);
+
+        return ResponseEntity.ok(successWithData(MemberCheckResponse.from(exists)));
+    }
+
 }
