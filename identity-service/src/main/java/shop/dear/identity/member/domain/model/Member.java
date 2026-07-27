@@ -84,6 +84,10 @@ public class Member extends BaseEntity {
         return this.seller != null && this.seller.getStatus() == SellerStatus.ACTIVE;
     }
 
+    public boolean isActive(){
+        return this.status == MemberStatus.ACTIVE;
+    }
+
     public void registerSeller(final String bank, final String account) {
         if (this.isSeller()) {
             throw new BusinessException(MemberErrorCode.ALREADY_SELLER);

@@ -11,7 +11,6 @@ import shop.dear.identity.member.application.dto.SellerInfo;
 import shop.dear.identity.member.application.dto.UpdateProfileCommand;
 import shop.dear.identity.member.application.dto.UpdateSellerAccountCommand;
 import shop.dear.identity.member.application.dto.external.ExistsProduct;
-import shop.dear.identity.member.domain.constract.MemberStatus;
 import shop.dear.identity.member.domain.exception.MemberErrorCode;
 import shop.dear.identity.member.domain.model.Member;
 import shop.dear.identity.member.domain.model.Seller;
@@ -52,11 +51,10 @@ public class MemberService  {
 
     public boolean existsMember(final Long memberId) {
 
-        MemberInfo info = memberRepository.findById(memberId)
-            .map(MemberInfo::from)
+        Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        return info.status() == MemberStatus.ACTIVE;
+        return member.isActive();
     }
 
     @Transactional
