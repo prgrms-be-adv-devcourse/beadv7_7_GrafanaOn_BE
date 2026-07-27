@@ -98,6 +98,18 @@ public class Payment extends BaseEntity {
         }
     }
 
+    public void preparePgPayment() {
+        if (this.purpose != PaymentPurpose.TOPUP) {
+            throw new BusinessException(PaymentErrorCode.INVALID_PAYMENT_PURPOSE);
+        }
+
+        if (this.pgPayment != null) {
+            throw new BusinessException(PaymentErrorCode.PG_PAYMENT_ALREADY_PREPARED);
+        }
+
+        this.pgPayment = PGPayment.create(this);
+    }
+
     public static Payment createTopUp(
             final Long walletId,
             final BigDecimal amount

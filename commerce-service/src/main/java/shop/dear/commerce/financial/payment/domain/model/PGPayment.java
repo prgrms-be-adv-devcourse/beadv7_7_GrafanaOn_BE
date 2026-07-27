@@ -23,32 +23,22 @@ public class PGPayment extends BaseEntity {
     @JoinColumn(name = "payment_id", nullable = false)
     private Payment payment;
 
-    @Column(name = "amount", precision = 15, scale = 2, nullable = false)
-    private BigDecimal amount;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "state", nullable = false, length = 30)
     private PGPaymentStatus state;
 
-    @Column(name = "transaction_key", nullable = false, length = 255)
-    private String transaction_key;
+    @Column(name = "transaction_key", length = 255)
+    private String transactionKey;
 
-    private PGPayment(
-            final Payment payment,
-            final BigDecimal amount,
-            final String transaction_key
-    ) {
+    @Column(name = "approved_amount", precision = 15, scale = 2)
+    private BigDecimal approvedAmount;
+
+    private PGPayment(final Payment payment) {
             this.payment = payment;
-            this.amount = amount;
-            this.transaction_key = transaction_key;
             this.state = PGPaymentStatus.READY;
     }
 
-    public static PGPayment create(
-            final Payment payment,
-            final BigDecimal amount,
-            final String transaction_key
-    ) {
-            return new PGPayment(payment, amount, transaction_key);
+    static PGPayment create(final Payment payment) {
+            return new PGPayment(payment);
     }
 }
