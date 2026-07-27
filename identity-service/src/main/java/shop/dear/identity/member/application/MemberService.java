@@ -92,7 +92,6 @@ public class MemberService  {
         return new SellerInfo(seller.getBank(), maskAccount(decodedAccount));
     }
 
-    @Transactional
     public boolean isSeller(final Long memberId) {
 
         Member member = memberRepository.findById(memberId)
