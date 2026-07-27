@@ -9,7 +9,7 @@ import shop.dear.common.exception.BusinessException;
 
 import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.MEMBER_NOT_FOUND;
 
-@Component
+@Component("purchaseMemberHttpClient")
 public class MemberHttpClient implements MemberPort {
 
     private static final String MEMBER_URI = "/internal/members";
