@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.product.application.dto.GetProductDetailDto;
+import shop.dear.commerce.product.application.dto.GetSellerProductDto;
 import shop.dear.commerce.product.application.dto.MemberProductExistsDto;
 import shop.dear.commerce.product.application.dto.PresignedUrlInfoDto;
 import shop.dear.commerce.product.application.dto.ScrapProductInfoDto;
@@ -320,5 +321,28 @@ class ProductServiceTest {
         assertThat(result.images().getFirst().sortOrder()).isEqualTo(sortOrder);
         assertThat(result.images().getFirst().url()).isEqualTo(url);
         assertThat(result.images().getFirst().story()).isEqualTo(story);
+    }
+
+    @DisplayName("유효한 값(sellerId)이 들어오면 해당 판매자가 등록한 상품목록을 조회한다.")
+    @Test
+    void givenSellerId_whenGetSellerProducts_thenReturnProducts() {
+        //Given
+        final Long sellerId = 1L;
+        final Product product = createProduct(sellerId);
+        product.addImage("test1.png", 1);
+        final Product savedProduct = productRepository.save(product);
+
+        //When
+        final List<GetSellerProductDto> result = productService.getSellerProducts(sellerId);
+
+        //Then
+        assertThat(result.size()).isEqualTo(1);
+        assertThat(result.getFirst().id()).isEqualTo(savedProduct.getId());
+        assertThat(result.getFirst().status()).isEqualTo(savedProduct.getStatus().toString());
+        assertThat(result.getFirst().url()).isEqualTo(savedProduct.getImages().getFirst().getUrl());
+        assertThat(result.getFirst().name()).isEqualTo(savedProduct.getName());
+        assertThat(result.getFirst().brand()).isEqualTo(savedProduct.getBrand());
+        assertThat(result.getFirst().price()).isEqualTo(savedProduct.getPrice().getValue());
+        assertThat(result.getFirst().viewCount()).isEqualTo(savedProduct.getViewCount());
     }
 }
