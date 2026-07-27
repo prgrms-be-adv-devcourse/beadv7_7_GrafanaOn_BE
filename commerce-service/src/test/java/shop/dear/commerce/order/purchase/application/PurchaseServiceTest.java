@@ -32,7 +32,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PurchaseServiceTest {
@@ -148,10 +147,10 @@ class PurchaseServiceTest {
         void confirmsPurchaseAndPublishesEvent() {
             // given
             final Purchase purchase = createPaidPurchase();
-            when(purchaseRepository.findById(1L)).thenReturn(Optional.of(purchase));
+            given(purchaseRepository.findById(1L)).willReturn(Optional.of(purchase));
 
             // when
-            purchaseService.confirmPurchase(1L);
+            purchaseService.confirmPurchase(1L, 1L);
 
             // then
             assertThat(purchase.getStatus()).isEqualTo(PurchaseStatus.PURCHASE_CONFIRMED);
@@ -172,10 +171,10 @@ class PurchaseServiceTest {
         @DisplayName("존재하지 않는 구매면 예외를 던진다")
         void throwsException_whenPurchaseNotFound() {
             // given
-            when(purchaseRepository.findById(1L)).thenReturn(Optional.empty());
+            given(purchaseRepository.findById(1L)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> purchaseService.confirmPurchase(1L))
+            assertThatThrownBy(() -> purchaseService.confirmPurchase(1L, 1L))
                     .isInstanceOf(BusinessException.class);
 
             verify(purchaseEventPublisher, never()).publish(any());
@@ -186,37 +185,13 @@ class PurchaseServiceTest {
         void throwsException_whenStatusIsNotPaid() {
             // given
             final Purchase purchase = createPendingPaymentPurchase();
-            when(purchaseRepository.findById(1L)).thenReturn(Optional.of(purchase));
+            given(purchaseRepository.findById(1L)).willReturn(Optional.of(purchase));
 
             // when & then
-            assertThatThrownBy(() -> purchaseService.confirmPurchase(1L))
+            assertThatThrownBy(() -> purchaseService.confirmPurchase(1L, 1L))
                     .isInstanceOf(BusinessException.class);
 
             verify(purchaseEventPublisher, never()).publish(any());
-        }
-
-        private Purchase createPaidPurchase() {
-            final Purchase purchase = Purchase.create(
-                    1L,
-                    2L,
-                    3L,
-                    BigDecimal.valueOf(10000),
-                    "delivery",
-                    null
-            );
-            purchase.pay();
-            return purchase;
-        }
-
-        private Purchase createPendingPaymentPurchase() {
-            return Purchase.create(
-                    1L,
-                    2L,
-                    3L,
-                    BigDecimal.valueOf(10000),
-                    "delivery",
-                    null
-            );
         }
     }
 
@@ -229,7 +204,7 @@ class PurchaseServiceTest {
         void cancelsPurchaseWhenPendingPayment() {
             // given
             final Purchase purchase = createPendingPaymentPurchase();
-            when(purchaseRepository.findById(1L)).thenReturn(Optional.of(purchase));
+            given(purchaseRepository.findById(1L)).willReturn(Optional.of(purchase));
 
             // when
             purchaseService.cancelPurchase(1L, 1L);
@@ -243,7 +218,7 @@ class PurchaseServiceTest {
         void cancelsPurchaseWhenPaid() {
             // given
             final Purchase purchase = createPaidPurchase();
-            when(purchaseRepository.findById(1L)).thenReturn(Optional.of(purchase));
+            given(purchaseRepository.findById(1L)).willReturn(Optional.of(purchase));
 
             // when
             purchaseService.cancelPurchase(1L, 1L);
@@ -256,7 +231,7 @@ class PurchaseServiceTest {
         @DisplayName("존재하지 않는 구매를 취소하면 예외를 던진다")
         void throwsException_whenPurchaseNotFound() {
             // given
-            when(purchaseRepository.findById(1L)).thenReturn(Optional.empty());
+            given(purchaseRepository.findById(1L)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> purchaseService.cancelPurchase(1L, 1L))
@@ -268,35 +243,11 @@ class PurchaseServiceTest {
         void throwsException_whenBuyerMismatch() {
             // given
             final Purchase purchase = createPendingPaymentPurchase();
-            when(purchaseRepository.findById(1L)).thenReturn(Optional.of(purchase));
+            given(purchaseRepository.findById(1L)).willReturn(Optional.of(purchase));
 
             // when & then
             assertThatThrownBy(() -> purchaseService.cancelPurchase(1L, 999L))
                     .isInstanceOf(BusinessException.class);
-        }
-
-        private Purchase createPaidPurchase() {
-            final Purchase purchase = Purchase.create(
-                    1L,
-                    2L,
-                    3L,
-                    BigDecimal.valueOf(10000),
-                    "delivery",
-                    null
-            );
-            purchase.pay();
-            return purchase;
-        }
-
-        private Purchase createPendingPaymentPurchase() {
-            return Purchase.create(
-                    1L,
-                    2L,
-                    3L,
-                    BigDecimal.valueOf(10000),
-                    "delivery",
-                    null
-            );
         }
     }
 
@@ -308,18 +259,11 @@ class PurchaseServiceTest {
         @DisplayName("구매 식별자로 구매를 조회하면 구매 정보를 반환한다")
         void returnsPurchase_whenPurchaseExists() {
             // given
-            final Purchase purchase = Purchase.create(
-                    1L,
-                    2L,
-                    3L,
-                    BigDecimal.valueOf(10000),
-                    "delivery",
-                    null
-            );
-            when(purchaseRepository.findById(1L)).thenReturn(Optional.of(purchase));
+            final Purchase purchase = createPendingPaymentPurchase();
+            given(purchaseRepository.findById(1L)).willReturn(Optional.of(purchase));
 
             // when
-            final Purchase result = purchaseService.getPurchase(1L);
+            final Purchase result = purchaseService.getPurchase(1L, 1L);
 
             // then
             assertThat(result).isEqualTo(purchase);
@@ -329,10 +273,22 @@ class PurchaseServiceTest {
         @DisplayName("존재하지 않는 구매를 조회하면 예외를 던진다")
         void throwsException_whenPurchaseNotFound() {
             // given
-            when(purchaseRepository.findById(1L)).thenReturn(Optional.empty());
+            given(purchaseRepository.findById(1L)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> purchaseService.getPurchase(1L))
+            assertThatThrownBy(() -> purchaseService.getPurchase(1L, 1L))
+                    .isInstanceOf(BusinessException.class);
+        }
+
+        @Test
+        @DisplayName("다른 사용자의 구매를 조회하면 예외를 던진다")
+        void throwsException_whenBuyerMismatch() {
+            // given
+            final Purchase purchase = createPendingPaymentPurchase();
+            given(purchaseRepository.findById(1L)).willReturn(Optional.of(purchase));
+
+            // when & then
+            assertThatThrownBy(() -> purchaseService.getPurchase(1L, 999L))
                     .isInstanceOf(BusinessException.class);
         }
     }
@@ -361,7 +317,7 @@ class PurchaseServiceTest {
                     "delivery2",
                     null
             );
-            when(purchaseRepository.findByBuyerId(1L)).thenReturn(List.of(purchase1, purchase2));
+            given(purchaseRepository.findByBuyerId(1L)).willReturn(List.of(purchase1, purchase2));
 
             // when
             final List<Purchase> result = purchaseService.getPurchasesByBuyerId(1L);
@@ -374,7 +330,7 @@ class PurchaseServiceTest {
         @DisplayName("구매 기록이 없으면 빈 목록을 반환한다")
         void returnsEmptyList_whenBuyerHasNoPurchases() {
             // given
-            when(purchaseRepository.findByBuyerId(1L)).thenReturn(List.of());
+            given(purchaseRepository.findByBuyerId(1L)).willReturn(List.of());
 
             // when
             final List<Purchase> result = purchaseService.getPurchasesByBuyerId(1L);
@@ -382,5 +338,29 @@ class PurchaseServiceTest {
             // then
             assertThat(result).isEmpty();
         }
+    }
+
+    private Purchase createPaidPurchase() {
+        final Purchase purchase = Purchase.create(
+                1L,
+                2L,
+                3L,
+                BigDecimal.valueOf(10000),
+                "delivery",
+                null
+        );
+        purchase.pay();
+        return purchase;
+    }
+
+    private Purchase createPendingPaymentPurchase() {
+        return Purchase.create(
+                1L,
+                2L,
+                3L,
+                BigDecimal.valueOf(10000),
+                "delivery",
+                null
+        );
     }
 }

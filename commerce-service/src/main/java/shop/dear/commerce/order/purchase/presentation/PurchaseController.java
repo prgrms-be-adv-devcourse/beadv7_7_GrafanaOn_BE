@@ -33,9 +33,10 @@ public class PurchaseController {
 
     @GetMapping("/{purchaseId}")
     public ResponseEntity<ApiResponse<PurchaseResponse>> getPurchase(
-            @Positive @PathVariable final Long purchaseId
+            @Positive @PathVariable final Long purchaseId,
+            @AuthUser final Long buyerId
     ) {
-        final Purchase purchase = purchaseService.getPurchase(purchaseId);
+        final Purchase purchase = purchaseService.getPurchase(purchaseId, buyerId);
         final PurchaseResponse response = PurchaseResponse.from(purchase);
         return ResponseEntity.ok(successWithData(response));
     }
@@ -67,6 +68,15 @@ public class PurchaseController {
             @AuthUser final Long buyerId
     ) {
         purchaseService.cancelPurchase(purchaseId, buyerId);
+        return ResponseEntity.ok(success());
+    }
+
+    @PostMapping("/{purchaseId}/confirm")
+    public ResponseEntity<ApiResponse<Void>> confirmPurchase(
+            @Positive @PathVariable final Long purchaseId,
+            @AuthUser final Long memberId
+    ) {
+        purchaseService.confirmPurchase(purchaseId, memberId);
         return ResponseEntity.ok(success());
     }
 }

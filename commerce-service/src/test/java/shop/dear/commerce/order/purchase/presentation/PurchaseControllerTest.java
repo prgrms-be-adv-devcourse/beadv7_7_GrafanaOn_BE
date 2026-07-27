@@ -114,6 +114,29 @@ class PurchaseControllerTest {
     }
 
     @Test
+    @DisplayName("즉시구매 확정에 성공하면 200을 반환한다")
+    void confirmPurchaseSuccess() throws Exception {
+        // when & then
+        mockMvc.perform(post("/api/purchases/1/confirm")
+                        .header(AuthUser.MEMBER_ID_HEADER, "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("success"));
+
+        verify(purchaseService).confirmPurchase(1L, 1L);
+    }
+
+    @Test
+    @DisplayName("구매 식별자가 양수가 아니면 400을 반환한다")
+    void rejectInvalidPurchaseIdForConfirm() throws Exception {
+        // when & then
+        mockMvc.perform(post("/api/purchases/0/confirm")
+                        .header(AuthUser.MEMBER_ID_HEADER, "1"))
+                .andExpect(status().isBadRequest());
+
+        verify(purchaseService, never()).confirmPurchase(anyLong(), anyLong());
+    }
+
+    @Test
     @DisplayName("내 즉시구매 목록 조회에 성공하면 200을 반환한다")
     void getPurchasesByMeSuccess() throws Exception {
         // given
@@ -141,7 +164,9 @@ class PurchaseControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("success"))
                 .andExpect(jsonPath("$.data.length()").value(2))
+                .andExpect(jsonPath("$.data[0].productId").value(10))
                 .andExpect(jsonPath("$.data[0].amount").value(10000))
+                .andExpect(jsonPath("$.data[1].productId").value(11))
                 .andExpect(jsonPath("$.data[1].amount").value(20000));
     }
 
@@ -157,7 +182,7 @@ class PurchaseControllerTest {
                 "서울시 강남구",
                 OffsetDateTime.now().plusMinutes(5)
         );
-        given(purchaseService.getPurchase(1L)).willReturn(purchase);
+        given(purchaseService.getPurchase(1L, 1L)).willReturn(purchase);
 
         // when & then
         mockMvc.perform(get("/api/purchases/1")
@@ -165,6 +190,7 @@ class PurchaseControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("success"))
                 .andExpect(jsonPath("$.data.status").value("PENDING_PAYMENT"))
+                .andExpect(jsonPath("$.data.productId").value(10))
                 .andExpect(jsonPath("$.data.amount").value(10000));
     }
 
@@ -176,7 +202,7 @@ class PurchaseControllerTest {
                         .header(AuthUser.MEMBER_ID_HEADER, "1"))
                 .andExpect(status().isBadRequest());
 
-        verify(purchaseService, never()).getPurchase(anyLong());
+        verify(purchaseService, never()).getPurchase(anyLong(), anyLong());
     }
 
     private record Request(Long productId, String delivery) {

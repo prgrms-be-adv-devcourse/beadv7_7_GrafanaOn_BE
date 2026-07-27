@@ -33,9 +33,15 @@ public class PurchaseService {
     private final PurchaseEventPublisher purchaseEventPublisher;
     private final ProductPort productPort;
 
-    public Purchase getPurchase(final Long purchaseId) {
-        return purchaseRepository.findById(purchaseId)
+    public Purchase getPurchase(final Long purchaseId, final Long buyerId) {
+        final Purchase purchase = purchaseRepository.findById(purchaseId)
                 .orElseThrow(() -> new BusinessException(PURCHASE_NOT_FOUND));
+
+        if (!Objects.equals(buyerId, purchase.getBuyerId())) {
+            throw new BusinessException(PURCHASE_NOT_FOUND);
+        }
+
+        return purchase;
     }
 
     public List<Purchase> getPurchasesByBuyerId(final Long buyerId) {
@@ -122,9 +128,13 @@ public class PurchaseService {
     }
 
     @Transactional
-    public void confirmPurchase(final Long purchaseId) {
+    public void confirmPurchase(final Long purchaseId, final Long memberId) {
         final Purchase purchase = purchaseRepository.findById(purchaseId)
                 .orElseThrow(() -> new BusinessException(PURCHASE_NOT_FOUND));
+
+        if (!Objects.equals(memberId, purchase.getBuyerId())) {
+            throw new BusinessException(PURCHASE_NOT_FOUND);
+        }
 
         purchase.confirmPurchase();
 
