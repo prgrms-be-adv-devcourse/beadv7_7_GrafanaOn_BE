@@ -17,10 +17,18 @@ public record ScrapProductInfoDto(
         return new ScrapProductInfoDto(
             product.getId(),
             product.getStatus().toString(),
-            product.getImages().getFirst().getUrl(),
+            getThumbnailUrl(product),
             product.getBrand(),
             product.getName(),
             product.getPrice().getValue()
         );
+    }
+
+    private static String getThumbnailUrl(final Product product) {
+        if (product.getImages() != null && !product.getImages().isEmpty()) {
+            return product.getImages().getFirst().getUrl();
+        }
+
+        return null;
     }
 }
