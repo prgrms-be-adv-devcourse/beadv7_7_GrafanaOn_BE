@@ -24,9 +24,14 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
         SELECT p FROM Product p
             WHERE (:saleType IS NULL OR p.saleType = :saleType)
             AND (:status IS NULL OR p.status = :status)
+            AND (:createdAt IS NULL OR p.insertedAt = :createdAt)
             ORDER BY p.viewCount DESC, p.insertedAt DESC
     """)
-    List<Product> findAllBySaleTypeAndStatus(@Param("saleType") final ProductSaleType saleType, @Param("status") final ProductStatus status);
+    List<Product> findAllBySaleTypeAndStatus(
+        @Param("saleType") final ProductSaleType saleType,
+        @Param("status") final ProductStatus status,
+        @Param("createdAt") final LocalDateTime createdAt
+    );
 
     @Modifying(clearAutomatically = true)
     @Query("""

@@ -67,8 +67,12 @@ public class ProductRepositoryAdapter implements ProductRepository {
     }
 
     @Override
-    public List<Product> findAllBySaleTypeAndStatus(final ProductSaleType saleType, final ProductStatus status) {
-        return productRepository.findAllBySaleTypeAndStatus(saleType, status);
+    public List<Product> findAllBySaleTypeAndStatus(
+        final ProductSaleType saleType,
+        final ProductStatus status,
+        final LocalDateTime createdAt
+    ) {
+        return productRepository.findAllBySaleTypeAndStatus(saleType, status, createdAt);
     }
 
     @Override
