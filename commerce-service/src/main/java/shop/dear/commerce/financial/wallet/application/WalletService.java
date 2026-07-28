@@ -39,6 +39,13 @@ public class WalletService {
         return WalletInfo.from(wallet);
     }
 
+    public GetWalletInfo getWalletId(final Long memberId) {
+
+        final Wallet wallet = findWallet(memberId);
+
+        return GetWalletInfo.from(wallet);
+    }
+
     @Transactional
     public void topUp(final TopUpCommand command) {
         final Wallet wallet = getOrCreateWallet(command.memberId());
