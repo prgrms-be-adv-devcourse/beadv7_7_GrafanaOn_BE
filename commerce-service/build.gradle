@@ -8,9 +8,16 @@ dependencies {
     // PostgreSQL
     runtimeOnly 'org.postgresql:postgresql'
 
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     // AWS S3
     implementation 'software.amazon.awssdk:s3:2.46.17'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind'
+}
+
+//plain jar 생성 false
+tasks.named('jar') {
+    enabled = false
 }

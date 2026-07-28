@@ -9,7 +9,6 @@ import shop.dear.commerce.product.domain.repository.ProductRepository;
 import shop.dear.commerce.product.infrastructure.persistence.jpa.ProductJpaRepository;
 import shop.dear.common.exception.BusinessException;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 

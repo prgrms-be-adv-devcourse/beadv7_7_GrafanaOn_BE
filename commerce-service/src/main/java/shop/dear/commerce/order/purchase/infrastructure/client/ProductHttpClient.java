@@ -15,7 +15,7 @@ import shop.dear.common.response.ApiResponse;
 import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.PRODUCT_LOOKUP_FAILED;
 import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.PRODUCT_NOT_FOUND;
 
-@Component
+@Component("purchaseProductHttpClient")
 public class ProductHttpClient implements ProductPort {
 
   private static final String PRODUCT_URI = "/internal/products/{productId}";

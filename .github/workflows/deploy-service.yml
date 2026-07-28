@@ -1,0 +1,88 @@
+name: Deploy Service (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        required: true
+        type: string
+      service_port:
+        required: true
+        type: string
+      green_port:
+        required: false
+        type: string
+        default: ""
+      dockerfile_path:
+        required: false
+        type: string
+        default: "Dockerfile"
+      db_url:
+        required: false
+        type: string
+        default: ""
+      use_blue_green:
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      DB_USERNAME:
+        required: false
+      DB_PASSWORD:
+        required: false
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: |
+          docker build -f ${{ inputs.service_name }}/${{ inputs.dockerfile_path }} -t ${{ inputs.service_name }}:${{ github.sha }} .
+
+      - name: Deploy to Green
+        if: inputs.use_blue_green
+        run: |
+          docker rm -f ${{ inputs.service_name }}-green || true
+          docker run -d \
+            --name ${{ inputs.service_name }}-green \
+            --network dear-network \
+            -p ${{ inputs.green_port }}:${{ inputs.service_port }} \
+            -e SPRING_PROFILES_ACTIVE=prod \
+            ${{ inputs.db_url != '' && format('-e SPRING_DATASOURCE_URL={0}', inputs.db_url) || '' }} \
+            ${{ secrets.DB_USERNAME != '' && format('-e SPRING_DATASOURCE_USERNAME={0}', secrets.DB_USERNAME) || '' }} \
+            ${{ secrets.DB_PASSWORD != '' && format('-e SPRING_DATASOURCE_PASSWORD={0}', secrets.DB_PASSWORD) || '' }} \
+            ${{ inputs.service_name }}:${{ github.sha }}
+
+      - name: Health Check (Green)
+        if: inputs.use_blue_green
+        run: |
+          for i in {1..10}; do
+            if curl -f http://localhost:${{ inputs.green_port }}/actuator/health; then
+              echo "Green 정상 기동 확인"
+              exit 0
+            fi
+            echo "대기 중... ($i/10)"
+            sleep 3
+          done
+          echo "Green 헬스체크 실패, 배포 중단"
+          docker rm -f ${{ inputs.service_name }}-green
+          exit 1
+
+      - name: Deploy (Rolling)
+        if: ${{ !inputs.use_blue_green }}
+        run: |
+          docker rm -f ${{ inputs.service_name }}-container || true
+          docker run -d \
+            --name ${{ inputs.service_name }}-container \
+            --network dear-network \
+            -p ${{ inputs.service_port }}:${{ inputs.service_port }} \
+            -e SPRING_PROFILES_ACTIVE=prod \
+            ${{ inputs.service_name }}:${{ github.sha  }}
+
+      - name: Cleanup old Blue
+        if: inputs.use_blue_green
+        run: |
+          docker rm -f ${{ inputs.service_name }}-blue || true
+          docker rename ${{ inputs.service_name }}-green ${{ inputs.service_name }}-blue

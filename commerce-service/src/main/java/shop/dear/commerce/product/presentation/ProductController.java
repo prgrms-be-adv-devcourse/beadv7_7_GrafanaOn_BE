@@ -105,6 +105,7 @@ public class ProductController {
         @RequestParam(value = "createdAt", required = false) final LocalDate createdAt
     ) {
         final List<GetProductDto> result = productService.getAllProduct(saleType, status, createdAt);
+
         final List<GetProductResponse> response = result.stream()
             .map(GetProductResponse::of)
             .toList();

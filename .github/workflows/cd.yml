@@ -1,0 +1,38 @@
+name: CD - Deploy to EC2
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-commerce:
+    uses: ./.github/workflows/deploy-service.yml
+    with:
+      service_name: commerce-service
+      service_port: "8082"
+      green_port: "8091"
+      db_url: ${{secrets.DB_URL}}
+      use_blue_green: true
+    secrets:
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+
+  deploy-identity:
+    uses: ./.github/workflows/deploy-service.yml
+    with:
+      service_name: identity-service
+      service_port: "8081"
+      green_port: "8092"
+      db_url: ${{secrets.DB_URL}}
+      use_blue_green: true
+    secrets:
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+
+  deploy-gateway:
+    needs: [deploy-commerce, deploy-identity]
+    uses: ./.github/workflows/deploy-service.yml
+    with:
+      service_name: gateway-service
+      service_port: "8080"
+      use_blue_green: false

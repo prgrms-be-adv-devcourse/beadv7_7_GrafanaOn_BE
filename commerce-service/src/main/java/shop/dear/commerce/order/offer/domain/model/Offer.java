@@ -40,6 +40,9 @@ public class Offer extends BaseEntity {
     @Column(name = "product_id", nullable = false)
     private Long productId;
 
+    @Column(name = "snapshot_id", nullable = false)
+    private Long snapshotId;
+
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
 
@@ -64,6 +67,7 @@ public class Offer extends BaseEntity {
         final Long buyerId,
         final Long sellerId,
         final Long productId,
+        final Long snapshotId,
         final BigDecimal amount,
         final String title,
         final String story,
@@ -73,6 +77,7 @@ public class Offer extends BaseEntity {
         this.buyerId = buyerId;
         this.sellerId = sellerId;
         this.productId = productId;
+        this.snapshotId = snapshotId;
         this.amount = amount;
         this.title = title;
         this.story = story;
@@ -85,12 +90,13 @@ public class Offer extends BaseEntity {
         final Long buyerId,
         final Long sellerId,
         final Long productId,
+        final Long snapshotId,
         final BigDecimal amount,
         final String title,
         final String story,
         final String delivery
     ) {
-        return new Offer(buyerId, sellerId, productId, amount, title, story, delivery);
+        return new Offer(buyerId, sellerId, productId, snapshotId, amount, title, story, delivery);
     }
 
     private static String generateNumber() {
