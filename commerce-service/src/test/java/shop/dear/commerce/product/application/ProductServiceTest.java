@@ -385,9 +385,10 @@ class ProductServiceTest {
 
         final ProductSaleType targetSaleType = ProductSaleType.OFFER;
         final ProductStatus targetStatus = ProductStatus.PREPARING;
+        final LocalDate date = LocalDate.now();
 
         // When
-        final List<GetProductDto> result = productService.getAllProduct(targetSaleType, targetStatus);
+        final List<GetProductDto> result = productService.getAllProduct(targetSaleType, targetStatus, date);
 
         // Then
         assertThat(result).hasSize(1);
@@ -396,7 +397,7 @@ class ProductServiceTest {
         assertThat(result.get(0).status()).isEqualTo(targetStatus.toString());
     }
 
-    @DisplayName("파라미터(saleType, status)가 null로 주어지면 전체 상품 목록을 조회한다.")
+    @DisplayName("파라미터(saleType, status, createdAt)가 null로 주어지면 전체 상품 목록을 조회한다.")
     @Test
     void givenNullParams_whenGetAllProduct_thenReturnAllProducts() {
         // Given
@@ -412,7 +413,7 @@ class ProductServiceTest {
         productRepository.save(product2);
 
         // When
-        final List<GetProductDto> result = productService.getAllProduct(null, null);
+        final List<GetProductDto> result = productService.getAllProduct(null, null, null);
 
         // Then
         assertThat(result).hasSize(2);
@@ -427,7 +428,7 @@ class ProductServiceTest {
         productRepository.save(product);
 
         // When
-        final List<GetProductDto> result = productService.getAllProduct(ProductSaleType.IMMEDIATE, ProductStatus.SOLD_OUT);
+        final List<GetProductDto> result = productService.getAllProduct(ProductSaleType.IMMEDIATE, ProductStatus.SOLD_OUT, null);
 
         // Then
         assertThat(result).isEmpty();

@@ -9,6 +9,7 @@ import shop.dear.commerce.product.domain.repository.ProductRepository;
 import shop.dear.commerce.product.infrastructure.persistence.jpa.ProductJpaRepository;
 import shop.dear.common.exception.BusinessException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -70,9 +71,10 @@ public class ProductRepositoryAdapter implements ProductRepository {
     public List<Product> findAllBySaleTypeAndStatus(
         final ProductSaleType saleType,
         final ProductStatus status,
-        final LocalDateTime createdAt
+        final LocalDateTime startDate,
+        final LocalDateTime endDate
     ) {
-        return productRepository.findAllBySaleTypeAndStatus(saleType, status, createdAt);
+        return productRepository.findAllBySaleTypeAndStatus(saleType, status, startDate, endDate);
     }
 
     @Override
