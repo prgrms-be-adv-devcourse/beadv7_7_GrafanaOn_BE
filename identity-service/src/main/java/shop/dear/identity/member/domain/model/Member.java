@@ -5,6 +5,12 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.dear.common.audit.BaseEntity;
+import shop.dear.common.exception.BusinessException;
+import shop.dear.identity.member.domain.constract.MemberStatus;
+import shop.dear.identity.member.domain.constract.SellerStatus;
+import shop.dear.identity.member.domain.exception.MemberErrorCode;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "member")
@@ -28,6 +34,16 @@ public class Member extends BaseEntity {
     @Column(name = "nickname", nullable = false, unique = true)
     private String nickname;
 
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Seller seller;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private MemberStatus status;
+
+    @Column(name = "withdrawnAt", nullable = true)
+    private LocalDateTime withdrawnAt;
+
     private Member(
         final String name,
         final String defaultShippingAddress,
@@ -38,6 +54,7 @@ public class Member extends BaseEntity {
         this.defaultShippingAddress = defaultShippingAddress;
         this.phoneNumber = phoneNumber;
         this.nickname = nickname;
+        this.status = MemberStatus.ACTIVE;
     }
 
     public static Member create(
@@ -62,5 +79,57 @@ public class Member extends BaseEntity {
         this.defaultShippingAddress = defaultShippingAddress;
         this.phoneNumber = phoneNumber;
         this.nickname = nickname;
+    }
+
+    public boolean isSeller(){
+        return this.seller != null && this.seller.getStatus() == SellerStatus.ACTIVE;
+    }
+
+    public boolean isActive(){
+        return this.status == MemberStatus.ACTIVE;
+    }
+
+    public void registerSeller(final String bank, final String account) {
+        if (this.isSeller()) {
+            throw new BusinessException(MemberErrorCode.ALREADY_SELLER);
+        }
+        this.seller = new Seller(
+            bank,
+            account,
+            this
+        );
+    }
+
+    public void updateSellerAccount(String bank, String account){
+        if (!this.isSeller()) {
+            throw new BusinessException(MemberErrorCode.NOT_SELLER);
+        }
+        this.seller.changeAccount(bank,account);
+    }
+
+    public void requestSellerWithdrawal() {
+        if (!this.isSeller()) {
+            throw new BusinessException(MemberErrorCode.NOT_SELLER);
+        }
+        this.seller.withdrawing();
+    }
+
+    public void completeSellerWithdrawal(){
+        this.seller.withdraw();
+    }
+
+    public void anonymizeProfile() {
+        if (seller != null && seller.getStatus() != SellerStatus.WITHDRAWN) {
+            throw new BusinessException(
+                    MemberErrorCode.SELLER_WITHDRAWAL_REQUIRED
+            );
+        }
+
+        this.name = "탈퇴한 회원";
+        this.defaultShippingAddress = "";
+        this.phoneNumber = "";
+        this.nickname = "withdrawn_" + this.id;
+        this.status = MemberStatus.WITHDRAWN;
+        this.withdrawnAt = LocalDateTime.now();
     }
 }

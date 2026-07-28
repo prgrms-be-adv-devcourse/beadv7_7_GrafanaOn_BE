@@ -2,6 +2,7 @@ package shop.dear.commerce.order.purchase.domain.repository;
 
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PurchaseRepository {
@@ -13,4 +14,6 @@ public interface PurchaseRepository {
     boolean existsById(Long id);
 
     void deleteById(Long id);
+
+    List<Purchase> findByBuyerId(Long buyerId);
 }

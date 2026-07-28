@@ -26,6 +26,9 @@ public class OfferSnapshot extends BaseEntity {
     @Column(name = "offer_id")
     private Long offerId;
 
+    @Column(name = "seller_id", nullable = false)
+    private Long sellerId;
+
     @Column(name = "writer_id", nullable = false)
     private Long writerId;
 
@@ -39,11 +42,13 @@ public class OfferSnapshot extends BaseEntity {
     private BigDecimal priceSnapshot;
 
     private OfferSnapshot(
+        final Long sellerId,
         final Long writerId,
         final Long productId,
         final String modelNumberSnapshot,
         final BigDecimal priceSnapshot
     ) {
+        this.sellerId = sellerId;
         this.writerId = writerId;
         this.productId = productId;
         this.modelNumberSnapshot = modelNumberSnapshot;
@@ -51,18 +56,34 @@ public class OfferSnapshot extends BaseEntity {
     }
 
     public static OfferSnapshot create(
+        final Long sellerId,
         final Long writerId,
         final Long productId,
         final String modelNumberSnapshot,
         final BigDecimal priceSnapshot
     ) {
-        return new OfferSnapshot(writerId, productId, modelNumberSnapshot, priceSnapshot);
+        return new OfferSnapshot(sellerId, writerId, productId, modelNumberSnapshot, priceSnapshot);
     }
 
-    public void linkToOffer(final Long offerId) {
+    public void updateSnapshot(
+            final String modelNumberSnapshot,
+            final BigDecimal priceSnapshot
+    ) {
+        this.modelNumberSnapshot = modelNumberSnapshot;
+        this.priceSnapshot = priceSnapshot;
+    }
+
+    public void linkToOffer(final Long offerId, final Long writerId) {
+        validateWriter(writerId);
         if (this.offerId != null) {
             throw new BusinessException(OfferSnapshotErrorCode.OFFER_SNAPSHOT_ALREADY_LINKED);
         }
         this.offerId = offerId;
+    }
+
+    private void validateWriter(final Long writerId) {
+        if (!this.writerId.equals(writerId)) {
+            throw new BusinessException(OfferSnapshotErrorCode.OFFER_SNAPSHOT_WRITER_MISMATCH);
+        }
     }
 }
