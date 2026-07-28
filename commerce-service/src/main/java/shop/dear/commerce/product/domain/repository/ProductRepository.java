@@ -1,5 +1,6 @@
 package shop.dear.commerce.product.domain.repository;
 
+import shop.dear.commerce.product.domain.constant.ProductSaleType;
 import shop.dear.commerce.product.domain.constant.ProductStatus;
 import shop.dear.commerce.product.domain.model.Product;
 
@@ -15,4 +16,5 @@ public interface ProductRepository {
     void increaseViewCount(final Long productId);
     boolean existsById(final Long productId);
     List<Product> findAllBySellerId(final Long sellerId);
+    List<Product> findAllBySaleTypeAndStatus(final ProductSaleType saleType, final ProductStatus status);
 }

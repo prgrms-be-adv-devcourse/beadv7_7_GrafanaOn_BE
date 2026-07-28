@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.product.application.dto.GetProductDetailDto;
+import shop.dear.commerce.product.application.dto.GetProductDto;
 import shop.dear.commerce.product.application.dto.GetSellerProductDto;
 import shop.dear.commerce.product.application.dto.MemberProductExistsDto;
 import shop.dear.commerce.product.application.dto.PresignedUrlInfoDto;
@@ -254,6 +255,14 @@ public class ProductService {
 
         return products.stream()
             .map(GetSellerProductDto::of)
+            .toList();
+    }
+
+    public List<GetProductDto> getAllProduct(final ProductSaleType saleType, final ProductStatus status) {
+        final List<Product> products = productRepository.findAllBySaleTypeAndStatus(saleType, status);
+
+        return products.stream()
+            .map(GetProductDto::of)
             .toList();
     }
 }
