@@ -1,0 +1,35 @@
+# JWT
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        default_batch_fetch_size: 100
+auth:
+  jwt:
+    issuer: ${JWT_ISSUER}
+    secret: ${JWT_SECRET}
+    access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION}
+    refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
+
+  cookie:
+    name: ${AUTH_REFRESH_COOKIE_NAME}
+    secure: ${AUTH_COOKIE_SECURE} # HTTPS에서만 쿠키 전송, 테스트 시 false
+    same-site: ${AUTH_COOKIE_SAME_SITE}
+    path: ${AUTH_COOKIE_PATH}
+
+identity:
+  client:
+    commerce-base-url: ${COMMERCE_BASE_URL}
+  security:
+    account-key: ${AES_SECRET_KEY}
+    account-iv: ${AES_SECRET_IV}

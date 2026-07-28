@@ -184,4 +184,13 @@ gradle-app.setting
 
 # End of https://www.toptal.com/developers/gitignore/api/java,gradle,intellij+all,macos
 
-gateway-service/src/main/resources/application-local.yaml
+# Spring Local Config
+
+**/src/main/resources/application-local.yml
+**/src/main/resources/application-local.yaml
+# Environment
+*.env
+**/*.env
+# Env Example
+!*.env.example
+!**/*.env.example
