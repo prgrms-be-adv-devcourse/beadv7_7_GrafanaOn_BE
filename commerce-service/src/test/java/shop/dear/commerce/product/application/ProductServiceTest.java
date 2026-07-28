@@ -16,6 +16,7 @@ import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
 import shop.dear.commerce.product.application.dto.command.GeneratePresignedUrlsCommand;
 import shop.dear.commerce.product.application.dto.command.GetScrapProductCommand;
 import shop.dear.commerce.product.application.dto.command.UpdateProductCommand;
+import shop.dear.commerce.product.application.dto.external.PublishProductInfo;
 import shop.dear.commerce.product.application.fake.FakeMemberPort;
 import shop.dear.commerce.product.application.fake.FakeOfferPort;
 import shop.dear.commerce.product.application.fake.FakePresignedUrlGenerator;
@@ -49,6 +50,8 @@ class ProductServiceTest {
     private ProductRepository productRepository;
 
     private FakeProductEventPublisher fakeProductEventPublisher;
+    @Autowired
+    private ProductScheduler productScheduler;
 
     @BeforeEach
     void setUp() {
@@ -428,5 +431,23 @@ class ProductServiceTest {
 
         // Then
         assertThat(result).isEmpty();
+    }
+
+    @DisplayName("등록된 상품의 상태를 판매중으로 변경한다.")
+    @Test
+    void whenPublishDailyProducts_thenSuccess() {
+        //Given
+        final Long sellerId = 1L;
+        final Product product = createProduct(sellerId);
+        final Product savedProduct = productRepository.save(product);
+
+        //When
+        final PublishProductInfo info = productScheduler.publishDailyProducts();
+
+        final Product updatedProduct = productRepository.findById(savedProduct.getId());
+
+        //Then
+        assertThat(info.count()).isEqualTo(1);
+        assertThat(updatedProduct.getStatus().toString()).isEqualTo("ON_SALE");
     }
 }
