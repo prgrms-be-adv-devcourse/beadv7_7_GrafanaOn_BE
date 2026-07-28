@@ -35,6 +35,8 @@ public class PaymentServiceTest {
     private static final Long ORDER_ID = 10L;
     private static final BigDecimal AMOUNT = new BigDecimal("10000.00");
 
+    private static final Long OTHER_MEMBER_ID = 2L;
+
     @Mock
     private PaymentRepository paymentRepository;
 
@@ -163,6 +165,68 @@ public class PaymentServiceTest {
         final BusinessException exception = assertThrows(
                 BusinessException.class,
                 () -> paymentService.failPayment(PAYMENT_ID)
+        );
+
+        // then
+        assertEquals(PaymentErrorCode.PAYMENT_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    void getPayment_whenOwner_returnsPaymentInfo() {
+        // given
+        final Payment payment = mock(Payment.class);
+        when(payment.getId()).thenReturn(PAYMENT_ID);
+        when(payment.getMemberId()).thenReturn(MEMBER_ID);
+        when(payment.getState()).thenReturn(PaymentStatus.PENDING);
+        when(paymentRepository.findById(PAYMENT_ID))
+                .thenReturn(Optional.of(payment));
+
+        // when
+        final PaymentInfo result = paymentService.getPayment(
+                MEMBER_ID,
+                PAYMENT_ID
+        );
+
+        // then
+        assertEquals(PAYMENT_ID, result.paymentId());
+        assertEquals(PaymentStatus.PENDING, result.state());
+    }
+
+    @Test
+    void getPayment_whenDifferentMember_throwsAccessDeniedException() {
+        // given
+        final Payment payment = Payment.createOrderPayment(
+                MEMBER_ID,
+                ORDER_ID,
+                OrderType.PURCHASE,
+                AMOUNT
+        );
+        when(paymentRepository.findById(PAYMENT_ID))
+                .thenReturn(Optional.of(payment));
+
+        // when
+        final BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> paymentService.getPayment(OTHER_MEMBER_ID, PAYMENT_ID)
+        );
+
+        // then
+        assertEquals(
+                PaymentErrorCode.PAYMENT_ACCESS_DENIED,
+                exception.getErrorCode()
+        );
+    }
+
+    @Test
+    void getPayment_whenPaymentNotFound_throwsException() {
+        // given
+        when(paymentRepository.findById(PAYMENT_ID))
+                .thenReturn(Optional.empty());
+
+        // when
+        final BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> paymentService.getPayment(MEMBER_ID, PAYMENT_ID)
         );
 
         // then

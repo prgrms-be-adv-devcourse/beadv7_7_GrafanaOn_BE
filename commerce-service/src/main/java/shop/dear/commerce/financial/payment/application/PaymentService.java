@@ -55,6 +55,19 @@ public class PaymentService {
         findPayment(paymentId).fail();
     }
 
+    public PaymentInfo getPayment(
+            final Long memberId,
+            final Long paymentId
+    ) {
+        final Payment payment = findPayment(paymentId);
+
+        if (!payment.getMemberId().equals(memberId)) {
+            throw new BusinessException(PaymentErrorCode.PAYMENT_ACCESS_DENIED);
+        }
+
+        return PaymentInfo.from(payment);
+    }
+
     private Payment findPayment(final Long paymentId) {
         return paymentRepository.findById(paymentId)
                 .orElseThrow(() ->
