@@ -152,4 +152,36 @@ class OfferControllerTest {
                         .param("status", "PENDING"))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    @DisplayName("오퍼 상세 조회 시 200을 반환한다")
+    void returnsOk_whenFindOffer() throws Exception {
+        // given
+        final Offer offer = Offer.create(
+                1L, 2L, 1L, 10L, new BigDecimal("10000"), "title", "story", "delivery"
+        );
+        given(offerService.findOfferById(any(), any())).willReturn(offer);
+
+        // when & then
+        mockMvc.perform(get("/api/offers/1")
+                        .header(AuthUser.MEMBER_ID_HEADER, "1"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("오퍼 상세 조회 시 offerId가 0 이하면 400을 반환한다")
+    void returnsBadRequest_whenFindOfferWithInvalidOfferId() throws Exception {
+        // when & then
+        mockMvc.perform(get("/api/offers/0")
+                        .header(AuthUser.MEMBER_ID_HEADER, "1"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("오퍼 상세 조회 시 인증 헤더가 없으면 401을 반환한다")
+    void returnsUnauthorized_whenFindOfferWithoutAuthHeader() throws Exception {
+        // when & then
+        mockMvc.perform(get("/api/offers/1"))
+                .andExpect(status().isUnauthorized());
+    }
 }
