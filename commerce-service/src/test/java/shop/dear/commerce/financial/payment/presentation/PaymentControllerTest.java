@@ -7,6 +7,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import shop.dear.commerce.financial.payment.application.dto.ChargeCommand;
+import shop.dear.commerce.financial.payment.application.dto.ChargeInfo;
 import shop.dear.common.auth.AuthUser;
 import shop.dear.common.event.order.OrderType;
 import shop.dear.commerce.financial.payment.application.PaymentService;
@@ -160,4 +162,38 @@ public class PaymentControllerTest {
 
         verify(paymentService, never()).payOrder(any(PayOrderCommand.class));
     }
+
+    @Test
+    void prepareCharge_returnsTossOrderInfo() throws Exception {
+        // given
+        given(paymentService.prepareCharge(any(ChargeCommand.class)))
+                .willReturn(new ChargeInfo(
+                        100L,
+                        "TOPUP_test-order-001",
+                        new BigDecimal("10000.00"),
+                        "예치금 충전"
+                ));
+
+        // when & then
+        mockMvc.perform(post("/api/payments/charge")
+                        .header(AuthUser.MEMBER_ID_HEADER, "1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"amount\":10000.00}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.code").value("success"))
+                .andExpect(jsonPath("$.data.paymentId").value(100))
+                .andExpect(jsonPath("$.data.orderId")
+                        .value("TOPUP_test-order-001"))
+                .andExpect(jsonPath("$.data.amount").value(10000))
+                .andExpect(jsonPath("$.data.orderName").value("예치금 충전"));
+
+        verify(paymentService).prepareCharge(
+                new ChargeCommand(
+                        1L,
+                        new BigDecimal("10000.00")
+                )
+        );
+    }
+
+
 }

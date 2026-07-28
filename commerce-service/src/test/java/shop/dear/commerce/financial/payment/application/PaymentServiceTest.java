@@ -6,6 +6,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+import shop.dear.commerce.financial.payment.application.dto.ChargeCommand;
+import shop.dear.commerce.financial.payment.application.dto.ChargeInfo;
+import shop.dear.commerce.financial.payment.domain.constant.PGPaymentStatus;
+import shop.dear.commerce.financial.payment.domain.constant.PaymentPurpose;
 import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.commerce.financial.payment.application.dto.PayOrderCommand;
@@ -20,8 +25,7 @@ import shop.dear.commerce.financial.payment.domain.repository.PaymentRepository;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -231,5 +235,54 @@ public class PaymentServiceTest {
 
         // then
         assertEquals(PaymentErrorCode.PAYMENT_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    void prepareCharge_createsPendingTopUpPaymentWithReadyPgPayment() {
+        // given
+        final ChargeCommand command = new ChargeCommand(
+                MEMBER_ID,
+                AMOUNT
+        );
+
+        when(paymentRepository.save(any(Payment.class)))
+                .thenAnswer(invocation -> {
+                    final Payment payment = invocation.getArgument(0);
+                    ReflectionTestUtils.setField(
+                            payment,
+                            "id",
+                            PAYMENT_ID
+                    );
+                    return payment;
+                });
+
+        // when
+        final ChargeInfo result = paymentService.prepareCharge(command);
+
+        // then
+        final ArgumentCaptor<Payment> paymentCaptor =
+                ArgumentCaptor.forClass(Payment.class);
+        verify(paymentRepository).save(paymentCaptor.capture());
+
+        final Payment savedPayment = paymentCaptor.getValue();
+
+        assertEquals(PAYMENT_ID, result.paymentId());
+        assertEquals(PaymentPurpose.TOPUP, savedPayment.getPurpose());
+        assertEquals(PaymentStatus.PENDING, savedPayment.getState());
+
+        assertNotNull(savedPayment.getPgPayment());
+        assertEquals(
+                PGPaymentStatus.READY,
+                savedPayment.getPgPayment().getState()
+        );
+        assertTrue(
+                savedPayment.getPgPayment()
+                        .getMerchantOrderId()
+                        .startsWith("TOPUP_")
+        );
+        assertEquals(
+                savedPayment.getPgPayment().getMerchantOrderId(),
+                result.orderId()
+        );
     }
 }

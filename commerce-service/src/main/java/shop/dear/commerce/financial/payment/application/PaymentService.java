@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
+import shop.dear.commerce.financial.payment.application.dto.ChargeCommand;
+import shop.dear.commerce.financial.payment.application.dto.ChargeInfo;
 import shop.dear.commerce.financial.payment.application.dto.PayOrderCommand;
 import shop.dear.commerce.financial.payment.application.dto.PaymentInfo;
 import shop.dear.commerce.financial.payment.application.event.WalletDebitRequestedEvent;
@@ -13,6 +15,8 @@ import shop.dear.commerce.financial.payment.domain.exception.PaymentErrorCode;
 import shop.dear.commerce.financial.payment.domain.model.Payment;
 import shop.dear.commerce.financial.payment.domain.repository.PaymentRepository;
 import shop.dear.common.exception.BusinessException;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -73,5 +77,20 @@ public class PaymentService {
                 .orElseThrow(() ->
                         new BusinessException(PaymentErrorCode.PAYMENT_NOT_FOUND)
                 );
+    }
+
+    @Transactional
+    public ChargeInfo prepareCharge(final ChargeCommand command) {
+        final Payment payment = Payment.createTopUp(
+                command.memberId(),
+                command.amount()
+        );
+
+        final String merchantOrderId = "TOPUP_" + UUID.randomUUID();
+        payment.preparePgPayment(merchantOrderId);
+
+        final Payment savedPayment = paymentRepository.save(payment);
+
+        return ChargeInfo.from(savedPayment);
     }
 }

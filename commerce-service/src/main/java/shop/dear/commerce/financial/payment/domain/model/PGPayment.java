@@ -37,12 +37,16 @@ public class PGPayment extends BaseEntity {
     @Column(name = "approved_amount", precision = 15, scale = 2)
     private BigDecimal approvedAmount;
 
-    private PGPayment(final Payment payment) {
+    @Column(name = "merchant_order_id", nullable = false, unique = true, length = 64)
+    private String merchantOrderId;
+
+    private PGPayment(final Payment payment, final String merchantOrderId) {
             this.payment = payment;
+            this.merchantOrderId = merchantOrderId;
             this.state = PGPaymentStatus.READY;
     }
 
-    static PGPayment create(final Payment payment) {
-            return new PGPayment(payment);
+    static PGPayment create(final Payment payment, final String merchantOrderId) {
+            return new PGPayment(payment, merchantOrderId);
     }
 }
