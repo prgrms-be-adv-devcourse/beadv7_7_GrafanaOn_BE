@@ -2,6 +2,7 @@ package shop.dear.commerce.product.infrastructure.persistence;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import shop.dear.commerce.product.domain.constant.ProductSaleType;
 import shop.dear.commerce.product.domain.constant.ProductStatus;
 import shop.dear.commerce.product.domain.model.Product;
 import shop.dear.commerce.product.domain.repository.ProductRepository;
@@ -62,5 +63,10 @@ public class ProductRepositoryAdapter implements ProductRepository {
     @Override
     public List<Product> findAllBySellerId(final Long sellerId) {
         return productRepository.findAllBySellerId(sellerId);
+    }
+
+    @Override
+    public List<Product> findAllBySaleTypeAndStatus(final ProductSaleType saleType, final ProductStatus status) {
+        return productRepository.findAllBySaleTypeAndStatus(saleType, status);
     }
 }

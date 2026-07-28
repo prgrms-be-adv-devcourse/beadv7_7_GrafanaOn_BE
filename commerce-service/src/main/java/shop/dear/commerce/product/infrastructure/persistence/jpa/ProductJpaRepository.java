@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import shop.dear.commerce.product.domain.constant.ProductSaleType;
 import shop.dear.commerce.product.domain.constant.ProductStatus;
 import shop.dear.commerce.product.domain.model.Product;
 
@@ -17,4 +18,10 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
     void increaseViewCount(@Param("productId") Long productId);
 
     List<Product> findAllBySellerId(final Long sellerId);
+
+    @Query("SELECT p FROM Product p " +
+        "WHERE (:saleType IS NULL OR p.saleType = :saleType) " +
+        "AND (:status IS NULL OR p.status = :status)" +
+        "ORDER BY p.viewCount DESC, p.insertedAt DESC")
+    List<Product> findAllBySaleTypeAndStatus(@Param("saleType") final ProductSaleType saleType, @Param("status") final ProductStatus status);
 }
