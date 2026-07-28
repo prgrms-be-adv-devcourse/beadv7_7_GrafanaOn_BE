@@ -107,6 +107,15 @@ class OfferControllerTest {
     }
 
     @Test
+    @DisplayName("오퍼 거절 요청 시 200을 반환한다")
+    void returnsOk_whenRejectOffer() throws Exception {
+        // when & then
+        mockMvc.perform(patch("/api/offers/1/reject")
+                        .header(AuthUser.MEMBER_ID_HEADER, "1"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     @DisplayName("offerId가 0 이하면 400을 반환한다")
     void returnsBadRequest_whenOfferIdNotPositive() throws Exception {
         // when & then
