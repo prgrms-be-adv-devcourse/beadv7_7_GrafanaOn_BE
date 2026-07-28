@@ -260,7 +260,7 @@ class OfferServiceTest {
         void createsOffer_whenPriceMatches() {
             // given
             final OfferSnapshot snapshot = createSnapshot(1L, 2L, 10L, new BigDecimal("10000"));
-            final CreateOfferCommand command = new CreateOfferCommand(1L, 1L, 3L, "title", "story", "delivery");
+            final CreateOfferCommand command = new CreateOfferCommand(1L, 1L, "title", "story", "delivery");
 
             stubMemberExists(1L);
             given(offerSnapshotRepository.findById(1L)).willReturn(Optional.of(snapshot));
@@ -272,7 +272,7 @@ class OfferServiceTest {
             final Offer offer = offerService.createOffer(command);
 
             // then
-            assertThat(offer.getBuyerId()).isEqualTo(3L);
+            assertThat(offer.getBuyerId()).isEqualTo(1L);
             assertThat(offer.getSellerId()).isEqualTo(2L);
             assertThat(offer.getProductId()).isEqualTo(10L);
             assertThat(offer.getAmount()).isEqualTo(new BigDecimal("10000"));
@@ -288,7 +288,7 @@ class OfferServiceTest {
         @DisplayName("스냅샷이 존재하지 않으면 예외를 던진다")
         void throwsException_whenSnapshotNotFound() {
             // given
-            final CreateOfferCommand command = new CreateOfferCommand(1L, 1L, 3L, "title", "story", "delivery");
+            final CreateOfferCommand command = new CreateOfferCommand(1L, 1L, "title", "story", "delivery");
 
             stubMemberExists(1L);
             given(offerSnapshotRepository.findById(1L)).willReturn(Optional.empty());
@@ -308,7 +308,7 @@ class OfferServiceTest {
         void throwsException_whenWriterMismatch() {
             // given
             final OfferSnapshot snapshot = createSnapshot(1L, 2L, 10L, new BigDecimal("10000"));
-            final CreateOfferCommand command = new CreateOfferCommand(999L, 1L, 3L, "title", "story", "delivery");
+            final CreateOfferCommand command = new CreateOfferCommand(999L, 1L, "title", "story", "delivery");
 
             stubMemberExists(999L);
             given(offerSnapshotRepository.findById(1L)).willReturn(Optional.of(snapshot));
@@ -330,7 +330,7 @@ class OfferServiceTest {
         void throwsException_whenPriceMismatch() {
             // given
             final OfferSnapshot snapshot = createSnapshot(1L, 2L, 10L, new BigDecimal("10000"));
-            final CreateOfferCommand command = new CreateOfferCommand(1L, 1L, 3L, "title", "story", "delivery");
+            final CreateOfferCommand command = new CreateOfferCommand(1L, 1L, "title", "story", "delivery");
 
             stubMemberExists(1L);
             given(offerSnapshotRepository.findById(1L)).willReturn(Optional.of(snapshot));

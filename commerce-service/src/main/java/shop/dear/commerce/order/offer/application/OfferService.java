@@ -90,7 +90,7 @@ public class OfferService {
                 .orElseThrow(() -> new BusinessException(OfferSnapshotErrorCode.OFFER_SNAPSHOT_NOT_FOUND));
 
         final Offer offer = Offer.create(
-                command.buyerId(),
+                command.writerId(),
                 snapshot.getSellerId(),
                 snapshot.getProductId(),
                 snapshot.getId(),

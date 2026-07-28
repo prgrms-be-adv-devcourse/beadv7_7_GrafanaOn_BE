@@ -68,7 +68,7 @@ class OfferControllerTest {
     @DisplayName("오퍼 생성 요청 시 201을 반환한다")
     void returnsCreated_whenCreateOffer() throws Exception {
         // given
-        final CreateOfferRequest request = new CreateOfferRequest(1L, 2L, "title", "story", "delivery");
+        final CreateOfferRequest request = new CreateOfferRequest(1L, "title", "story", "delivery");
         final Offer offer = Offer.create(
                 2L, 3L, 1L, 10L, new BigDecimal("10000"), "title", "story", "delivery"
         );
