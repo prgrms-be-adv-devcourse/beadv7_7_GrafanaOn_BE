@@ -41,6 +41,14 @@ public class WalletService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public GetWalletInfo getWalletId(final Long memberId) {
+
+        final Wallet wallet = findWallet(memberId);
+
+        return GetWalletInfo.from(wallet);
+    }
+
+    @Transactional
     public void topUp(final TopUpCommand command) {
         final Wallet wallet = getOrCreateWallet(command.memberId());
 
