@@ -6,7 +6,7 @@ spring:
     name: gateway-service
 
   profiles:
-    active: local
+    active: ${SPRING_PROFILES_ACTIVE:local}
 
 management:
   endpoints:
