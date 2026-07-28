@@ -40,4 +40,14 @@ public class OfferRepositoryAdapter implements OfferRepository {
   public boolean existsByProductIdAndStatusIn(final Long productId, final List<OfferStatus> statuses) {
     return offerJpaRepository.existsByProductIdAndStatusIn(productId, statuses);
   }
+
+  @Override
+  public List<Offer> findByProductIdAndStatusInOrderByInsertedAtDesc(final Long productId, final List<OfferStatus> statuses) {
+    return offerJpaRepository.findByProductIdAndStatusInOrderByInsertedAtDesc(productId, statuses);
+  }
+
+  @Override
+  public List<Offer> findByProductIdOrderByInsertedAtDesc(final Long productId) {
+    return offerJpaRepository.findByProductIdOrderByInsertedAtDesc(productId);
+  }
 }

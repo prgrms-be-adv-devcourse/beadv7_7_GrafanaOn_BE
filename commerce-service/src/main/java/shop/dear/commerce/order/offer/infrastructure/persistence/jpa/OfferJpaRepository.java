@@ -9,4 +9,8 @@ import java.util.List;
 public interface OfferJpaRepository extends JpaRepository<Offer, Long> {
 
   boolean existsByProductIdAndStatusIn(Long productId, List<OfferStatus> statuses);
+
+  List<Offer> findByProductIdAndStatusInOrderByInsertedAtDesc(Long productId, List<OfferStatus> statuses);
+
+  List<Offer> findByProductIdOrderByInsertedAtDesc(Long productId);
 }
