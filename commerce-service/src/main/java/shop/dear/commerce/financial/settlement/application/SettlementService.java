@@ -6,10 +6,10 @@ import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.financial.settlement.application.dto.SettlementInfo;
 import shop.dear.commerce.financial.settlement.application.dto.WalletInfo;
 import shop.dear.commerce.financial.settlement.application.port.SettlementEventPublisher;
+import shop.dear.commerce.financial.settlement.application.port.WalletPort;
 import shop.dear.commerce.financial.settlement.domain.constant.SettlementStatus;
 import shop.dear.commerce.financial.settlement.domain.model.Settlement;
 import shop.dear.commerce.financial.settlement.domain.repository.SettlementRepository;
-import shop.dear.commerce.financial.settlement.infrastructure.client.WalletApiClient;
 import shop.dear.common.event.settlement.SettlementPayoutEvent;
 import shop.dear.common.event.settlement.SettlementPayoutItem;
 
@@ -25,16 +25,15 @@ public class SettlementService {
 
 	private final SettlementRepository settlementRepository;
 	private final SettlementEventPublisher settlementEventPublisher;
-	private final WalletApiClient walletApiClient;
+	private final WalletPort walletPort;
 
 	//특정기간의 정산완료 이력 조회
 	public List<SettlementInfo> getHistory(
-		Long memberId,
 		LocalDateTime startDate,
 		LocalDateTime endDate
 	) {
 
-		Long walletId = getWalletId(memberId);
+		Long walletId = getWalletId();
 
 		return settlementRepository.findByInsertedAtBetween(
 				startDate,
@@ -48,9 +47,9 @@ public class SettlementService {
 	}
 
 	//회원의 정산예정금액(전월 1일 ~ 마지막일)
-	public BigDecimal getNetAmount(Long memberId, YearMonth targetMonth) {
+	public BigDecimal getNetAmount(YearMonth targetMonth) {
 
-		Long walletId = getWalletId(memberId);
+		Long walletId = getWalletId();
 
 		//정산예금 netAmount 합계
 		BigDecimal netAmount =  settlementRepository.findByInsertedAtBetween(
@@ -120,9 +119,9 @@ public class SettlementService {
 			.atStartOfDay();
 	}
 
-	public Long getWalletId(final Long memberId) {
+	public Long getWalletId() {
 
-		WalletInfo info = walletApiClient.getWalletId(memberId);
+		WalletInfo info = walletPort.getWalletId();
 
 		return info.walletId();
 	}
