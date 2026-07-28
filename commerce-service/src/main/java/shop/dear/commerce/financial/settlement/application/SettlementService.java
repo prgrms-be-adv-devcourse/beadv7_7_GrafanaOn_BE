@@ -24,32 +24,34 @@ public class SettlementService {
 	private final SettlementRepository settlementRepository;
 	private final SettlementEventPublisher settlementEventPublisher;
 
-	//특정기간의 정산 이력 조회
-	public List<SettlementInfo> getSettlements(Long memberId, LocalDateTime from, LocalDateTime to) {
+	//특정기간의 정산완료 이력 조회
+	public List<SettlementInfo> getHistory(
+		Long memberId,
+		LocalDateTime startDate,
+		LocalDateTime endDate
+	) {
 		return settlementRepository.findByInsertedAtBetween(
-			from,
-			to,
-			memberId,
-			SettlementStatus.COMPLETED
-		).stream()
-		.map(SettlementInfo::from)
-		.toList();
+				startDate,
+				endDate,
+				memberId,
+				SettlementStatus.COMPLETED
+			)
+			.stream()
+			.map(SettlementInfo::from)
+			.toList();
 	}
 
-	//회원의 정산예정금액
-	public BigDecimal getSettlementAmount(Long walletId, YearMonth targetMonth){
-
-		//정산월의 1일 ~ 마지막일
-		LocalDateTime startDate = targetMonth.atDay(1).atStartOfDay();
-		LocalDateTime endDate = targetMonth.plusMonths(1).atDay(1).atStartOfDay();
+	//회원의 정산예정금액(전월 1일 ~ 마지막일)
+	public BigDecimal getNetAmount(Long walletId, YearMonth targetMonth) {
 
 		//정산예금 netAmount 합계
 		BigDecimal netAmount =  settlementRepository.findByInsertedAtBetween(
-				startDate,
-				endDate,
+				getStartDate(targetMonth),
+				getEndDate(targetMonth),
 				walletId,
 				SettlementStatus.PENDING
-			).stream()
+			)
+			.stream()
 			.map(SettlementInfo::from)
 			.map(SettlementInfo::netAmount)
 			.reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -57,11 +59,12 @@ public class SettlementService {
 		return netAmount;
 	}
 
-	// 정산 대상 목록 조회
+	// 정산 대상 (walletId) 목록 조회
 	public List<Long> getPayoutTargetWalletIds(final YearMonth targetMonth) {
+
 		return settlementRepository.findWalletIdsByInsertedAtBetween(
-			targetMonth.atDay(1).atStartOfDay(),
-			targetMonth.plusMonths(1).atDay(1).atStartOfDay(),
+			getStartDate(targetMonth),
+			getEndDate(targetMonth),
 			SettlementStatus.PENDING
 		);
 	}
@@ -71,8 +74,8 @@ public class SettlementService {
 	public void requestPayout(final Long walletId, final YearMonth targetMonth) {
 
 		final List<Settlement> settlements = settlementRepository.findByInsertedAtBetween(
-			targetMonth.atDay(1).atStartOfDay(),
-			targetMonth.plusMonths(1).atDay(1).atStartOfDay(),
+			getStartDate(targetMonth),
+			getEndDate(targetMonth),
 			walletId,
 			SettlementStatus.PENDING
 		);
@@ -92,9 +95,20 @@ public class SettlementService {
 			))
 			.toList();
 
-		//예치금 충전 요청
+		//이벤트 발행 (wallet에서 예치금 충전처리)
 		settlementEventPublisher.publish(
 			new SettlementPayoutEvent(walletId, items)
 		);
+	}
+
+	public LocalDateTime getStartDate(YearMonth targetMonth) {
+		return targetMonth.atDay(1)
+			.atStartOfDay();
+	}
+
+	public LocalDateTime getEndDate(YearMonth targetMonth) {
+		return targetMonth.plusMonths(1)
+			.atDay(1)
+			.atStartOfDay();
 	}
 }
