@@ -7,14 +7,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.product.application.dto.GetProductDetailDto;
+import shop.dear.commerce.product.application.dto.GetProductDto;
 import shop.dear.commerce.product.application.dto.GetSellerProductDto;
 import shop.dear.commerce.product.application.dto.MemberProductExistsDto;
 import shop.dear.commerce.product.application.dto.PresignedUrlInfoDto;
 import shop.dear.commerce.product.application.dto.ScrapProductInfoDto;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
+import shop.dear.commerce.product.application.dto.command.GeneratePresignedUrlsCommand;
 import shop.dear.commerce.product.application.dto.command.GetScrapProductCommand;
 import shop.dear.commerce.product.application.dto.command.UpdateProductCommand;
-import shop.dear.commerce.product.application.dto.command.GeneratePresignedUrlsCommand;
 import shop.dear.commerce.product.application.fake.FakeMemberPort;
 import shop.dear.commerce.product.application.fake.FakeOfferPort;
 import shop.dear.commerce.product.application.fake.FakePresignedUrlGenerator;
@@ -75,6 +76,20 @@ class ProductServiceTest {
             LocalDate.now(),
             Price.from(BigDecimal.valueOf(120000)),
             ProductSaleType.OFFER,
+            "Test Description"
+        );
+    }
+
+    private Product createProduct(final Long memberId, final ProductSaleType saleType) {
+        return Product.create(
+            memberId,
+            "testName",
+            "testBrand",
+            "testModelNumber-001",
+            ProductCategory.SNEAKERS,
+            LocalDate.now(),
+            Price.from(BigDecimal.valueOf(120000)),
+            saleType,
             "Test Description"
         );
     }
@@ -344,5 +359,74 @@ class ProductServiceTest {
         assertThat(result.getFirst().brand()).isEqualTo(savedProduct.getBrand());
         assertThat(result.getFirst().price()).isEqualTo(savedProduct.getPrice().getValue());
         assertThat(result.getFirst().viewCount()).isEqualTo(savedProduct.getViewCount());
+    }
+
+    @DisplayName("유효한 값(saleType, status)이 들어오면 해당 상태에 맞는 상품들을 조회한다.")
+    @Test
+    void givenSaleTypeAndStatus_whenGetAllProduct_thenReturnProducts() {
+        // Given
+        final Long sellerId = 1L;
+
+        final Product product1 = createProduct(sellerId, ProductSaleType.OFFER);  // saleType = OFFER, status = PREPARING
+        product1.addImage("test1.png", 1);
+        final Product savedProduct1 = productRepository.save(product1);
+
+        final Product product2 = createProduct(sellerId, ProductSaleType.IMMEDIATE); // saleType = IMMEDIATE, status = PREPARING
+        product2.addImage("test2.png", 1);
+        final Product savedProduct2 = productRepository.save(product2);
+
+        final Product product3 = createProduct(sellerId, ProductSaleType.OFFER);  // saleType = OFFER, status = ON_SALE
+        product3.addImage("test3.png", 1);
+        product3.changeStatusToOnSale();
+        final Product savedProduct3 = productRepository.save(product3);
+
+        final ProductSaleType targetSaleType = ProductSaleType.OFFER;
+        final ProductStatus targetStatus = ProductStatus.PREPARING;
+
+        // When
+        final List<GetProductDto> result = productService.getAllProduct(targetSaleType, targetStatus);
+
+        // Then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).id()).isEqualTo(savedProduct1.getId());
+        assertThat(result.get(0).saleType()).isEqualTo(targetSaleType.toString());
+        assertThat(result.get(0).status()).isEqualTo(targetStatus.toString());
+    }
+
+    @DisplayName("파라미터(saleType, status)가 null로 주어지면 전체 상품 목록을 조회한다.")
+    @Test
+    void givenNullParams_whenGetAllProduct_thenReturnAllProducts() {
+        // Given
+        final Long sellerId = 1L;
+
+        final Product product1 = createProduct(sellerId, ProductSaleType.OFFER);
+        product1.addImage("test1.png", 1);
+
+        final Product product2 = createProduct(sellerId, ProductSaleType.IMMEDIATE);
+        product2.addImage("test2.png", 1);
+
+        productRepository.save(product1);
+        productRepository.save(product2);
+
+        // When
+        final List<GetProductDto> result = productService.getAllProduct(null, null);
+
+        // Then
+        assertThat(result).hasSize(2);
+    }
+
+    @DisplayName("조건에 해당하는 상품이 없으면 빈 리스트를 반환한다.")
+    @Test
+    void givenNonMatchingFilter_whenGetAllProduct_thenReturnEmptyList() {
+        // Given
+        final Long sellerId = 1L;
+        final Product product = createProduct(sellerId, ProductSaleType.OFFER); // status = PREPARING
+        productRepository.save(product);
+
+        // When
+        final List<GetProductDto> result = productService.getAllProduct(ProductSaleType.IMMEDIATE, ProductStatus.SOLD_OUT);
+
+        // Then
+        assertThat(result).isEmpty();
     }
 }
