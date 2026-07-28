@@ -208,6 +208,13 @@ public class WalletServiceTest {
         private int saveCount;
 
         @Override
+        public Optional<Wallet> findById(final Long walletId) {
+            return wallets.values().stream()
+                    .filter(wallet -> walletId.equals(wallet.getId()))
+                    .findFirst();
+        }
+
+        @Override
         public Optional<Wallet> findByMemberId(final Long memberId) {
             return Optional.ofNullable(wallets.get(memberId));
         }
