@@ -189,6 +189,88 @@ class OfferServiceTest {
     }
 
     @Nested
+    @DisplayName("rejectOffer")
+    class RejectOffer {
+
+        @Test
+        @DisplayName("오퍼를 거절하면 상태가 REJECTED로 변경된다")
+        void rejectsOffer() {
+            // given
+            final Offer offer = createPendingPaidOffer();
+            given(offerRepository.findById(1L)).willReturn(Optional.of(offer));
+            given(offerRepository.save(offer)).willReturn(offer);
+
+            // when
+            offerService.rejectOffer(1L, 2L);
+
+            // then
+            assertThat(offer.getStatus()).isEqualTo(OfferStatus.REJECTED);
+            verify(offerRepository).save(offer);
+            verify(offerEventPublisher, never()).publish(any());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 오퍼면 예외를 던진다")
+        void throwsException_whenOfferNotFound() {
+            // given
+            given(offerRepository.findById(1L)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> offerService.rejectOffer(1L, 2L))
+                    .isInstanceOf(BusinessException.class);
+
+            verify(offerRepository, never()).save(any());
+            verify(offerEventPublisher, never()).publish(any());
+        }
+
+        @Test
+        @DisplayName("판매자가 아니면 예외를 던진다")
+        void throwsException_whenNotSeller() {
+            // given
+            final Offer offer = createPendingPaidOffer();
+            given(offerRepository.findById(1L)).willReturn(Optional.of(offer));
+
+            // when & then
+            assertThatThrownBy(() -> offerService.rejectOffer(1L, 999L))
+                    .isInstanceOf(BusinessException.class);
+
+            verify(offerRepository, never()).save(any());
+            verify(offerEventPublisher, never()).publish(any());
+        }
+
+        @Test
+        @DisplayName("PENDING 상태가 아니면 예외를 던진다")
+        void throwsException_whenStatusIsNotPending() {
+            // given
+            final Offer offer = createPendingPaidOffer();
+            offer.reject();
+            given(offerRepository.findById(1L)).willReturn(Optional.of(offer));
+
+            // when & then
+            assertThatThrownBy(() -> offerService.rejectOffer(1L, 2L))
+                    .isInstanceOf(BusinessException.class);
+
+            verify(offerRepository, never()).save(any());
+            verify(offerEventPublisher, never()).publish(any());
+        }
+
+        private Offer createPendingPaidOffer() {
+            final Offer offer = Offer.create(
+                    1L,
+                    2L,
+                    3L,
+                    10L,
+                    BigDecimal.valueOf(10000),
+                    "title",
+                    "story",
+                    "delivery"
+            );
+            offer.markPaid();
+            return offer;
+        }
+    }
+
+    @Nested
     @DisplayName("createOfferSnapshot")
     class CreateOfferSnapshot {
 
