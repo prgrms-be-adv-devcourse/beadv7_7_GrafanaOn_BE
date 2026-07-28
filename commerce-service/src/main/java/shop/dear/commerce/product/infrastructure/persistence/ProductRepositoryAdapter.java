@@ -37,18 +37,13 @@ public class ProductRepositoryAdapter implements ProductRepository {
     }
 
     @Override
-    public void delete(final Product product) {
-        productRepository.delete(product);
+    public boolean existsBySellerIdAndStatusInAndDeletedAtIsNull(final Long sellerId, final List<ProductStatus> statuses) {
+        return productRepository.existsBySellerIdAndStatusInAndDeletedAtIsNull(sellerId, statuses);
     }
 
     @Override
-    public boolean existsBySellerIdAndStatusIn(final Long sellerId, final List<ProductStatus> statuses) {
-        return productRepository.existsBySellerIdAndStatusIn(sellerId, statuses);
-    }
-
-    @Override
-    public List<Product> findAllById(final List<Long> productIds) {
-        return productRepository.findAllById(productIds);
+    public List<Product> findAllByIdInAndDeletedAtIsNull(final List<Long> productIds) {
+        return productRepository.findAllByIdInAndDeletedAtIsNull(productIds);
     }
 
     @Override
@@ -62,18 +57,18 @@ public class ProductRepositoryAdapter implements ProductRepository {
     }
 
     @Override
-    public List<Product> findAllBySellerId(final Long sellerId) {
-        return productRepository.findAllBySellerId(sellerId);
+    public List<Product> findAllBySellerIdAndDeletedAtIsNull(final Long sellerId) {
+        return productRepository.findAllBySellerIdAndDeletedAtIsNull(sellerId);
     }
 
     @Override
-    public List<Product> findAllBySaleTypeAndStatusAndCreatedAt(
+    public List<Product> findAllBySaleTypeAndStatusAndCreatedAtAndDeletedAtIsNull(
         final ProductSaleType saleType,
         final ProductStatus status,
         final LocalDateTime startDate,
         final LocalDateTime endDate
     ) {
-        return productRepository.findAllBySaleTypeAndStatusAndCreatedAt(saleType, status, startDate, endDate);
+        return productRepository.findAllBySaleTypeAndStatusAndCreatedAtAndDeletedAtIsNull(saleType, status, startDate, endDate);
     }
 
     @Override

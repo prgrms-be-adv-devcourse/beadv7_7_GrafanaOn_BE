@@ -123,6 +123,7 @@ public class ProductService {
         validateSeller(sellerId);
 
         final Product originalProduct = productRepository.findById(productId);
+        validateDeleted(originalProduct);
         originalProduct.validateOwner(sellerId);
         validateProductUpdatable(originalProduct);
 
@@ -165,6 +166,12 @@ public class ProductService {
         ));
     }
 
+    private void validateDeleted(final Product product) {
+        if (product.isDeleted()) {
+            throw new BusinessException(ProductErrorCode.INVALID_PRODUCT);
+        }
+    }
+
     private void validateProductUpdatable(final Product originalProduct) {
         if (!originalProduct.isUpdatable()) {
             throw new BusinessException(ProductErrorCode.INVALID_PRODUCT_STATUS_FOR_UPDATE);
@@ -185,10 +192,11 @@ public class ProductService {
         validateSeller(sellerId);
 
         final Product product = productRepository.findById(productId);
+        validateDeleted(product);
         product.validateOwner(sellerId);
         validateProductDeletable(product);
 
-        productRepository.delete(product);
+        product.delete();
 
         productEventPublisher.publish(new ProductDeletedEvent(productId));
     }
@@ -204,7 +212,7 @@ public class ProductService {
         validateSeller(sellerId);
 
         final List<ProductStatus> statuses = List.of(ProductStatus.PREPARING, ProductStatus.ON_SALE);
-        final boolean exists = productRepository.existsBySellerIdAndStatusIn(sellerId, statuses);
+        final boolean exists = productRepository.existsBySellerIdAndStatusInAndDeletedAtIsNull(sellerId, statuses);
 
         return new MemberProductExistsDto(exists);
     }
@@ -212,7 +220,7 @@ public class ProductService {
     public List<ScrapProductInfoDto> getScrapProducts(final Long memberId, final GetScrapProductCommand command) {
         validateMember(memberId);
 
-        final List<Product> scrapProducts = productRepository.findAllById(command.ids());
+        final List<Product> scrapProducts = productRepository.findAllByIdInAndDeletedAtIsNull(command.ids());
 
         return scrapProducts.stream()
             .map(ScrapProductInfoDto::from)
@@ -226,6 +234,7 @@ public class ProductService {
 
         productRepository.increaseViewCount(productId);
         final Product product = productRepository.findById(productId);
+        validateDeleted(product);
 
         validateProductVisible(product);
 
@@ -249,6 +258,7 @@ public class ProductService {
 
         final Product product = productRepository.findById(productId);
 
+        validateDeleted(product);
         validateProductVisible(product);
 
         return GetProductDetailDto.of(product);
@@ -258,7 +268,7 @@ public class ProductService {
         validateMember(sellerId);
         validateSeller(sellerId);
 
-        final List<Product> products = productRepository.findAllBySellerId(sellerId);
+        final List<Product> products = productRepository.findAllBySellerIdAndDeletedAtIsNull(sellerId);
 
         return products.stream()
             .map(GetSellerProductDto::of)
@@ -274,7 +284,7 @@ public class ProductService {
             endDate = createdAt.atTime(LocalTime.MAX);
         }
 
-        final List<Product> products = productRepository.findAllBySaleTypeAndStatusAndCreatedAt(saleType, status, startDate, endDate);
+        final List<Product> products = productRepository.findAllBySaleTypeAndStatusAndCreatedAtAndDeletedAtIsNull(saleType, status, startDate, endDate);
 
         return products.stream()
             .map(GetProductDto::of)
