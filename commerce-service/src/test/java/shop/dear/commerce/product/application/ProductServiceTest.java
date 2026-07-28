@@ -224,7 +224,8 @@ class ProductServiceTest {
 
         //Then
         final List<Product> products = productRepository.findAll();
-        assertThat(products.size()).isEqualTo(0);
+        assertThat(products.size()).isEqualTo(1);
+        assertThat(products.get(0).isDeleted()).isEqualTo(true);
     }
 
     @DisplayName("유효한 값(sellerId)이 들어오면 해당 사용자가 등록한 판매 예정 및 판매중인 상품이 존재하는지 여부를 반환한다.")
