@@ -24,6 +24,6 @@ jobs:
         run: ./gradlew :commerce-service:build -x test
 
       - name: Build gateway
-        run: ./gradlew :gateway:build -x test
+        run: ./gradlew :gateway-service:build -x test
 
   # TODO: SonarQube
