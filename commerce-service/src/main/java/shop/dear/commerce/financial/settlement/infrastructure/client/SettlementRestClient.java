@@ -6,10 +6,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
 
 @Configuration
-public class SettlementClientConfig {
+public class SettlementRestClient {
 
 	@Bean
-	RestClient settlementRestClient(@Value("${order.client.base-url}") String baseUrl) {
+	RestClient walletRestClient(@Value("${order.client.base-url}") String baseUrl) {
 		return RestClient.builder()
 			.baseUrl(baseUrl)
 			.build();
