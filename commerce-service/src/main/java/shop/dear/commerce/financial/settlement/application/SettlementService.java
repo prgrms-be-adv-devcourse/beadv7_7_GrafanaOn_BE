@@ -24,6 +24,18 @@ public class SettlementService {
 	private final SettlementRepository settlementRepository;
 	private final SettlementEventPublisher settlementEventPublisher;
 
+	//특정기간의 정산 이력 조회
+	public List<SettlementInfo> getSettlements(Long memberId, LocalDateTime from, LocalDateTime to) {
+		return settlementRepository.findByInsertedAtBetween(
+			from,
+			to,
+			memberId,
+			SettlementStatus.COMPLETED
+		).stream()
+		.map(SettlementInfo::from)
+		.toList();
+	}
+
 	//회원의 정산예정금액
 	public BigDecimal getSettlementAmount(Long walletId, YearMonth targetMonth){
 
