@@ -16,7 +16,7 @@ public class WalletApiClient implements WalletPort {
 	private final RestClient walletRestClient;
 
 	@Override
-	public WalletInfo getWalletId(Long memberId) {
+	public WalletInfo getWalletId() {
 		ApiResponse<WalletApiResponse> body = walletRestClient.get()
 			.uri("/internal/deposits")
 			.retrieve()

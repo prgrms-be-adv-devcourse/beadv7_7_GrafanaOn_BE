@@ -29,7 +29,9 @@ public class SettlementController {
 	@GetMapping("/me")
 	public ResponseEntity<ApiResponse<NetAmountResponse>> getNetAmount(@AuthUser Long memberId, @NotNull YearMonth targetMonth) {
 
-		NetAmountResponse netAmountResponse = NetAmountResponse.from(settlementService.getNetAmount(memberId, targetMonth));
+		//memverId검증로직추가
+
+		NetAmountResponse netAmountResponse = NetAmountResponse.from(settlementService.getNetAmount(targetMonth));
 
 		return ResponseEntity.ok(successWithData(netAmountResponse));
 	}
@@ -41,9 +43,9 @@ public class SettlementController {
 		@NotNull LocalDateTime startDate,
 		@NotNull LocalDateTime endDate
 	) {
+		//memverId검증로직추가
 
 		List<SettlementResponse> history = settlementService.getHistory(
-				memberId,
 				startDate,
 				endDate
 			)
