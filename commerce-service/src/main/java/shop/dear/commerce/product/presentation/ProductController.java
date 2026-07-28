@@ -31,6 +31,7 @@ import shop.dear.commerce.product.presentation.dto.response.ProductDetailRespons
 import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static shop.dear.common.response.ApiResponse.success;
@@ -100,9 +101,11 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<GetProductResponse>>> getAllProduct(
         @RequestParam(value = "saleType",required = false) final ProductSaleType saleType,
-        @RequestParam(value = "status", required = false) final ProductStatus status
+        @RequestParam(value = "status", required = false) final ProductStatus status,
+        @RequestParam(value = "createdAt", required = false) final LocalDate createdAt
     ) {
-        final List<GetProductDto> result = productService.getAllProduct(saleType, status);
+        final List<GetProductDto> result = productService.getAllProduct(saleType, status, createdAt);
+
         final List<GetProductResponse> response = result.stream()
             .map(GetProductResponse::of)
             .toList();

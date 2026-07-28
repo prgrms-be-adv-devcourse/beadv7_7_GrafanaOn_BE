@@ -30,6 +30,9 @@ import shop.dear.common.event.product.ProductChangedEvent;
 import shop.dear.common.event.product.ProductDeletedEvent;
 import shop.dear.common.exception.BusinessException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -258,8 +261,16 @@ public class ProductService {
             .toList();
     }
 
-    public List<GetProductDto> getAllProduct(final ProductSaleType saleType, final ProductStatus status) {
-        final List<Product> products = productRepository.findAllBySaleTypeAndStatus(saleType, status);
+    public List<GetProductDto> getAllProduct(final ProductSaleType saleType, final ProductStatus status, final LocalDate createdAt) {
+        LocalDateTime startDate = null;
+        LocalDateTime endDate = null;
+
+        if (createdAt != null) {
+            startDate = createdAt.atStartOfDay();
+            endDate = createdAt.atTime(LocalTime.MAX);
+        }
+
+        final List<Product> products = productRepository.findAllBySaleTypeAndStatusAndCreatedAt(saleType, status, startDate, endDate);
 
         return products.stream()
             .map(GetProductDto::of)
