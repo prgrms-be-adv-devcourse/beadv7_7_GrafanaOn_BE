@@ -150,9 +150,11 @@ public class OfferService {
         offerRepository.save(offer);
     }
 
-    public List<Offer> findOffersByProductId(final Long memberId,
-                                           final Long productId,
-                                           final List<OfferStatus> statuses) {
+    public List<Offer> findOffersByProductId(
+            final Long memberId,
+            final Long productId,
+            final List<OfferStatus> statuses
+    ) {
         final ProductInfo product = productPort.getProduct(productId);
         if (!product.sellerId().equals(memberId)) {
             throw new BusinessException(NOT_OFFER_SELLER);
