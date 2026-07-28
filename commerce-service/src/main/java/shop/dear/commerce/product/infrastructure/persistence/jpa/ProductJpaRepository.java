@@ -8,6 +8,7 @@ import shop.dear.commerce.product.domain.constant.ProductSaleType;
 import shop.dear.commerce.product.domain.constant.ProductStatus;
 import shop.dear.commerce.product.domain.model.Product;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ProductJpaRepository extends JpaRepository<Product, Long> {
@@ -24,4 +25,13 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
         "AND (:status IS NULL OR p.status = :status)" +
         "ORDER BY p.viewCount DESC, p.insertedAt DESC")
     List<Product> findAllBySaleTypeAndStatus(@Param("saleType") final ProductSaleType saleType, @Param("status") final ProductStatus status);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+        UPDATE Product p SET p.status = 'ON_SALE'
+        WHERE p.status = 'PREPARING'
+          AND p.insertedAt >= :startTime
+          AND p.insertedAt < :endTime
+        """)
+    int updateStatusToOnSale(@Param("startTime") final LocalDateTime startTime, @Param("endTime") final LocalDateTime endTime);
 }

@@ -9,6 +9,7 @@ import shop.dear.commerce.product.domain.repository.ProductRepository;
 import shop.dear.commerce.product.infrastructure.persistence.jpa.ProductJpaRepository;
 import shop.dear.common.exception.BusinessException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static shop.dear.commerce.product.domain.exception.ProductErrorCode.INVALID_PRODUCT;
@@ -68,5 +69,10 @@ public class ProductRepositoryAdapter implements ProductRepository {
     @Override
     public List<Product> findAllBySaleTypeAndStatus(final ProductSaleType saleType, final ProductStatus status) {
         return productRepository.findAllBySaleTypeAndStatus(saleType, status);
+    }
+
+    @Override
+    public int updateStatusToOnSale(final LocalDateTime startTime, final LocalDateTime endTime) {
+        return productRepository.updateStatusToOnSale(startTime, endTime);
     }
 }

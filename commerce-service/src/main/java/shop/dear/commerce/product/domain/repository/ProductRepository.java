@@ -4,6 +4,7 @@ import shop.dear.commerce.product.domain.constant.ProductSaleType;
 import shop.dear.commerce.product.domain.constant.ProductStatus;
 import shop.dear.commerce.product.domain.model.Product;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ProductRepository {
@@ -17,4 +18,5 @@ public interface ProductRepository {
     boolean existsById(final Long productId);
     List<Product> findAllBySellerId(final Long sellerId);
     List<Product> findAllBySaleTypeAndStatus(final ProductSaleType saleType, final ProductStatus status);
+    int updateStatusToOnSale(final LocalDateTime startTime, final LocalDateTime endTime);
 }
