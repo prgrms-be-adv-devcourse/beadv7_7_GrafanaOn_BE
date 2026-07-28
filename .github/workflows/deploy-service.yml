@@ -71,7 +71,7 @@ jobs:
           exit 1
 
       - name: Deploy (Rolling)
-        if: {{!inputs.use_blue_green}}
+        if: ${{ !inputs.use_blue_green }}
         run: |
           docker rm -f ${{ inputs.service_name }}-container || true
           docker run -d \
