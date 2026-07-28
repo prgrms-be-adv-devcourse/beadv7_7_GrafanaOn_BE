@@ -573,4 +573,30 @@ class ProductTest {
         // Then
         assertThat(isVisible).isFalse();
     }
+
+    @DisplayName("상품 삭제 시 삭제되는 시점의 시간을 저장한다.")
+    @Test
+    void whenDelete_thenSaveTime() {
+        //Given
+        final Product product = createProduct();
+
+        //When
+        product.delete();
+
+        //Then
+        assertThat(product.getDeletedAt()).isNotNull();
+    }
+
+    @DisplayName("상품이 삭제되었는지 여부를 검증한다.")
+    @Test
+    void whenIsDeleted_thenReturnResult() {
+        //Given
+        final Product product = createProduct();
+
+        //When
+        final boolean result = product.isDeleted();
+
+        //Then
+        assertThat(result).isFalse();
+    }
 }
