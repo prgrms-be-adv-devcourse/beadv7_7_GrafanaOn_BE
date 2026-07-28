@@ -1,0 +1,14 @@
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: commerce-product-route
+              uri: http://${TARGET_CONTAINER:blue-container}:8080
+              predicates:
+                - Path=/api/products/**
+
+logging:
+  level:
+    root: INFO
