@@ -232,4 +232,103 @@ public class PaymentTest {
                 exception.getErrorCode()
         );
     }
+
+    @Test
+    void complete_success() {
+        // given
+        Payment payment = Payment.createOrderPayment(
+                1L,
+                100L,
+                OrderType.PURCHASE,
+                new BigDecimal("10000.00")
+        );
+
+        // when
+        payment.complete();
+
+        // then
+        assertEquals(PaymentStatus.PAID, payment.getState());
+    }
+
+    @Test
+    void complete_twice_throwsException() {
+        // given
+        Payment payment = Payment.createOrderPayment(
+                1L,
+                100L,
+                OrderType.PURCHASE,
+                new BigDecimal("10000.00")
+        );
+        payment.complete();
+
+        // when
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> payment.complete()
+        );
+
+        // then
+        assertEquals(
+                PaymentErrorCode.INVALID_PAYMENT_STATUS_TRANSITION,
+                exception.getErrorCode()
+        );
+    }
+
+    @Test
+    void pendingPayment_canFail() {
+        final Payment payment = Payment.createOrderPayment(
+                1L,
+                10L,
+                OrderType.PURCHASE,
+                new BigDecimal("10000.00")
+        );
+
+        payment.fail();
+
+        assertEquals(PaymentStatus.FAILED, payment.getState());
+    }
+
+    @Test
+    void fail_afterPaid_throwsException() {
+        final Payment payment = Payment.createOrderPayment(
+                1L,
+                100L,
+                OrderType.PURCHASE,
+                new BigDecimal("10000.00")
+        );
+        payment.complete();
+
+        final BusinessException exception = assertThrows(
+                BusinessException.class,
+                payment::fail
+        );
+
+        assertEquals(
+                PaymentErrorCode.INVALID_PAYMENT_STATUS_TRANSITION,
+                exception.getErrorCode()
+        );
+        assertEquals(PaymentStatus.PAID, payment.getState());
+    }
+
+    @Test
+    void fail_twice_throwsException() {
+        final Payment payment = Payment.createOrderPayment(
+                1L,
+                100L,
+                OrderType.PURCHASE,
+                new BigDecimal("10000.00")
+        );
+        payment.fail();
+
+        final BusinessException exception = assertThrows(
+                BusinessException.class,
+                payment::fail
+        );
+
+        assertEquals(
+                PaymentErrorCode.INVALID_PAYMENT_STATUS_TRANSITION,
+                exception.getErrorCode()
+        );
+        assertEquals(PaymentStatus.FAILED, payment.getState());
+    }
 }

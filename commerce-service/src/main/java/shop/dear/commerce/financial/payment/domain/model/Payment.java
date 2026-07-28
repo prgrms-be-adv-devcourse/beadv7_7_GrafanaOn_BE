@@ -113,6 +113,26 @@ public class Payment extends BaseEntity {
         this.pgPayment = PGPayment.create(this);
     }
 
+    public void complete() {
+        if (this.state != PaymentStatus.PENDING) {
+            throw new BusinessException(
+                    PaymentErrorCode.INVALID_PAYMENT_STATUS_TRANSITION
+            );
+        }
+
+        this.state = PaymentStatus.PAID;
+    }
+
+    public void fail() {
+        if (this.state != PaymentStatus.PENDING) {
+            throw new BusinessException(
+                    PaymentErrorCode.INVALID_PAYMENT_STATUS_TRANSITION
+            );
+        }
+
+        this.state = PaymentStatus.FAILED;
+    }
+
     public static Payment createTopUp(
             final Long memberId,
             final BigDecimal amount
