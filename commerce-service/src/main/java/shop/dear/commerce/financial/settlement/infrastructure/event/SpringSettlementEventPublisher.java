@@ -1,7 +1,6 @@
 package shop.dear.commerce.financial.settlement.infrastructure.event;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import shop.dear.commerce.financial.settlement.application.port.SettlementEventPublisher;
