@@ -55,4 +55,13 @@ public class OfferController {
         offerService.acceptOffer(offerId, memberId);
         return ResponseEntity.ok(successWithData(null));
     }
+
+    @PatchMapping("/{offerId}/reject")
+    public ResponseEntity<ApiResponse<Void>> rejectOffer(
+            @Positive @PathVariable final Long offerId,
+            @AuthUser final Long memberId
+    ) {
+        offerService.rejectOffer(offerId, memberId);
+        return ResponseEntity.ok(successWithData(null));
+    }
 }
