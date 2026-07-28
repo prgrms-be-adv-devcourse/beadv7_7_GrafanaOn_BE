@@ -150,6 +150,17 @@ public class OfferService {
         offerRepository.save(offer);
     }
 
+    public Offer findOfferById(final Long offerId, final Long memberId) {
+        final Offer offer = offerRepository.findById(offerId)
+                .orElseThrow(() -> new BusinessException(OFFER_NOT_FOUND));
+
+        if (!offer.isSeller(memberId) && !offer.getBuyerId().equals(memberId)) {
+            throw new BusinessException(NOT_OFFER_SELLER);
+        }
+
+        return offer;
+    }
+
     public List<Offer> findOffersByProductId(
             final Long memberId,
             final Long productId,
