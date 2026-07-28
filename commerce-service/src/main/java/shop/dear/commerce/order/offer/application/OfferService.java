@@ -136,4 +136,17 @@ public class OfferService {
                 OrderType.OFFER
         ));
     }
+
+    @Transactional
+    public void rejectOffer(final Long offerId, final Long memberId) {
+        final Offer offer = offerRepository.findById(offerId)
+                .orElseThrow(() -> new BusinessException(OFFER_NOT_FOUND));
+
+        if (!offer.isSeller(memberId)) {
+            throw new BusinessException(NOT_OFFER_SELLER);
+        }
+
+        offer.reject();
+        offerRepository.save(offer);
+    }
 }
