@@ -149,4 +149,18 @@ public class OfferService {
         offer.reject();
         offerRepository.save(offer);
     }
+
+    public List<Offer> findOffersByProductId(final Long memberId,
+                                           final Long productId,
+                                           final List<OfferStatus> statuses) {
+        final ProductInfo product = productPort.getProduct(productId);
+        if (!product.sellerId().equals(memberId)) {
+            throw new BusinessException(NOT_OFFER_SELLER);
+        }
+
+        if (statuses == null || statuses.isEmpty()) {
+            return offerRepository.findByProductIdOrderByInsertedAtDesc(productId);
+        }
+        return offerRepository.findByProductIdAndStatusInOrderByInsertedAtDesc(productId, statuses);
+    }
 }
