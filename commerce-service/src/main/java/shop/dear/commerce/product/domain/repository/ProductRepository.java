@@ -17,6 +17,6 @@ public interface ProductRepository {
     void increaseViewCount(final Long productId);
     boolean existsById(final Long productId);
     List<Product> findAllBySellerId(final Long sellerId);
-    List<Product> findAllBySaleTypeAndStatus(final ProductSaleType saleType, final ProductStatus status, final LocalDateTime startDate, final LocalDateTime endDate);
+    List<Product> findAllBySaleTypeAndStatusAndCreatedAt(final ProductSaleType saleType, final ProductStatus status, final LocalDateTime startDate, final LocalDateTime endDate);
     int updateStatusToOnSale(final LocalDateTime startTime, final LocalDateTime endTime);
 }

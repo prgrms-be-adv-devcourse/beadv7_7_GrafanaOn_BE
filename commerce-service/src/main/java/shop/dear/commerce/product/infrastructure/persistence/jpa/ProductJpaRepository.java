@@ -28,7 +28,7 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
             AND (cast(:endDate as timestamp) IS NULL OR p.insertedAt <= :endDate)
             ORDER BY p.viewCount DESC, p.insertedAt DESC
     """)
-    List<Product> findAllBySaleTypeAndStatus(
+    List<Product> findAllBySaleTypeAndStatusAndCreatedAt(
         @Param("saleType") final ProductSaleType saleType,
         @Param("status") final ProductStatus status,
         @Param("startDate") final LocalDateTime startDate,

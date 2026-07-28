@@ -270,7 +270,7 @@ public class ProductService {
             endDate = createdAt.atTime(LocalTime.MAX);
         }
 
-        final List<Product> products = productRepository.findAllBySaleTypeAndStatus(saleType, status, startDate, endDate);
+        final List<Product> products = productRepository.findAllBySaleTypeAndStatusAndCreatedAt(saleType, status, startDate, endDate);
 
         return products.stream()
             .map(GetProductDto::of)
