@@ -20,10 +20,12 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
 
     List<Product> findAllBySellerId(final Long sellerId);
 
-    @Query("SELECT p FROM Product p " +
-        "WHERE (:saleType IS NULL OR p.saleType = :saleType) " +
-        "AND (:status IS NULL OR p.status = :status)" +
-        "ORDER BY p.viewCount DESC, p.insertedAt DESC")
+    @Query("""
+        SELECT p FROM Product p
+            WHERE (:saleType IS NULL OR p.saleType = :saleType)
+            AND (:status IS NULL OR p.status = :status)
+            ORDER BY p.viewCount DESC, p.insertedAt DESC
+    """)
     List<Product> findAllBySaleTypeAndStatus(@Param("saleType") final ProductSaleType saleType, @Param("status") final ProductStatus status);
 
     @Modifying(clearAutomatically = true)
