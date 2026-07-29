@@ -20,6 +20,7 @@ import shop.dear.common.event.settlement.SettlementPayoutEvent;
 import shop.dear.common.event.settlement.SettlementPayoutItem;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
@@ -36,9 +37,13 @@ class SettlementServiceTest {
 
 	private static final Long MEMBER_ID = 1L;
 	private static final Long WALLET_ID = 10L;
-	private static final YearMonth TARGET_MONTH = YearMonth.of(2026, 7);
+	private static final YearMonth TARGET_MONTH = YearMonth.of(2026, 8);
 	private static final LocalDateTime START_DATE = LocalDateTime.of(2026, 7, 1, 0, 0);
 	private static final LocalDateTime END_DATE = LocalDateTime.of(2026, 8, 1, 0, 0);
+	private static final LocalDate HISTORY_START_DATE = LocalDate.of(2026, 7, 1);
+	private static final LocalDate HISTORY_END_DATE = LocalDate.of(2026, 7, 31);
+	private static final LocalDateTime HISTORY_START_DATE_TIME = HISTORY_START_DATE.atStartOfDay();
+	private static final LocalDateTime HISTORY_END_DATE_TIME = HISTORY_END_DATE.plusDays(1).atStartOfDay();
 
 	@Mock
 	private SettlementRepository settlementRepository;
@@ -70,7 +75,7 @@ class SettlementServiceTest {
 	}
 
 	private void stubWalletId() {
-		given(walletPort.getWalletId())
+		given(walletPort.getWalletId(MEMBER_ID))
 				.willReturn(new WalletInfo(MEMBER_ID, WALLET_ID));
 	}
 
@@ -92,7 +97,7 @@ class SettlementServiceTest {
 			));
 
 			// when
-			final BigDecimal netAmount = settlementService.getNetAmount(TARGET_MONTH);
+			final BigDecimal netAmount = settlementService.getNetAmount(MEMBER_ID, TARGET_MONTH);
 
 			// then
 			assertThat(netAmount).isEqualByComparingTo(new BigDecimal("17500.00"));
@@ -108,7 +113,7 @@ class SettlementServiceTest {
 			)).willReturn(List.of());
 
 			// when
-			final BigDecimal netAmount = settlementService.getNetAmount(TARGET_MONTH);
+			final BigDecimal netAmount = settlementService.getNetAmount(MEMBER_ID, TARGET_MONTH);
 
 			// then
 			assertThat(netAmount).isEqualByComparingTo(BigDecimal.ZERO);
@@ -124,7 +129,7 @@ class SettlementServiceTest {
 			)).willReturn(List.of());
 
 			// when
-			settlementService.getNetAmount(TARGET_MONTH);
+			settlementService.getNetAmount(MEMBER_ID, TARGET_MONTH);
 
 			// then
 			verify(settlementRepository).findByInsertedAtBetween(
@@ -146,7 +151,7 @@ class SettlementServiceTest {
 			// given
 			stubWalletId();
 			given(settlementRepository.findByInsertedAtBetween(
-					START_DATE, END_DATE, WALLET_ID, SettlementStatus.COMPLETED
+					HISTORY_START_DATE_TIME, HISTORY_END_DATE_TIME, WALLET_ID, SettlementStatus.COMPLETED
 			)).willReturn(List.of(
 					settlement(1L, new BigDecimal("10000.00")),
 					settlement(2L, new BigDecimal("5500.00"))
@@ -154,8 +159,9 @@ class SettlementServiceTest {
 
 			// when
 			final List<SettlementInfo> history = settlementService.getHistory(
-					START_DATE,
-					END_DATE
+					MEMBER_ID,
+					HISTORY_START_DATE,
+					HISTORY_END_DATE
 			);
 
 			// then
@@ -164,6 +170,27 @@ class SettlementServiceTest {
 					.containsExactly(1L, 2L);
 			assertThat(history).extracting(SettlementInfo::walletId)
 					.containsOnly(WALLET_ID);
+		}
+
+		@Test
+		@DisplayName("startDate 0시부터 endDate 다음날 0시 직전까지의 기간으로 조회한다")
+		void queriesWithDateRangeConvertedToDateTime() {
+			// given
+			stubWalletId();
+			given(settlementRepository.findByInsertedAtBetween(
+					any(), any(), any(), any()
+			)).willReturn(List.of());
+
+			// when
+			settlementService.getHistory(MEMBER_ID, HISTORY_START_DATE, HISTORY_END_DATE);
+
+			// then
+			verify(settlementRepository).findByInsertedAtBetween(
+					HISTORY_START_DATE_TIME,
+					HISTORY_END_DATE_TIME,
+					WALLET_ID,
+					SettlementStatus.COMPLETED
+			);
 		}
 	}
 
@@ -267,7 +294,7 @@ class SettlementServiceTest {
 			stubWalletId();
 
 			// when
-			final Long walletId = settlementService.getWalletId();
+			final Long walletId = settlementService.getWalletId(MEMBER_ID);
 
 			// then
 			assertThat(walletId).isEqualTo(WALLET_ID);
