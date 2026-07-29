@@ -7,11 +7,10 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import shop.dear.commerce.financial.payment.application.dto.*;
 import shop.dear.common.auth.AuthUser;
 import shop.dear.common.event.order.OrderType;
 import shop.dear.commerce.financial.payment.application.PaymentService;
-import shop.dear.commerce.financial.payment.application.dto.PayOrderCommand;
-import shop.dear.commerce.financial.payment.application.dto.PaymentInfo;
 import shop.dear.commerce.financial.payment.domain.constant.PaymentStatus;
 
 import java.math.BigDecimal;
@@ -159,5 +158,80 @@ public class PaymentControllerTest {
                 .andExpect(status().isBadRequest());
 
         verify(paymentService, never()).payOrder(any(PayOrderCommand.class));
+    }
+
+    @Test
+    void prepareCharge_returnsTossOrderInfo() throws Exception {
+        // given
+        given(paymentService.prepareCharge(any(ChargeCommand.class)))
+                .willReturn(new ChargeInfo(
+                        100L,
+                        "TOPUP_test-order-001",
+                        new BigDecimal("10000.00"),
+                        "예치금 충전"
+                ));
+
+        // when & then
+        mockMvc.perform(post("/api/payments/charge")
+                        .header(AuthUser.MEMBER_ID_HEADER, "1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"amount\":10000.00}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.code").value("success"))
+                .andExpect(jsonPath("$.data.paymentId").value(100))
+                .andExpect(jsonPath("$.data.orderId")
+                        .value("TOPUP_test-order-001"))
+                .andExpect(jsonPath("$.data.amount").value(10000))
+                .andExpect(jsonPath("$.data.orderName").value("예치금 충전"));
+
+        verify(paymentService).prepareCharge(
+                new ChargeCommand(
+                        1L,
+                        new BigDecimal("10000.00")
+                )
+        );
+    }
+
+    @Test
+    void confirmCharge_returnsOk() throws Exception {
+        mockMvc.perform(post("/api/payments/confirm")
+                        .header(AuthUser.MEMBER_ID_HEADER, "1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                              {
+                                "paymentKey": "test-payment-key",                                             
+                                "orderId": "TOPUP_test-order-001",                                            
+                                "amount": 10000.00                                                            
+                              }
+                              """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("success"));
+
+        verify(paymentService).confirmCharge(
+                new ConfirmChargeCommand(
+                        1L,
+                        "test-payment-key",
+                        "TOPUP_test-order-001",
+                        new BigDecimal("10000.00")
+                )
+        );
+    }
+
+    @Test
+    void confirmCharge_withMissingPaymentKey_returnsBadRequest()
+            throws Exception {
+        mockMvc.perform(post("/api/payments/confirm")
+                        .header(AuthUser.MEMBER_ID_HEADER, "1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""                                                                            
+                              {
+                                "orderId": "TOPUP_test-order-001",
+                                "amount": 10000.00
+                              }
+                              """))
+                .andExpect(status().isBadRequest());
+
+        verify(paymentService, never())
+                .confirmCharge(any(ConfirmChargeCommand.class));
     }
 }

@@ -105,7 +105,7 @@ public class Payment extends BaseEntity {
         }
     }
 
-    public void preparePgPayment() {
+    public void preparePgPayment(final String merchantOrderId) {
         if (this.purpose != PaymentPurpose.TOPUP) {
             throw new BusinessException(PaymentErrorCode.INVALID_PAYMENT_PURPOSE);
         }
@@ -114,7 +114,7 @@ public class Payment extends BaseEntity {
             throw new BusinessException(PaymentErrorCode.PG_PAYMENT_ALREADY_PREPARED);
         }
 
-        this.pgPayment = PGPayment.create(this);
+        this.pgPayment = PGPayment.create(this, merchantOrderId);
     }
 
     public void complete() {
@@ -164,5 +164,16 @@ public class Payment extends BaseEntity {
                 orderType,
                 amount
         );
+    }
+
+    public void approvePgPayment(
+            final String transactionKey,
+            final BigDecimal approvedAmount
+    ) {
+        if (this.purpose != PaymentPurpose.TOPUP || this.pgPayment == null) {
+            throw new BusinessException(PaymentErrorCode.INVALID_PAYMENT_PURPOSE);
+        }
+
+        this.pgPayment.approve(transactionKey, approvedAmount);
     }
 }
