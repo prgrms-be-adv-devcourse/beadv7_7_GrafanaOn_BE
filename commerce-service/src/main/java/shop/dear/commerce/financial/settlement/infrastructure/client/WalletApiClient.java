@@ -1,6 +1,7 @@
 package shop.dear.commerce.financial.settlement.infrastructure.client;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -9,6 +10,7 @@ import shop.dear.commerce.financial.settlement.application.port.WalletPort;
 import shop.dear.commerce.financial.settlement.infrastructure.client.dto.WalletApiResponse;
 import shop.dear.common.response.ApiResponse;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class WalletApiClient implements WalletPort {
@@ -16,7 +18,8 @@ public class WalletApiClient implements WalletPort {
 	private final RestClient walletRestClient;
 
 	@Override
-	public WalletInfo getWalletId() {
+	public WalletInfo getWalletId(final Long memberId) {
+
 		ApiResponse<WalletApiResponse> body = walletRestClient.get()
 			.uri("/internal/deposits")
 			.retrieve()
@@ -25,6 +28,6 @@ public class WalletApiClient implements WalletPort {
 
 		WalletApiResponse data = body.getData();
 
-		return new WalletInfo(data.memberId(), data.walletId());
+		return new WalletInfo(memberId, data.walletId());
 	}
 }

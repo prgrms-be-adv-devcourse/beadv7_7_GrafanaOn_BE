@@ -19,6 +19,10 @@ offer:
   client:
     base-url: ${OFFER_CLIENT_BASE_URL}
 
+wallet:
+  client:
+    base-url: ${WALLET_CLIENT_BASE_URL}
+
 secret:
   aws:
     s3:

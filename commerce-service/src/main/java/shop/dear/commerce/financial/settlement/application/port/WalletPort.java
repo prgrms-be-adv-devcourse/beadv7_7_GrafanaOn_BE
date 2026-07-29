@@ -4,5 +4,5 @@ import shop.dear.commerce.financial.settlement.application.dto.WalletInfo;
 
 public interface WalletPort {
 
-	WalletInfo getWalletId();
+	WalletInfo getWalletId(Long memberId);
 }

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import shop.dear.commerce.financial.settlement.application.SettlementService;
 import shop.dear.commerce.financial.settlement.presentation.dto.response.NetAmountResponse;
@@ -12,7 +13,7 @@ import shop.dear.commerce.financial.settlement.presentation.dto.response.Settlem
 import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -27,11 +28,12 @@ public class SettlementController {
 
 	//특정월의 정산예정금액 조회 (전월 1일 ~ 말일)
 	@GetMapping("/me")
-	public ResponseEntity<ApiResponse<NetAmountResponse>> getNetAmount(@AuthUser Long memberId, @NotNull YearMonth targetMonth) {
+	public ResponseEntity<ApiResponse<NetAmountResponse>> getNetAmount(
+		@AuthUser Long memberId,
+		@RequestParam @NotNull YearMonth targetMonth
+	) {
 
-		//memverId검증로직추가
-
-		NetAmountResponse netAmountResponse = NetAmountResponse.from(settlementService.getNetAmount(targetMonth));
+		NetAmountResponse netAmountResponse = NetAmountResponse.from(settlementService.getNetAmount(memberId, targetMonth));
 
 		return ResponseEntity.ok(successWithData(netAmountResponse));
 	}
@@ -40,18 +42,18 @@ public class SettlementController {
 	@GetMapping("/me/history")
 	public ResponseEntity<ApiResponse<List<SettlementResponse>>> getHistory(
 		@AuthUser Long memberId,
-		@NotNull LocalDateTime startDate,
-		@NotNull LocalDateTime endDate
+		@RequestParam @NotNull LocalDate startDate,
+		@RequestParam @NotNull LocalDate endDate
 	) {
-		//memverId검증로직추가
 
 		List<SettlementResponse> history = settlementService.getHistory(
-				startDate,
-				endDate
-			)
-			.stream()
-			.map(SettlementResponse::from)
-			.toList();
+			memberId,
+			startDate,
+			endDate
+		)
+		.stream()
+		.map(SettlementResponse::from)
+		.toList();
 		
 		return ResponseEntity.ok(successWithData(history));
 	}

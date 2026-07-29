@@ -20,7 +20,7 @@ public class SettlementScheduler {
 	@Scheduled(cron = "0 0 5 1 * * ")
 	public void payoutTaskByCron() {
 
-		YearMonth targetMonth = YearMonth.now().minusMonths(1);
+		YearMonth targetMonth = YearMonth.now();
 
 		List<Long> walletList = settlementService.getPayoutTargetWalletIds(targetMonth);
 
