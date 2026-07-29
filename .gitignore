@@ -183,5 +183,3 @@ gradle-app.setting
 **/docker/local_postgres/data/*
 
 # End of https://www.toptal.com/developers/gitignore/api/java,gradle,intellij+all,macos
-
-gateway-service/src/main/resources/application-local.yaml

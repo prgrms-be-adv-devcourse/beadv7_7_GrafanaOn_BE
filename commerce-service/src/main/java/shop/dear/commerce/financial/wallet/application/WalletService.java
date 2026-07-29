@@ -1,5 +1,6 @@
 package shop.dear.commerce.financial.wallet.application;
 
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -46,7 +47,7 @@ public class WalletService {
         return GetWalletInfo.from(wallet);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void topUp(final TopUpCommand command) {
         final Wallet wallet = getOrCreateWallet(command.memberId());
 
@@ -73,7 +74,7 @@ public class WalletService {
         walletRepository.save(wallet);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void payAvailable(final PayCommand command) {
         final Wallet wallet = findWallet(command.memberId());
 
@@ -82,7 +83,7 @@ public class WalletService {
         walletRepository.save(wallet);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void payHeld(final PayCommand command) {
         final Wallet wallet = findWallet(command.memberId());
 

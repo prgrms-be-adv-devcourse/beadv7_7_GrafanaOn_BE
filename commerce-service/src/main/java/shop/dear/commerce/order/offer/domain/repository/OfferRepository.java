@@ -17,4 +17,8 @@ public interface OfferRepository {
     void deleteById(Long id);
 
     boolean existsByProductIdAndStatusIn(Long productId, List<OfferStatus> statuses);
+
+    List<Offer> findByProductIdAndStatusInOrderByInsertedAtDesc(Long productId, List<OfferStatus> statuses);
+
+    List<Offer> findByProductIdOrderByInsertedAtDesc(Long productId);
 }

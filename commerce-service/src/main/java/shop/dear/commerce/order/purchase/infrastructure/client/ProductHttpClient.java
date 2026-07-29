@@ -22,7 +22,7 @@ public class ProductHttpClient implements ProductPort {
 
   private final RestClient restClient;
 
-  public ProductHttpClient(@Qualifier("purchaseRestClient") final RestClient restClient) {
+  public ProductHttpClient(@Qualifier("productRestClient") final RestClient restClient) {
     this.restClient = restClient;
   }
 

@@ -111,7 +111,7 @@ public class Member extends BaseEntity {
         if (!this.isSeller()) {
             throw new BusinessException(MemberErrorCode.NOT_SELLER);
         }
-        this.seller.withdrawing();
+        this.seller.withdraw();
     }
 
     public void completeSellerWithdrawal(){
