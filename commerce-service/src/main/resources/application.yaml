@@ -7,13 +7,17 @@ spring:
 server:
   port: 8082
 
-order:
-  client:
-    base-url: ${ORDER_CLIENT_BASE_URL}
-
 member:
   client:
-    base-url: ${MEMBER_CLIENT_BASE_URL:${order.client.base-url}}
+    base-url: ${MEMBER_CLIENT_BASE_URL}
+
+product:
+  client:
+    base-url: ${PRODUCT_CLIENT_BASE_URL}
+
+offer:
+  client:
+    base-url: ${OFFER_CLIENT_BASE_URL}
 
 secret:
   aws:
