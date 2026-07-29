@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import shop.dear.commerce.financial.payment.application.port.PaymentCompletedEventPublisher;
+import shop.dear.commerce.financial.payment.application.port.PaymentFailedEventPublisher;
 import shop.dear.commerce.financial.payment.domain.constant.PaymentPurpose;
 import shop.dear.common.event.financial.PaymentCompletedEvent;
 import shop.dear.common.event.order.OrderType;
@@ -46,6 +47,9 @@ public class PaymentServiceTest {
 
     @Mock
     private PaymentCompletedEventPublisher paymentCompletedEventPublisher;
+
+    @Mock
+    private PaymentFailedEventPublisher paymentFailedEventPublisher;
 
     @InjectMocks
     private PaymentService paymentService;

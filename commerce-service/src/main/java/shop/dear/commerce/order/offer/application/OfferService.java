@@ -16,6 +16,8 @@ import shop.dear.commerce.order.offersnapshot.domain.repository.OfferSnapshotRep
 import shop.dear.commerce.order.offer.application.port.MemberPort;
 import shop.dear.commerce.order.offer.application.port.ProductPort;
 import shop.dear.commerce.order.offer.application.port.dto.ProductInfo;
+import shop.dear.common.event.financial.PaymentHoldRequestedEvent;
+import shop.dear.common.event.financial.PaymentRequestedEvent;
 import shop.dear.common.event.order.FinishedOrderEvent;
 import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
@@ -106,6 +108,13 @@ public class OfferService {
         final ProductInfo currentProduct = productPort.getProduct(snapshot.getProductId());
         validatePriceSnapshot(snapshot.getPriceSnapshot(), currentProduct.price());
 
+        offerEventPublisher.publish(new PaymentHoldRequestedEvent(
+                savedOffer.getId(),
+                OrderType.OFFER,
+                savedOffer.getBuyerId(),
+                savedOffer.getAmount()
+        ));
+
         return savedOffer;
     }
 
@@ -126,6 +135,13 @@ public class OfferService {
         }
 
         offer.accept();
+
+        offerEventPublisher.publish(new PaymentRequestedEvent(
+                offer.getId(),
+                OrderType.OFFER,
+                offer.getBuyerId(),
+                offer.getAmount()
+        ));
 
         offerEventPublisher.publish(new FinishedOrderEvent(
                 offer.getId(),

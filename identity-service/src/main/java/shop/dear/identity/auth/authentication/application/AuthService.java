@@ -105,13 +105,23 @@ public class AuthService {
         Long memberId = tokenProviderPort
                 .parseMemberIdFromRefreshToken(refreshToken);
 
-        boolean refreshTokenMatches = refreshTokenStorePort
-                .matches(memberId, refreshToken);
+        RefreshTokenVerificationResult verificationResult =
+                refreshTokenStorePort.verify(memberId, refreshToken);
 
-        if (!refreshTokenMatches) {
-            throw new BusinessException(
-                    AuthErrorCode.INVALID_REFRESH_TOKEN
-            );
+        switch (verificationResult) {
+            case MISMATCHED -> {
+                refreshTokenStorePort.revokeCompromisedSession(memberId);
+
+                throw new BusinessException(AuthErrorCode.REFRESH_TOKEN_REUSE_DETECTED);
+            }
+
+            case NOT_FOUND -> throw new BusinessException(AuthErrorCode.INVALID_REFRESH_TOKEN);
+
+            case EXPIRED -> throw new BusinessException(AuthErrorCode.EXPIRED_TOKEN);
+
+            case MATCHED -> {
+                // 정상. 하던 것 계속.
+            }
         }
 
         AuthAccount authAccount = authAccountRepository

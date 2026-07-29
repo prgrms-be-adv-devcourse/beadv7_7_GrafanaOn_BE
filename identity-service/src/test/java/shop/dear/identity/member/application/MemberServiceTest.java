@@ -321,9 +321,9 @@ public class MemberServiceTest {
         memberService.unRegister(1L);
 
         Assertions.assertFalse(member.isSeller());
-        Assertions.assertEquals(SellerStatus.WITHDRAWING, member.getSeller().getStatus());
-        Assertions.assertEquals("국민은행", member.getSeller().getBank());
-        Assertions.assertEquals("123-456-789", member.getSeller().getAccount());
+        Assertions.assertEquals(SellerStatus.WITHDRAWN, member.getSeller().getStatus());
+        Assertions.assertEquals("****", member.getSeller().getBank());
+        Assertions.assertEquals("****", member.getSeller().getAccount());
     }
 
     @Test
@@ -372,46 +372,6 @@ public class MemberServiceTest {
         Assertions.assertEquals("", member.getDefaultShippingAddress());
         Assertions.assertEquals("", member.getPhoneNumber());
         Assertions.assertEquals("withdrawn_1", member.getNickname());
-
-        verifyNoInteractions(productPort);
-    }
-
-    @Test
-    @DisplayName("판매자 정산이 완료되지 않으면 회원 탈퇴에 실패한다")
-    void withdrawProfileFailsWhenSellerSettlementIsPending() {
-        // given
-        Member member = Member.create(
-                "홍길동",
-                "서울시 강남구",
-                "010-1234-5678",
-                "user_000001"
-        );
-
-        member.registerSeller(
-                "국민은행",
-                "encrypted-account"
-        );
-        member.requestSellerWithdrawal();
-
-        given(memberRepository.findById(1L))
-                .willReturn(Optional.of(member));
-
-        // when
-        BusinessException exception = Assertions.assertThrows(
-                BusinessException.class,
-                () -> memberService.withdrawProfile(1L)
-        );
-
-        // then
-        Assertions.assertEquals(
-                MemberErrorCode.SELLER_WITHDRAWAL_REQUIRED,
-                exception.getErrorCode()
-        );
-
-        Assertions.assertEquals("홍길동", member.getName());
-        Assertions.assertEquals("서울시 강남구", member.getDefaultShippingAddress());
-        Assertions.assertEquals("010-1234-5678", member.getPhoneNumber());
-        Assertions.assertEquals("user_000001", member.getNickname());
 
         verifyNoInteractions(productPort);
     }

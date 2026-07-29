@@ -17,6 +17,7 @@ import shop.dear.commerce.order.purchase.domain.constant.PurchaseStatus;
 import shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.commerce.order.purchase.domain.repository.PurchaseRepository;
+import shop.dear.common.event.financial.PaymentRequestedEvent;
 import shop.dear.common.event.order.FinishedOrderEvent;
 import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
@@ -36,6 +37,7 @@ import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class PurchaseServiceTest {
@@ -82,6 +84,16 @@ class PurchaseServiceTest {
 
             verifyMemberExists(1L);
             verify(purchaseRepository).save(any(Purchase.class));
+
+            final ArgumentCaptor<PaymentRequestedEvent> captor =
+                    ArgumentCaptor.forClass(PaymentRequestedEvent.class);
+            verify(purchaseEventPublisher).publish(captor.capture());
+
+            final PaymentRequestedEvent event = captor.getValue();
+            assertThat(event.orderId()).isEqualTo(purchase.getId());
+            assertThat(event.memberId()).isEqualTo(purchase.getBuyerId());
+            assertThat(event.amount()).isEqualTo(purchase.getAmount());
+            assertThat(event.orderType()).isEqualTo(OrderType.PURCHASE);
         }
 
         @Test
@@ -102,6 +114,7 @@ class PurchaseServiceTest {
 
             verify(productPort, never()).getProduct(anyLong());
             verify(purchaseRepository, never()).save(any(Purchase.class));
+            verifyNoInteractions(purchaseEventPublisher);
         }
 
         private ProductInfo productInfo(
@@ -187,7 +200,7 @@ class PurchaseServiceTest {
                     .isInstanceOf(BusinessException.class);
 
             verifyMemberExists(1L);
-            verify(purchaseEventPublisher, never()).publish(any());
+            verifyNoInteractions(purchaseEventPublisher);
         }
 
         @Test
@@ -207,7 +220,7 @@ class PurchaseServiceTest {
                     .isInstanceOf(BusinessException.class);
 
             verifyMemberExists(1L);
-            verify(purchaseEventPublisher, never()).publish(any());
+            verifyNoInteractions(purchaseEventPublisher);
         }
     }
 
