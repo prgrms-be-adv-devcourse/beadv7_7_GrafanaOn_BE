@@ -21,6 +21,7 @@ import shop.dear.common.event.financial.PaymentCompletedEvent;
 import shop.dear.common.event.financial.PaymentFailedEvent;
 import shop.dear.common.exception.BusinessException;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -37,6 +38,17 @@ public class PaymentService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public PaymentInfo payOrder(final PayOrderCommand command) {
+
+        final Optional<Payment> existingPayment =
+                paymentRepository.findByOrderIdAndOrderType(
+                        command.orderId(),
+                        command.orderType()
+                );
+
+        if (existingPayment.isPresent()) {
+            return PaymentInfo.from(existingPayment.get());
+        }
+
         final Payment payment = Payment.createOrderPayment(
                 command.memberId(),
                 command.orderId(),

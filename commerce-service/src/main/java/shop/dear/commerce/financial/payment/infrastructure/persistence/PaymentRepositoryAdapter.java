@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import shop.dear.commerce.financial.payment.domain.model.Payment;
 import shop.dear.commerce.financial.payment.domain.repository.PaymentRepository;
 import shop.dear.commerce.financial.payment.infrastructure.persistence.jpa.PaymentJpaRepository;
+import shop.dear.common.event.order.OrderType;
 
 import java.util.Optional;
 
@@ -29,5 +30,16 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
             final String merchantOrderId
     ) {
         return paymentJpaRepository.findByMerchantOrderId(merchantOrderId);
+    }
+
+    @Override
+    public Optional<Payment> findByOrderIdAndOrderType(
+            final Long orderId,
+            final OrderType orderType
+    ) {
+        return paymentJpaRepository.findByOrderIdAndOrderType(
+                orderId,
+                orderType
+        );
     }
 }

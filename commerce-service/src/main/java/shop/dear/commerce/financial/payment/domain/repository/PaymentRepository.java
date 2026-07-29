@@ -1,6 +1,8 @@
 package shop.dear.commerce.financial.payment.domain.repository;
 
 import shop.dear.commerce.financial.payment.domain.model.Payment;
+import shop.dear.common.event.order.OrderType;
+
 import java.util.Optional;
 
 public interface PaymentRepository {
@@ -9,4 +11,6 @@ public interface PaymentRepository {
     Payment save(Payment payment);
 
     Optional<Payment> findByMerchantOrderId(String merchantOrderId);
+
+    Optional<Payment> findByOrderIdAndOrderType(Long orderId, OrderType orderType);
 }

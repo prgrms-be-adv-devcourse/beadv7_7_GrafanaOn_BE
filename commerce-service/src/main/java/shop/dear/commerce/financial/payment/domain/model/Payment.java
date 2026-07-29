@@ -15,7 +15,13 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "payment")
+@Table(
+        name = "payment",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_payment_order",
+                columnNames = {"order_id", "order_type"}
+        )
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Payment extends BaseEntity {
