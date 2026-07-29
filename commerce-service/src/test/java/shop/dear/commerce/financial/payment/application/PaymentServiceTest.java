@@ -85,6 +85,11 @@ public class PaymentServiceTest {
         when(paymentRepository.save(any(Payment.class)))
                 .thenReturn(savedPayment);
 
+        when(paymentRepository.findByOrderIdAndOrderType(
+                ORDER_ID,
+                OrderType.PURCHASE
+        )).thenReturn(Optional.empty());
+
         // when
         final PaymentInfo result = paymentService.payOrder(command);
 
@@ -118,6 +123,36 @@ public class PaymentServiceTest {
         assertEquals(MEMBER_ID.longValue(), event.memberId().longValue());
         assertEquals(AMOUNT, event.amount());
         assertEquals(OrderType.PURCHASE, event.orderType());
+    }
+
+    @Test
+    void payOrder_whenOrderPaymentAlreadyExists_returnsExistingPaymentWithoutDebit() {
+        // given
+        final PayOrderCommand command = new PayOrderCommand(
+                MEMBER_ID,
+                ORDER_ID,
+                OrderType.PURCHASE,
+                AMOUNT
+        );
+
+        final Payment existingPayment = mock(Payment.class);
+        when(existingPayment.getId()).thenReturn(PAYMENT_ID);
+        when(existingPayment.getState()).thenReturn(PaymentStatus.PENDING);
+
+        when(paymentRepository.findByOrderIdAndOrderType(
+                ORDER_ID,
+                OrderType.PURCHASE
+        )).thenReturn(Optional.of(existingPayment));
+
+        // when
+        final PaymentInfo result = paymentService.payOrder(command);
+
+        // then
+        assertEquals(PAYMENT_ID, result.paymentId());
+        assertEquals(PaymentStatus.PENDING, result.state());
+
+        verify(paymentRepository, never()).save(any(Payment.class));
+        verifyNoInteractions(walletDebitEventPublisher);
     }
 
     @Test
