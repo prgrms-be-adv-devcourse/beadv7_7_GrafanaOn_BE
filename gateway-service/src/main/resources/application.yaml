@@ -1,12 +1,14 @@
+# 공통 설록
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 
 spring:
   application:
     name: gateway-service
 
+# Profile을 주지 않으면 local, prod를 주면 prod로.
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:local}
+    default: local
 
 management:
   endpoints:
@@ -17,3 +19,9 @@ management:
   endpoint:
     gateway:
       access: read-only
+
+# JWT 설정 추가
+auth:
+  jwt:
+    issuer: ${JWT_ISSUER:dear-identity-service}
+    secret: ${JWT_SECRET}
