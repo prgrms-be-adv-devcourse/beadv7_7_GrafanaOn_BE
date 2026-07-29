@@ -14,9 +14,12 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 import shop.dear.commerce.product.domain.exception.ProductImageErrorCode;
 import shop.dear.common.audit.BaseEntity;
 import shop.dear.common.exception.BusinessException;
+
+import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -41,8 +44,12 @@ public class ProductImage extends BaseEntity {
     @Column(name = "sort_order", nullable = false)
     private int sortOrder;
 
+    @SQLRestriction("deleted_at IS NULL")
     @OneToOne(mappedBy = "productImage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Story story;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     static ProductImage create(
         final Product product,
@@ -86,7 +93,19 @@ public class ProductImage extends BaseEntity {
         return sortOrder;
     }
 
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+
+        if (this.story != null) {
+            this.story.delete();
+        }
+    }
+
     public void addStory(final String content) {
         this.story = Story.create(this, content);
+    }
+
+    public boolean isDeleted() {
+        return this.deletedAt != null;
     }
 }

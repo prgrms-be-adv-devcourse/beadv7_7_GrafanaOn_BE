@@ -12,10 +12,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ProductJpaRepository extends JpaRepository<Product, Long> {
-    boolean existsBySellerIdAndStatusInAndDeletedAtIsNull(final Long sellerId, final List<ProductStatus> statuses);
+    boolean existsBySellerIdAndStatusIn(final Long sellerId, final List<ProductStatus> statuses);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE Product p SET p.viewCount = p.viewCount + 1 WHERE p.id = :productId")
+    @Query("UPDATE Product p SET p.viewCount = p.viewCount + 1 WHERE p.id = :productId AND p.deletedAt IS NULL")
     void increaseViewCount(@Param("productId") Long productId);
 
     List<Product> findAllBySellerIdAndDeletedAtIsNull(final Long sellerId);
@@ -41,8 +41,9 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
         WHERE p.status = 'PREPARING'
           AND p.insertedAt >= :startTime
           AND p.insertedAt < :endTime
+          AND p.deletedAt IS NULL
         """)
     int updateStatusToOnSale(@Param("startTime") final LocalDateTime startTime, @Param("endTime") final LocalDateTime endTime);
 
-    List<Product> findAllByIdInAndDeletedAtIsNull(final List<Long> productIds);
+    List<Product> findAllByIdIn(final List<Long> productIds);
 }

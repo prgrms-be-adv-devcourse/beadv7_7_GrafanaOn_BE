@@ -212,7 +212,7 @@ public class ProductService {
         validateSeller(sellerId);
 
         final List<ProductStatus> statuses = List.of(ProductStatus.PREPARING, ProductStatus.ON_SALE);
-        final boolean exists = productRepository.existsBySellerIdAndStatusInAndDeletedAtIsNull(sellerId, statuses);
+        final boolean exists = productRepository.existsBySellerIdAndStatusIn(sellerId, statuses);
 
         return new MemberProductExistsDto(exists);
     }
@@ -220,7 +220,7 @@ public class ProductService {
     public List<ScrapProductInfoDto> getScrapProducts(final Long memberId, final GetScrapProductCommand command) {
         validateMember(memberId);
 
-        final List<Product> scrapProducts = productRepository.findAllByIdInAndDeletedAtIsNull(command.ids());
+        final List<Product> scrapProducts = productRepository.findAllByIdIn(command.ids());
 
         return scrapProducts.stream()
             .map(ScrapProductInfoDto::from)

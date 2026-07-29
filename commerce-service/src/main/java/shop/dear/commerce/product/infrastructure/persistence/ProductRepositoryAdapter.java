@@ -37,13 +37,13 @@ public class ProductRepositoryAdapter implements ProductRepository {
     }
 
     @Override
-    public boolean existsBySellerIdAndStatusInAndDeletedAtIsNull(final Long sellerId, final List<ProductStatus> statuses) {
-        return productRepository.existsBySellerIdAndStatusInAndDeletedAtIsNull(sellerId, statuses);
+    public boolean existsBySellerIdAndStatusIn(final Long sellerId, final List<ProductStatus> statuses) {
+        return productRepository.existsBySellerIdAndStatusIn(sellerId, statuses);
     }
 
     @Override
-    public List<Product> findAllByIdInAndDeletedAtIsNull(final List<Long> productIds) {
-        return productRepository.findAllByIdInAndDeletedAtIsNull(productIds);
+    public List<Product> findAllByIdIn(final List<Long> productIds) {
+        return productRepository.findAllByIdIn(productIds);
     }
 
     @Override
