@@ -9,7 +9,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import shop.dear.commerce.financial.payment.application.dto.*;
 import shop.dear.common.auth.AuthUser;
-import shop.dear.common.event.order.OrderType;
 import shop.dear.commerce.financial.payment.application.PaymentService;
 import shop.dear.commerce.financial.payment.domain.constant.PaymentStatus;
 
@@ -36,35 +35,10 @@ public class PaymentControllerTest {
     private PaymentService paymentService;
 
     @Test
-    void createPayment_returnsPendingPayment() throws Exception {
-        // given
-        given(paymentService.payOrder(any(PayOrderCommand.class)))
-                .willReturn(new PaymentInfo(100L, PaymentStatus.PENDING));
-
-        final PaymentRequestBody request = new PaymentRequestBody(
-                10L,
-                OrderType.PURCHASE,
-                new BigDecimal("10000.00")
-        );
-
-        // when & then
+    void orderPaymentEndpointIsNotExposed() throws Exception {
         mockMvc.perform(post("/api/payments")
-                        .header(AuthUser.MEMBER_ID_HEADER, "1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.code").value("success"))
-                .andExpect(jsonPath("$.data.paymentId").value(100))
-                .andExpect(jsonPath("$.data.status").value("PENDING"));
-
-        verify(paymentService).payOrder(
-                new PayOrderCommand(
-                        1L,
-                        10L,
-                        OrderType.PURCHASE,
-                        new BigDecimal("10000.00")
-                )
-        );
+                        .header(AuthUser.MEMBER_ID_HEADER, "1"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -84,13 +58,6 @@ public class PaymentControllerTest {
         verify(paymentService).getPayment(1L, 100L);
     }
 
-    private record PaymentRequestBody(
-            Long orderId,
-            OrderType orderType,
-            BigDecimal amount
-    ) {
-    }
-
     @Test
     void getPayment_withNonPositivePaymentId_returnsBadRequest() throws Exception {
         mockMvc.perform(get("/api/payments/0")
@@ -98,66 +65,6 @@ public class PaymentControllerTest {
                 .andExpect(status().isBadRequest());
 
         verify(paymentService, never()).getPayment(anyLong(), anyLong());
-    }
-
-    @Test
-    void createPayment_withMissingOrderId_returnsBadRequest() throws Exception {
-        final PaymentRequestBody request = new PaymentRequestBody(
-                null, OrderType.PURCHASE, new BigDecimal("10000.00")
-        );
-
-        mockMvc.perform(post("/api/payments")
-                        .header(AuthUser.MEMBER_ID_HEADER, "1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
-
-        verify(paymentService, never()).payOrder(any(PayOrderCommand.class));
-    }
-
-    @Test
-    void createPayment_withNonPositiveOrderId_returnsBadRequest() throws Exception {
-        final PaymentRequestBody request = new PaymentRequestBody(
-                0L, OrderType.PURCHASE, new BigDecimal("10000.00")
-        );
-
-        mockMvc.perform(post("/api/payments")
-                        .header(AuthUser.MEMBER_ID_HEADER, "1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
-
-        verify(paymentService, never()).payOrder(any(PayOrderCommand.class));
-    }
-
-    @Test
-    void createPayment_withMissingAmount_returnsBadRequest() throws Exception {
-        final PaymentRequestBody request = new PaymentRequestBody(
-                10L, OrderType.PURCHASE, null
-        );
-
-        mockMvc.perform(post("/api/payments")
-                        .header(AuthUser.MEMBER_ID_HEADER, "1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
-
-        verify(paymentService, never()).payOrder(any(PayOrderCommand.class));
-    }
-
-    @Test
-    void createPayment_withNonPositiveAmount_returnsBadRequest() throws Exception {
-        final PaymentRequestBody request = new PaymentRequestBody(
-                10L, OrderType.PURCHASE, BigDecimal.ZERO
-        );
-
-        mockMvc.perform(post("/api/payments")
-                        .header(AuthUser.MEMBER_ID_HEADER, "1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
-
-        verify(paymentService, never()).payOrder(any(PayOrderCommand.class));
     }
 
     @Test
