@@ -132,7 +132,7 @@ class ScrapServiceTest {
     }
 
     @Test
-    @DisplayName("스크랩 목록 조회 시 삭제된 상품이 있으면 상품 정보는 null로 채워진다")
+    @DisplayName("스크랩 목록 조회 시 삭제된 상품은 결과에서 제외된다")
     void getScrapListTest_productNotFound() {
 
         Scrap scrap = Scrap.create(1L, 100L);
@@ -150,8 +150,7 @@ class ScrapServiceTest {
 
         Page<ScrapDetail> result = scrapService.getScrapList(1L, 0, 10);
 
-        Assertions.assertEquals(100L, result.getContent().get(0).id());
-        Assertions.assertNull(result.getContent().get(0).name());
+        Assertions.assertTrue(result.getContent().isEmpty());
     }
 
     @Test

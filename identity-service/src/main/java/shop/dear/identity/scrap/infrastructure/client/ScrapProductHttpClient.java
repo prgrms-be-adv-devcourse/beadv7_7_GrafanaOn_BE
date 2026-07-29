@@ -27,7 +27,7 @@ public class ScrapProductHttpClient implements ProductPort {
             return List.of();
         }
 
-        final ApiResponse<ProductApiData> body = productRestClient.method(HttpMethod.GET)
+        final ApiResponse<List<ProductApiData>> body = productRestClient.method(HttpMethod.POST)
             .uri("/internal/products/me/scraps")
             .contentType(MediaType.APPLICATION_JSON)
             .body(new GetProductsBody(productIds))
@@ -35,13 +35,13 @@ public class ScrapProductHttpClient implements ProductPort {
             .body(new ParameterizedTypeReference<>() {
             });
 
-        return body.getData().products().stream()
+        return body.getData().stream()
             .map(product -> new ProductSummary(
                 product.id(),
                 product.name(),
                 product.brand(),
                 product.price(),
-                product.thumbnailUrl(),
+                product.imageUrl(),
                 product.status()
             ))
             .toList();
