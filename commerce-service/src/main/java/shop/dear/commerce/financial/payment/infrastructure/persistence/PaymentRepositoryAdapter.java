@@ -23,4 +23,11 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
     public Payment save(final Payment payment) {
         return paymentJpaRepository.save(payment);
     }
+
+    @Override
+    public Optional<Payment> findByMerchantOrderId(
+            final String merchantOrderId
+    ) {
+        return paymentJpaRepository.findByMerchantOrderId(merchantOrderId);
+    }
 }

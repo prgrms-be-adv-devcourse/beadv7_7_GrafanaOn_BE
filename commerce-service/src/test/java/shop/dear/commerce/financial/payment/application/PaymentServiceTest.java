@@ -7,14 +7,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import shop.dear.commerce.financial.payment.application.dto.ChargeCommand;
-import shop.dear.commerce.financial.payment.application.dto.ChargeInfo;
+import shop.dear.commerce.financial.payment.application.dto.*;
+import shop.dear.commerce.financial.payment.application.port.PgPaymentApprovalPort;
 import shop.dear.commerce.financial.payment.domain.constant.PGPaymentStatus;
 import shop.dear.commerce.financial.payment.domain.constant.PaymentPurpose;
 import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
-import shop.dear.commerce.financial.payment.application.dto.PayOrderCommand;
-import shop.dear.commerce.financial.payment.application.dto.PaymentInfo;
 import shop.dear.commerce.financial.payment.application.event.WalletDebitRequestedEvent;
 import shop.dear.commerce.financial.payment.application.port.WalletDebitEventPublisher;
 import shop.dear.commerce.financial.payment.domain.constant.PaymentStatus;
@@ -27,9 +25,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PaymentServiceTest {
@@ -41,11 +37,21 @@ public class PaymentServiceTest {
 
     private static final Long OTHER_MEMBER_ID = 2L;
 
+    private static final String MERCHANT_ORDER_ID = "TOPUP_test-order-001";
+    private static final String PAYMENT_KEY = "test-payment-key";
+    private static final String TRANSACTION_KEY = "test-transaction-key";
+
     @Mock
     private PaymentRepository paymentRepository;
 
     @Mock
     private WalletDebitEventPublisher walletDebitEventPublisher;
+
+    @Mock
+    private PgPaymentApprovalPort pgPaymentApprovalPort;
+
+    @Mock
+    private TopUpApprovalCompletionService topUpApprovalCompletionService;
 
     @InjectMocks
     private PaymentService paymentService;
@@ -284,5 +290,120 @@ public class PaymentServiceTest {
                 savedPayment.getPgPayment().getMerchantOrderId(),
                 result.orderId()
         );
+    }
+
+    @Test
+    void confirmCharge_whenValid_approvesPgAndRecordsApproval() {
+        // given
+        final Payment payment = createPreparedTopUpPayment();
+
+        final ConfirmChargeCommand command = new ConfirmChargeCommand(
+                MEMBER_ID,
+                PAYMENT_KEY,
+                MERCHANT_ORDER_ID,
+                AMOUNT
+        );
+
+        final PgApprovalResult approvalResult = new PgApprovalResult(
+                MERCHANT_ORDER_ID,
+                TRANSACTION_KEY,
+                AMOUNT
+        );
+
+        when(paymentRepository.findByMerchantOrderId(MERCHANT_ORDER_ID))
+                .thenReturn(Optional.of(payment));
+
+        when(pgPaymentApprovalPort.approve(
+                PAYMENT_KEY,
+                MERCHANT_ORDER_ID,
+                AMOUNT,
+                "topup-confirm-" + PAYMENT_ID
+        )).thenReturn(approvalResult);
+
+        // when
+        paymentService.confirmCharge(command);
+
+        // then
+        verify(pgPaymentApprovalPort).approve(
+                PAYMENT_KEY,
+                MERCHANT_ORDER_ID,
+                AMOUNT,
+                "topup-confirm-" + PAYMENT_ID
+        );
+        verify(topUpApprovalCompletionService)
+                .recordApproval(approvalResult);
+    }
+
+    @Test
+    void confirmCharge_whenAmountDiffers_doesNotCallPg() {
+        // given
+        final Payment payment = createPreparedTopUpPayment();
+
+        final ConfirmChargeCommand command = new ConfirmChargeCommand(
+                MEMBER_ID,
+                PAYMENT_KEY,
+                MERCHANT_ORDER_ID,
+                new BigDecimal("9999.00")
+        );
+
+        when(paymentRepository.findByMerchantOrderId(MERCHANT_ORDER_ID))
+                .thenReturn(Optional.of(payment));
+
+        // when
+        final BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> paymentService.confirmCharge(command)
+        );
+
+        // then
+        assertEquals(
+                PaymentErrorCode.PAYMENT_CONFIRMATION_MISMATCH,
+                exception.getErrorCode()
+        );
+        verifyNoInteractions(
+                pgPaymentApprovalPort,
+                topUpApprovalCompletionService
+        );
+    }
+
+    @Test
+    void confirmCharge_whenDifferentMember_doesNotCallPg() {
+        // given
+        final Payment payment = createPreparedTopUpPayment();
+
+        final ConfirmChargeCommand command = new ConfirmChargeCommand(
+                OTHER_MEMBER_ID,
+                PAYMENT_KEY,
+                MERCHANT_ORDER_ID,
+                AMOUNT
+        );
+
+        when(paymentRepository.findByMerchantOrderId(MERCHANT_ORDER_ID))
+                .thenReturn(Optional.of(payment));
+
+        // when
+        final BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> paymentService.confirmCharge(command)
+        );
+
+        // then
+        assertEquals(
+                PaymentErrorCode.PAYMENT_ACCESS_DENIED,
+                exception.getErrorCode()
+        );
+        verifyNoInteractions(
+                pgPaymentApprovalPort,
+                topUpApprovalCompletionService
+        );
+    }
+
+    private Payment createPreparedTopUpPayment() {
+        final Payment payment = Payment.createTopUp(MEMBER_ID, AMOUNT);
+        payment.preparePgPayment(MERCHANT_ORDER_ID);
+
+        ReflectionTestUtils.setField(payment, "id", PAYMENT_ID);
+
+        return payment;
     }
 }

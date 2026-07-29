@@ -160,4 +160,15 @@ public class Payment extends BaseEntity {
                 amount
         );
     }
+
+    public void approvePgPayment(
+            final String transactionKey,
+            final BigDecimal approvedAmount
+    ) {
+        if (this.purpose != PaymentPurpose.TOPUP || this.pgPayment == null) {
+            throw new BusinessException(PaymentErrorCode.INVALID_PAYMENT_PURPOSE);
+        }
+
+        this.pgPayment.approve(transactionKey, approvedAmount);
+    }
 }

@@ -5,7 +5,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.dear.commerce.financial.payment.domain.constant.PGPaymentStatus;
+import shop.dear.commerce.financial.payment.domain.exception.PaymentErrorCode;
 import shop.dear.common.audit.BaseEntity;
+import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
 
@@ -48,5 +50,25 @@ public class PGPayment extends BaseEntity {
 
     static PGPayment create(final Payment payment, final String merchantOrderId) {
             return new PGPayment(payment, merchantOrderId);
+    }
+
+    public void approve(
+            final String transactionKey,
+            final BigDecimal approvedAmount
+    ) {
+        if (this.state != PGPaymentStatus.READY) {
+            throw new BusinessException(
+                    PaymentErrorCode.INVALID_PAYMENT_STATUS_TRANSITION
+            );
+        }
+
+        if (approvedAmount == null
+                || approvedAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException(PaymentErrorCode.INVALID_AMOUNT);
+        }
+
+        this.transactionKey = transactionKey;
+        this.approvedAmount = approvedAmount;
+        this.state = PGPaymentStatus.DONE;
     }
 }

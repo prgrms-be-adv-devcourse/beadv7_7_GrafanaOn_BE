@@ -23,3 +23,7 @@ secret:
     credentials:
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}
+
+toss:
+  base-url: ${TOSS_BASE_URL:https://api.tosspayments.com}
+  secret-key: ${TOSS_SECRET_KEY:}

@@ -5,12 +5,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
-import shop.dear.commerce.financial.payment.application.dto.ChargeCommand;
-import shop.dear.commerce.financial.payment.application.dto.ChargeInfo;
-import shop.dear.commerce.financial.payment.application.dto.PayOrderCommand;
-import shop.dear.commerce.financial.payment.application.dto.PaymentInfo;
+import shop.dear.commerce.financial.payment.application.dto.*;
 import shop.dear.commerce.financial.payment.application.event.WalletDebitRequestedEvent;
+import shop.dear.commerce.financial.payment.application.port.PgPaymentApprovalPort;
 import shop.dear.commerce.financial.payment.application.port.WalletDebitEventPublisher;
+import shop.dear.commerce.financial.payment.domain.constant.PGPaymentStatus;
+import shop.dear.commerce.financial.payment.domain.constant.PaymentPurpose;
+import shop.dear.commerce.financial.payment.domain.constant.PaymentStatus;
 import shop.dear.commerce.financial.payment.domain.exception.PaymentErrorCode;
 import shop.dear.commerce.financial.payment.domain.model.Payment;
 import shop.dear.commerce.financial.payment.domain.repository.PaymentRepository;
@@ -25,6 +26,8 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final WalletDebitEventPublisher walletDebitEventPublisher;
+    private final PgPaymentApprovalPort pgPaymentApprovalPort;
+    private final TopUpApprovalCompletionService topUpApprovalCompletionService;
 
     @Transactional
     public PaymentInfo payOrder(final PayOrderCommand command) {
@@ -92,5 +95,71 @@ public class PaymentService {
         final Payment savedPayment = paymentRepository.save(payment);
 
         return ChargeInfo.from(savedPayment);
+    }
+
+    // Toss HTTP 호출 중에는 DB 트랜잭션을 열지 않음
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void confirmCharge(final ConfirmChargeCommand command) {
+        final Payment payment = paymentRepository.findByMerchantOrderId(
+                        command.orderId()
+                )
+                .orElseThrow(() ->
+                        new BusinessException(PaymentErrorCode.PAYMENT_NOT_FOUND)
+                );
+
+        validateBeforeApproval(payment, command);
+
+        final PgApprovalResult approvalResult = pgPaymentApprovalPort.approve(
+                command.paymentKey(),
+                command.orderId(),
+                command.amount(),
+                "topup-confirm-" + payment.getId()
+        );
+
+        validateApprovalResult(command, payment, approvalResult);
+
+        topUpApprovalCompletionService.recordApproval(approvalResult);
+    }
+
+    private void validateBeforeApproval(
+            final Payment payment,
+            final ConfirmChargeCommand command
+    ) {
+        if (!payment.getMemberId().equals(command.memberId())) {
+            throw new BusinessException(PaymentErrorCode.PAYMENT_ACCESS_DENIED);
+        }
+
+        if (payment.getPurpose() != PaymentPurpose.TOPUP) {
+            throw new BusinessException(PaymentErrorCode.INVALID_PAYMENT_PURPOSE);
+        }
+
+        if (payment.getState() != PaymentStatus.PENDING
+                || payment.getPgPayment().getState() != PGPaymentStatus.READY) {
+            throw new BusinessException(
+                    PaymentErrorCode.INVALID_PAYMENT_STATUS_TRANSITION
+            );
+        }
+
+        if (payment.getAmount().compareTo(command.amount()) != 0) {
+            throw new BusinessException(
+                    PaymentErrorCode.PAYMENT_CONFIRMATION_MISMATCH
+            );
+        }
+    }
+
+    private void validateApprovalResult(
+            final ConfirmChargeCommand command,
+            final Payment payment,
+            final PgApprovalResult approvalResult
+    ) {
+        if (approvalResult == null
+                || !command.orderId().equals(approvalResult.orderId())
+                || approvalResult.approvedAmount() == null
+                || payment.getAmount()
+                .compareTo(approvalResult.approvedAmount()) != 0) {
+            throw new BusinessException(
+                    PaymentErrorCode.PAYMENT_CONFIRMATION_MISMATCH
+            );
+        }
     }
 }

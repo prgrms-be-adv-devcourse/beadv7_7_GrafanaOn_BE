@@ -7,13 +7,10 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import shop.dear.commerce.financial.payment.application.dto.ChargeCommand;
-import shop.dear.commerce.financial.payment.application.dto.ChargeInfo;
+import shop.dear.commerce.financial.payment.application.dto.*;
 import shop.dear.common.auth.AuthUser;
 import shop.dear.common.event.order.OrderType;
 import shop.dear.commerce.financial.payment.application.PaymentService;
-import shop.dear.commerce.financial.payment.application.dto.PayOrderCommand;
-import shop.dear.commerce.financial.payment.application.dto.PaymentInfo;
 import shop.dear.commerce.financial.payment.domain.constant.PaymentStatus;
 
 import java.math.BigDecimal;
@@ -195,5 +192,46 @@ public class PaymentControllerTest {
         );
     }
 
+    @Test
+    void confirmCharge_returnsOk() throws Exception {
+        mockMvc.perform(post("/api/payments/confirm")
+                        .header(AuthUser.MEMBER_ID_HEADER, "1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                              {
+                                "paymentKey": "test-payment-key",                                             
+                                "orderId": "TOPUP_test-order-001",                                            
+                                "amount": 10000.00                                                            
+                              }
+                              """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("success"));
 
+        verify(paymentService).confirmCharge(
+                new ConfirmChargeCommand(
+                        1L,
+                        "test-payment-key",
+                        "TOPUP_test-order-001",
+                        new BigDecimal("10000.00")
+                )
+        );
+    }
+
+    @Test
+    void confirmCharge_withMissingPaymentKey_returnsBadRequest()
+            throws Exception {
+        mockMvc.perform(post("/api/payments/confirm")
+                        .header(AuthUser.MEMBER_ID_HEADER, "1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""                                                                            
+                              {
+                                "orderId": "TOPUP_test-order-001",
+                                "amount": 10000.00
+                              }
+                              """))
+                .andExpect(status().isBadRequest());
+
+        verify(paymentService, never())
+                .confirmCharge(any(ConfirmChargeCommand.class));
+    }
 }
