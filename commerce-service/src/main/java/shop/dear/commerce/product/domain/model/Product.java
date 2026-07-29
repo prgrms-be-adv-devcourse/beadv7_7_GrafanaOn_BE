@@ -22,6 +22,7 @@ import shop.dear.common.audit.BaseEntity;
 import shop.dear.common.exception.BusinessException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,6 +81,9 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductImage> images = new ArrayList<>();
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     public static Product create(
         final Long sellerId,
         final String name,
@@ -126,6 +130,7 @@ public class Product extends BaseEntity {
         this.status = ProductStatus.PREPARING;
         this.viewCount = 0L;
         this.description = validateDescription(description);
+        this.deletedAt = null;
     }
 
     private String validateName(final String name) {
@@ -266,5 +271,13 @@ public class Product extends BaseEntity {
 
     public boolean isVisible() {
         return this.status == ProductStatus.ON_SALE || this.status == ProductStatus.SOLD_OUT;
+    }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public boolean isDeleted() {
+        return this.deletedAt != null;
     }
 }

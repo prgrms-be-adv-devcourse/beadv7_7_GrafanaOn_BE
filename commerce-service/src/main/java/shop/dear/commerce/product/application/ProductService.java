@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.product.application.dto.GetProductDetailDto;
+import shop.dear.commerce.product.application.dto.GetProductDto;
 import shop.dear.commerce.product.application.dto.GetSellerProductDto;
 import shop.dear.commerce.product.application.dto.MemberProductExistsDto;
 import shop.dear.commerce.product.application.dto.PresignedUrlInfoDto;
@@ -29,6 +30,9 @@ import shop.dear.common.event.product.ProductChangedEvent;
 import shop.dear.common.event.product.ProductDeletedEvent;
 import shop.dear.common.exception.BusinessException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -92,16 +96,18 @@ public class ProductService {
         final Product savedProduct = productRepository.save(product);
 
         productEventPublisher.publish(new ProductChangedEvent(
-            savedProduct.getId(),
-            savedProduct.getName(),
-            savedProduct.getModelNumber(),
-            savedProduct.getCategory().toString(),
-            savedProduct.getReleaseDate(),
-            savedProduct.getPrice().getValue(),
-            savedProduct.getSaleType().toString(),
-            savedProduct.getViewCount(),
-            savedProduct.getDescription(),
-            fullStory.toString()
+                savedProduct.getId(),
+                savedProduct.getName(),
+                savedProduct.getModelNumber(),
+                savedProduct.getCategory().name(),
+                savedProduct.getReleaseDate(),
+                savedProduct.getPrice().getValue(),
+                savedProduct.getSaleType().name(),
+                savedProduct.getStatus().name(),
+                savedProduct.getViewCount(),
+                savedProduct.getDescription(),
+                fullStory.toString().trim(),
+                savedProduct.getInsertedAt()
         ));
     }
 
@@ -117,6 +123,7 @@ public class ProductService {
         validateSeller(sellerId);
 
         final Product originalProduct = productRepository.findById(productId);
+        validateDeleted(originalProduct);
         originalProduct.validateOwner(sellerId);
         validateProductUpdatable(originalProduct);
 
@@ -144,17 +151,25 @@ public class ProductService {
         final Product savedProduct = productRepository.save(updatedProduct);
 
         productEventPublisher.publish(new ProductChangedEvent(
-            savedProduct.getId(),
-            savedProduct.getName(),
-            savedProduct.getModelNumber(),
-            savedProduct.getCategory().toString(),
-            savedProduct.getReleaseDate(),
-            savedProduct.getPrice().getValue(),
-            savedProduct.getSaleType().toString(),
-            savedProduct.getViewCount(),
-            savedProduct.getDescription(),
-            fullStory.toString()
+                savedProduct.getId(),
+                savedProduct.getName(),
+                savedProduct.getModelNumber(),
+                savedProduct.getCategory().name(),
+                savedProduct.getReleaseDate(),
+                savedProduct.getPrice().getValue(),
+                savedProduct.getSaleType().name(),
+                savedProduct.getStatus().name(),
+                savedProduct.getViewCount(),
+                savedProduct.getDescription(),
+                fullStory.toString().trim(),
+                savedProduct.getInsertedAt()
         ));
+    }
+
+    private void validateDeleted(final Product product) {
+        if (product.isDeleted()) {
+            throw new BusinessException(ProductErrorCode.INVALID_PRODUCT);
+        }
     }
 
     private void validateProductUpdatable(final Product originalProduct) {
@@ -177,10 +192,11 @@ public class ProductService {
         validateSeller(sellerId);
 
         final Product product = productRepository.findById(productId);
+        validateDeleted(product);
         product.validateOwner(sellerId);
         validateProductDeletable(product);
 
-        productRepository.delete(product);
+        product.delete();
 
         productEventPublisher.publish(new ProductDeletedEvent(productId));
     }
@@ -196,7 +212,7 @@ public class ProductService {
         validateSeller(sellerId);
 
         final List<ProductStatus> statuses = List.of(ProductStatus.PREPARING, ProductStatus.ON_SALE);
-        final boolean exists = productRepository.existsBySellerIdAndStatusIn(sellerId, statuses);
+        final boolean exists = productRepository.existsBySellerIdAndStatusInAndDeletedAtIsNull(sellerId, statuses);
 
         return new MemberProductExistsDto(exists);
     }
@@ -204,7 +220,7 @@ public class ProductService {
     public List<ScrapProductInfoDto> getScrapProducts(final Long memberId, final GetScrapProductCommand command) {
         validateMember(memberId);
 
-        final List<Product> scrapProducts = productRepository.findAllById(command.ids());
+        final List<Product> scrapProducts = productRepository.findAllByIdInAndDeletedAtIsNull(command.ids());
 
         return scrapProducts.stream()
             .map(ScrapProductInfoDto::from)
@@ -218,6 +234,7 @@ public class ProductService {
 
         productRepository.increaseViewCount(productId);
         final Product product = productRepository.findById(productId);
+        validateDeleted(product);
 
         validateProductVisible(product);
 
@@ -241,6 +258,7 @@ public class ProductService {
 
         final Product product = productRepository.findById(productId);
 
+        validateDeleted(product);
         validateProductVisible(product);
 
         return GetProductDetailDto.of(product);
@@ -250,10 +268,26 @@ public class ProductService {
         validateMember(sellerId);
         validateSeller(sellerId);
 
-        final List<Product> products = productRepository.findAllBySellerId(sellerId);
+        final List<Product> products = productRepository.findAllBySellerIdAndDeletedAtIsNull(sellerId);
 
         return products.stream()
             .map(GetSellerProductDto::of)
+            .toList();
+    }
+
+    public List<GetProductDto> getAllProduct(final ProductSaleType saleType, final ProductStatus status, final LocalDate createdAt) {
+        LocalDateTime startDate = null;
+        LocalDateTime endDate = null;
+
+        if (createdAt != null) {
+            startDate = createdAt.atStartOfDay();
+            endDate = createdAt.atTime(LocalTime.MAX);
+        }
+
+        final List<Product> products = productRepository.findAllBySaleTypeAndStatusAndCreatedAtAndDeletedAtIsNull(saleType, status, startDate, endDate);
+
+        return products.stream()
+            .map(GetProductDto::of)
             .toList();
     }
 }

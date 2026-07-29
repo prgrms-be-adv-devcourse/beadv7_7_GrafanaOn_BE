@@ -2,12 +2,14 @@ package shop.dear.commerce.product.infrastructure.persistence;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import shop.dear.commerce.product.domain.constant.ProductSaleType;
 import shop.dear.commerce.product.domain.constant.ProductStatus;
 import shop.dear.commerce.product.domain.model.Product;
 import shop.dear.commerce.product.domain.repository.ProductRepository;
 import shop.dear.commerce.product.infrastructure.persistence.jpa.ProductJpaRepository;
 import shop.dear.common.exception.BusinessException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static shop.dear.commerce.product.domain.exception.ProductErrorCode.INVALID_PRODUCT;
@@ -35,18 +37,13 @@ public class ProductRepositoryAdapter implements ProductRepository {
     }
 
     @Override
-    public void delete(final Product product) {
-        productRepository.delete(product);
+    public boolean existsBySellerIdAndStatusInAndDeletedAtIsNull(final Long sellerId, final List<ProductStatus> statuses) {
+        return productRepository.existsBySellerIdAndStatusInAndDeletedAtIsNull(sellerId, statuses);
     }
 
     @Override
-    public boolean existsBySellerIdAndStatusIn(final Long sellerId, final List<ProductStatus> statuses) {
-        return productRepository.existsBySellerIdAndStatusIn(sellerId, statuses);
-    }
-
-    @Override
-    public List<Product> findAllById(final List<Long> productIds) {
-        return productRepository.findAllById(productIds);
+    public List<Product> findAllByIdInAndDeletedAtIsNull(final List<Long> productIds) {
+        return productRepository.findAllByIdInAndDeletedAtIsNull(productIds);
     }
 
     @Override
@@ -60,7 +57,22 @@ public class ProductRepositoryAdapter implements ProductRepository {
     }
 
     @Override
-    public List<Product> findAllBySellerId(final Long sellerId) {
-        return productRepository.findAllBySellerId(sellerId);
+    public List<Product> findAllBySellerIdAndDeletedAtIsNull(final Long sellerId) {
+        return productRepository.findAllBySellerIdAndDeletedAtIsNull(sellerId);
+    }
+
+    @Override
+    public List<Product> findAllBySaleTypeAndStatusAndCreatedAtAndDeletedAtIsNull(
+        final ProductSaleType saleType,
+        final ProductStatus status,
+        final LocalDateTime startDate,
+        final LocalDateTime endDate
+    ) {
+        return productRepository.findAllBySaleTypeAndStatusAndCreatedAtAndDeletedAtIsNull(saleType, status, startDate, endDate);
+    }
+
+    @Override
+    public int updateStatusToOnSale(final LocalDateTime startTime, final LocalDateTime endTime) {
+        return productRepository.updateStatusToOnSale(startTime, endTime);
     }
 }

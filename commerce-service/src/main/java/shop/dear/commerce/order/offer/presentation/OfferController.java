@@ -8,11 +8,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import shop.dear.commerce.order.offer.application.OfferService;
+import shop.dear.commerce.order.offer.domain.constant.OfferStatus;
 import shop.dear.commerce.order.offer.domain.model.Offer;
 import shop.dear.commerce.order.offer.presentation.dto.CreateOfferRequest;
 import shop.dear.commerce.order.offer.presentation.dto.CreateOfferSnapshotRequest;
 import shop.dear.commerce.order.offer.presentation.dto.CreateOfferSnapshotResponse;
+import shop.dear.commerce.order.offer.presentation.dto.OfferDetailResponse;
+import shop.dear.commerce.order.offer.presentation.dto.OfferListResponse;
 import shop.dear.commerce.order.offer.presentation.dto.OfferResponse;
+
+import java.util.List;
 import shop.dear.commerce.order.offersnapshot.domain.model.OfferSnapshot;
 import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
@@ -26,6 +31,19 @@ import static shop.dear.common.response.ApiResponse.successWithData;
 public class OfferController {
 
     private final OfferService offerService;
+
+    @GetMapping("/products/{productId}")
+    public ResponseEntity<ApiResponse<List<OfferListResponse>>> findOffersByProduct(
+            @Positive @PathVariable final Long productId,
+            @RequestParam(required = false) final List<OfferStatus> statuses,
+            @AuthUser final Long memberId
+    ) {
+        final List<Offer> offers = offerService.findOffersByProductId(memberId, productId, statuses);
+        final List<OfferListResponse> responses = offers.stream()
+                .map(OfferListResponse::from)
+                .toList();
+        return ResponseEntity.ok(successWithData(responses));
+    }
 
     @PostMapping("/snapshot")
     public ResponseEntity<ApiResponse<CreateOfferSnapshotResponse>> createOfferSnapshot(
@@ -47,12 +65,30 @@ public class OfferController {
                 .body(successWithData(OfferResponse.from(offer)));
     }
 
+    @GetMapping("/{offerId}")
+    public ResponseEntity<ApiResponse<OfferDetailResponse>> findOffer(
+            @Positive @PathVariable final Long offerId,
+            @AuthUser final Long memberId
+    ) {
+        final Offer offer = offerService.findOfferById(offerId, memberId);
+        return ResponseEntity.ok(successWithData(OfferDetailResponse.from(offer)));
+    }
+
     @PatchMapping("/{offerId}/accept")
     public ResponseEntity<ApiResponse<Void>> acceptOffer(
             @Positive @PathVariable final Long offerId,
             @AuthUser final Long memberId
     ) {
         offerService.acceptOffer(offerId, memberId);
+        return ResponseEntity.ok(successWithData(null));
+    }
+
+    @PatchMapping("/{offerId}/reject")
+    public ResponseEntity<ApiResponse<Void>> rejectOffer(
+            @Positive @PathVariable final Long offerId,
+            @AuthUser final Long memberId
+    ) {
+        offerService.rejectOffer(offerId, memberId);
         return ResponseEntity.ok(successWithData(null));
     }
 }

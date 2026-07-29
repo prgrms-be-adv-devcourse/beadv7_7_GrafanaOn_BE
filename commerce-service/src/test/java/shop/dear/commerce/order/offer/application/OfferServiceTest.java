@@ -189,6 +189,260 @@ class OfferServiceTest {
     }
 
     @Nested
+    @DisplayName("rejectOffer")
+    class RejectOffer {
+
+        @Test
+        @DisplayName("오퍼를 거절하면 상태가 REJECTED로 변경된다")
+        void rejectsOffer() {
+            // given
+            final Offer offer = createPendingPaidOffer();
+            given(offerRepository.findById(1L)).willReturn(Optional.of(offer));
+            given(offerRepository.save(offer)).willReturn(offer);
+
+            // when
+            offerService.rejectOffer(1L, 2L);
+
+            // then
+            assertThat(offer.getStatus()).isEqualTo(OfferStatus.REJECTED);
+            verify(offerRepository).save(offer);
+            verify(offerEventPublisher, never()).publish(any());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 오퍼면 예외를 던진다")
+        void throwsException_whenOfferNotFound() {
+            // given
+            given(offerRepository.findById(1L)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> offerService.rejectOffer(1L, 2L))
+                    .isInstanceOf(BusinessException.class);
+
+            verify(offerRepository, never()).save(any());
+            verify(offerEventPublisher, never()).publish(any());
+        }
+
+        @Test
+        @DisplayName("판매자가 아니면 예외를 던진다")
+        void throwsException_whenNotSeller() {
+            // given
+            final Offer offer = createPendingPaidOffer();
+            given(offerRepository.findById(1L)).willReturn(Optional.of(offer));
+
+            // when & then
+            assertThatThrownBy(() -> offerService.rejectOffer(1L, 999L))
+                    .isInstanceOf(BusinessException.class);
+
+            verify(offerRepository, never()).save(any());
+            verify(offerEventPublisher, never()).publish(any());
+        }
+
+        @Test
+        @DisplayName("PENDING 상태가 아니면 예외를 던진다")
+        void throwsException_whenStatusIsNotPending() {
+            // given
+            final Offer offer = createPendingPaidOffer();
+            offer.reject();
+            given(offerRepository.findById(1L)).willReturn(Optional.of(offer));
+
+            // when & then
+            assertThatThrownBy(() -> offerService.rejectOffer(1L, 2L))
+                    .isInstanceOf(BusinessException.class);
+
+            verify(offerRepository, never()).save(any());
+            verify(offerEventPublisher, never()).publish(any());
+        }
+
+        private Offer createPendingPaidOffer() {
+            final Offer offer = Offer.create(
+                    1L,
+                    2L,
+                    3L,
+                    10L,
+                    BigDecimal.valueOf(10000),
+                    "title",
+                    "story",
+                    "delivery"
+            );
+            offer.markPaid();
+            return offer;
+        }
+    }
+
+    @Nested
+    @DisplayName("findOfferById")
+    class FindOfferById {
+
+        @Test
+        @DisplayName("판매자가 본인 상품의 오퍼를 상세 조회한다")
+        void returnsOffer_whenSeller() {
+            // given
+            final Offer offer = createPendingPaidOffer();
+            given(offerRepository.findById(1L)).willReturn(Optional.of(offer));
+
+            // when
+            final Offer result = offerService.findOfferById(1L, 2L);
+
+            // then
+            assertThat(result.getId()).isEqualTo(offer.getId());
+            assertThat(result.getSellerId()).isEqualTo(2L);
+            verify(offerRepository).findById(1L);
+        }
+
+        @Test
+        @DisplayName("구매자가 본인이 요청한 오퍼를 상세 조회한다")
+        void returnsOffer_whenBuyer() {
+            // given
+            final Offer offer = createPendingPaidOffer();
+            given(offerRepository.findById(1L)).willReturn(Optional.of(offer));
+
+            // when
+            final Offer result = offerService.findOfferById(1L, 1L);
+
+            // then
+            assertThat(result.getId()).isEqualTo(offer.getId());
+            assertThat(result.getBuyerId()).isEqualTo(1L);
+            verify(offerRepository).findById(1L);
+        }
+
+        @Test
+        @DisplayName("오퍼가 존재하지 않으면 예외를 던진다")
+        void throwsException_whenOfferNotFound() {
+            // given
+            given(offerRepository.findById(1L)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> offerService.findOfferById(1L, 1L))
+                    .isInstanceOf(BusinessException.class);
+
+            verify(offerRepository).findById(1L);
+        }
+
+        @Test
+        @DisplayName("판매자도 구매자도 아니면 예외를 던진다")
+        void throwsException_whenNotAuthorized() {
+            // given
+            final Offer offer = createPendingPaidOffer();
+            given(offerRepository.findById(1L)).willReturn(Optional.of(offer));
+
+            // when & then
+            assertThatThrownBy(() -> offerService.findOfferById(1L, 999L))
+                    .isInstanceOf(BusinessException.class);
+
+            verify(offerRepository).findById(1L);
+        }
+
+        private Offer createPendingPaidOffer() {
+            final Offer offer = Offer.create(
+                    1L,
+                    2L,
+                    3L,
+                    10L,
+                    BigDecimal.valueOf(10000),
+                    "title",
+                    "story",
+                    "delivery"
+            );
+            offer.markPaid();
+            return offer;
+        }
+    }
+
+    @Nested
+    @DisplayName("findOffersByProductId")
+    class FindOffersByProductId {
+
+        @Test
+        @DisplayName("판매자가 등록한 특정 상품의 오퍼 목록을 조회한다")
+        void returnsOffers_whenSellerOwnsProduct() {
+            // given
+            final Offer offer1 = createPendingPaidOffer();
+            final Offer offer2 = createPendingPaidOffer();
+            given(productPort.getProduct(10L)).willReturn(productInfo(2L));
+            given(offerRepository.findByProductIdOrderByInsertedAtDesc(10L))
+                    .willReturn(List.of(offer1, offer2));
+
+            // when
+            final List<Offer> offers = offerService.findOffersByProductId(2L, 10L, List.of());
+
+            // then
+            assertThat(offers).hasSize(2);
+            assertThat(offers.get(0).getSellerId()).isEqualTo(2L);
+            assertThat(offers.get(1).getSellerId()).isEqualTo(2L);
+            verify(productPort).getProduct(10L);
+            verify(offerRepository).findByProductIdOrderByInsertedAtDesc(10L);
+        }
+
+        @Test
+        @DisplayName("상태 필터로 특정 상품의 오퍼 목록을 조회한다")
+        void returnsOffersByStatus_whenSellerOwnsProduct() {
+            // given
+            final Offer offer1 = createPendingPaidOffer();
+            final Offer offer2 = createPendingPaidOffer();
+            offer2.reject();
+            given(productPort.getProduct(10L)).willReturn(productInfo(2L));
+            given(offerRepository.findByProductIdAndStatusInOrderByInsertedAtDesc(10L, List.of(OfferStatus.PENDING)))
+                    .willReturn(List.of(offer1));
+
+            // when
+            final List<Offer> offers = offerService.findOffersByProductId(2L, 10L, List.of(OfferStatus.PENDING));
+
+            // then
+            assertThat(offers).hasSize(1);
+            assertThat(offers.get(0).getStatus()).isEqualTo(OfferStatus.PENDING);
+            verify(productPort).getProduct(10L);
+            verify(offerRepository).findByProductIdAndStatusInOrderByInsertedAtDesc(10L, List.of(OfferStatus.PENDING));
+        }
+
+        @Test
+        @DisplayName("접수된 오퍼가 없으면 빈 목록을 반환한다")
+        void returnsEmptyList_whenNoOffers() {
+            // given
+            given(productPort.getProduct(10L)).willReturn(productInfo(2L));
+            given(offerRepository.findByProductIdOrderByInsertedAtDesc(10L))
+                    .willReturn(List.of());
+
+            // when
+            final List<Offer> offers = offerService.findOffersByProductId(2L, 10L, List.of());
+
+            // then
+            assertThat(offers).isEmpty();
+            verify(productPort).getProduct(10L);
+            verify(offerRepository).findByProductIdOrderByInsertedAtDesc(10L);
+        }
+
+        @Test
+        @DisplayName("상품 판매자가 아니면 예외를 던진다")
+        void throwsException_whenNotSeller() {
+            // given
+            given(productPort.getProduct(10L)).willReturn(productInfo(999L));
+
+            // when & then
+            assertThatThrownBy(() -> offerService.findOffersByProductId(2L, 10L, List.of()))
+                    .isInstanceOf(BusinessException.class);
+
+            verify(productPort).getProduct(10L);
+            verify(offerRepository, never()).findByProductIdOrderByInsertedAtDesc(10L);
+        }
+
+        private Offer createPendingPaidOffer() {
+            final Offer offer = Offer.create(
+                    1L,
+                    2L,
+                    3L,
+                    10L,
+                    BigDecimal.valueOf(10000),
+                    "title",
+                    "story",
+                    "delivery"
+            );
+            offer.markPaid();
+            return offer;
+        }
+    }
+
+    @Nested
     @DisplayName("createOfferSnapshot")
     class CreateOfferSnapshot {
 
