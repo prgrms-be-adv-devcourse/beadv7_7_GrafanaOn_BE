@@ -2,7 +2,9 @@ package shop.dear.identity.auth.authentication.infrastructure.persistence;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import shop.dear.identity.auth.authentication.application.dto.RefreshTokenVerificationResult;
 import shop.dear.identity.auth.authentication.application.port.RefreshTokenStorePort;
 import shop.dear.identity.auth.authentication.domain.RefreshToken;
 import shop.dear.identity.auth.authentication.infrastructure.persistence.jpa.RefreshTokenJpaRepository;
@@ -38,20 +40,44 @@ public class RefreshTokenStoreAdapter implements RefreshTokenStorePort {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public boolean matches(Long memberId, String refreshToken) {
-        String tokenHash = hash(refreshToken);
+    public RefreshTokenVerificationResult verify(Long memberId, String refreshToken) {
+        String requestedTokenHash = hash(refreshToken);
+        Instant now = Instant.now();
 
-        return jpaRepository
-                .existsByMemberIdAndTokenHashAndExpiresAtAfter(
-                        memberId,
-                        tokenHash,
-                        Instant.now());
+        return jpaRepository.findById(memberId)
+                .map(savedToken -> {
+                    if (!savedToken.getExpiresAt().isAfter(now)) {
+                        return RefreshTokenVerificationResult.EXPIRED;
+                    }
+
+                    boolean matches = MessageDigest.isEqual(
+                            savedToken.getTokenHash()
+                                    .getBytes(StandardCharsets.UTF_8),
+                            requestedTokenHash
+                                    .getBytes(StandardCharsets.UTF_8)
+                    );
+
+                    if (!matches) {
+                        return RefreshTokenVerificationResult.MISMATCHED;
+                    }
+
+                    return RefreshTokenVerificationResult.MATCHED;
+                })
+                .orElse(RefreshTokenVerificationResult.NOT_FOUND);
     }
 
     @Override
     public void deleteByMemberId(Long memberId) {
         jpaRepository.deleteById(memberId);
+    }
+
+    @Override
+    // 외부 reissue 트랜잭션, REQUIRES_NEW를 통해 별도 Tx로 설계한다.
+    // 재사용 탐지 -> 별도 Tx에서 현재 Refresh Token 삭제 및 커밋 -> 예외 발생 -> 외부 Tx 롤백
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void revokeCompromisedSession(Long memberId) {
+        jpaRepository.deleteById(memberId);
+
     }
 
     private String hash(String refreshToken) {
