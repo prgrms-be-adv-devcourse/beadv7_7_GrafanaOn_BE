@@ -290,4 +290,15 @@ public class ProductService {
             .map(GetProductDto::of)
             .toList();
     }
+
+    @Transactional
+    public void changeProductStatus(final Long productId) {
+        final Product product = productRepository.findById(productId);
+
+        if (product.getStatus() == ProductStatus.SOLD_OUT) {
+            return;
+        }
+
+        product.changeStatusToSoldOut();
+    }
 }
