@@ -194,3 +194,4 @@ gradle-app.setting
 # Env Example
 !*.env.example
 !**/*.env.example
+common/deploy/env/.env.prod
