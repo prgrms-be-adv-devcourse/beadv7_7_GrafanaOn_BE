@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.commerce.financial.payment.application.event.WalletDebitRequestedEvent;
@@ -17,9 +18,7 @@ import shop.dear.commerce.financial.wallet.domain.exception.WalletErrorCode;
 
 import java.math.BigDecimal;
 
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class WalletDebitRequestedEventListenerTest {
@@ -150,6 +149,75 @@ public class WalletDebitRequestedEventListenerTest {
 
         // then
         verify(walletService).payHeld(command);
+        verify(applicationEventPublisher).publishEvent(
+                new WalletDebitFailedEvent(PAYMENT_ID)
+        );
+        verify(applicationEventPublisher, never()).publishEvent(
+                new WalletDebitSucceededEvent(PAYMENT_ID)
+        );
+    }
+
+    @Test
+    void handlePurchase_whenOptimisticLockFailsThenSucceeds_retriesAndPublishesSuccess() {
+        // given
+        final WalletDebitRequestedEvent event = new WalletDebitRequestedEvent(
+                PAYMENT_ID,
+                MEMBER_ID,
+                AMOUNT,
+                OrderType.PURCHASE
+        );
+        final PayCommand command = new PayCommand(
+                MEMBER_ID,
+                AMOUNT,
+                PAYMENT_ID
+        );
+
+        doThrow(new ObjectOptimisticLockingFailureException(
+                "Wallet",
+                MEMBER_ID
+        )).doNothing()
+                .when(walletService)
+                .payAvailable(command);
+
+        // when
+        listener.handle(event);
+
+        // then
+        verify(walletService, times(2)).payAvailable(command);
+        verify(applicationEventPublisher).publishEvent(
+                new WalletDebitSucceededEvent(PAYMENT_ID)
+        );
+        verify(applicationEventPublisher, never()).publishEvent(
+                new WalletDebitFailedEvent(PAYMENT_ID)
+        );
+    }
+
+    @Test
+    void handlePurchase_whenOptimisticLockPersists_publishesFailureAfterThreeAttempts() {
+        // given
+        final WalletDebitRequestedEvent event = new WalletDebitRequestedEvent(
+                PAYMENT_ID,
+                MEMBER_ID,
+                AMOUNT,
+                OrderType.PURCHASE
+        );
+        final PayCommand command = new PayCommand(
+                MEMBER_ID,
+                AMOUNT,
+                PAYMENT_ID
+        );
+
+        doThrow(new ObjectOptimisticLockingFailureException(
+                "Wallet",
+                MEMBER_ID
+        )).when(walletService)
+                .payAvailable(command);
+
+        // when
+        listener.handle(event);
+
+        // then
+        verify(walletService, times(3)).payAvailable(command);
         verify(applicationEventPublisher).publishEvent(
                 new WalletDebitFailedEvent(PAYMENT_ID)
         );
