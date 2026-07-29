@@ -76,7 +76,8 @@ public class AuthExceptionHandler {
                  AUTH_ACCOUNT_NOT_FOUND,
                  INVALID_TOKEN,
                  EXPIRED_TOKEN,
-                 INVALID_REFRESH_TOKEN -> HttpStatus.UNAUTHORIZED;
+                 INVALID_REFRESH_TOKEN,
+                 REFRESH_TOKEN_REUSE_DETECTED -> HttpStatus.UNAUTHORIZED;
         };
     }
 }
