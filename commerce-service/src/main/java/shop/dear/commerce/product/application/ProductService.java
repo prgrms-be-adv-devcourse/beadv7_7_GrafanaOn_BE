@@ -248,7 +248,7 @@ public class ProductService {
     }
 
     private void validateProductVisible(final Long memberId, final Product product) {
-        if (product.validateVisible(memberId)) {
+        if (!product.validateVisible(memberId)) {
             throw new BusinessException(ProductErrorCode.INVALID_PRODUCT_VISIBLE);
         }
     }

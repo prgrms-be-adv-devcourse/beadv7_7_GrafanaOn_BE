@@ -287,7 +287,7 @@ class ProductServiceTest {
     @Test
     void givenMemberIdAndProductId_whenGetProductDetail_thenReturnProductDetail() {
         //Given
-        final Long memberId = 1L;
+        final Long memberId = 2L;
 
         final Long sellerId = 2L;
         final String name = "Dear Sneakers";
