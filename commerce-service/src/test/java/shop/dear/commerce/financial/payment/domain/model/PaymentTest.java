@@ -9,6 +9,7 @@ import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -249,6 +250,7 @@ public class PaymentTest {
 
         // then
         assertEquals(PaymentStatus.PAID, payment.getState());
+        assertNotNull(payment.getPaidAt());
     }
 
     @Test
@@ -261,6 +263,7 @@ public class PaymentTest {
                 new BigDecimal("10000.00")
         );
         payment.complete();
+        final OffsetDateTime paidAt = payment.getPaidAt();
 
         // when
         BusinessException exception = assertThrows(
@@ -273,6 +276,7 @@ public class PaymentTest {
                 PaymentErrorCode.INVALID_PAYMENT_STATUS_TRANSITION,
                 exception.getErrorCode()
         );
+        assertEquals(paidAt, payment.getPaidAt());
     }
 
     @Test

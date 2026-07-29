@@ -11,6 +11,9 @@ import shop.dear.commerce.financial.payment.application.dto.*;
 import shop.dear.commerce.financial.payment.application.port.PgPaymentApprovalPort;
 import shop.dear.commerce.financial.payment.domain.constant.PGPaymentStatus;
 import shop.dear.commerce.financial.payment.domain.constant.PaymentPurpose;
+import shop.dear.commerce.financial.payment.application.port.PaymentCompletedEventPublisher;
+import shop.dear.commerce.financial.payment.application.port.PaymentFailedEventPublisher;
+import shop.dear.common.event.financial.PaymentCompletedEvent;
 import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.commerce.financial.payment.application.event.WalletDebitRequestedEvent;
@@ -46,6 +49,12 @@ public class PaymentServiceTest {
 
     @Mock
     private WalletDebitEventPublisher walletDebitEventPublisher;
+
+    @Mock
+    private PaymentCompletedEventPublisher paymentCompletedEventPublisher;
+
+    @Mock
+    private PaymentFailedEventPublisher paymentFailedEventPublisher;
 
     @Mock
     private PgPaymentApprovalPort pgPaymentApprovalPort;
@@ -112,7 +121,7 @@ public class PaymentServiceTest {
     }
 
     @Test
-    void completePayment_changesPendingPaymentToPaid() {
+    void completePayment_changesOrderPaymentToPaid_andPublishesEvent() {
         // given
         final Payment payment = Payment.createOrderPayment(
                 MEMBER_ID,
@@ -120,6 +129,8 @@ public class PaymentServiceTest {
                 OrderType.PURCHASE,
                 AMOUNT
         );
+        ReflectionTestUtils.setField(payment, "id", PAYMENT_ID);
+
         when(paymentRepository.findById(PAYMENT_ID))
                 .thenReturn(Optional.of(payment));
 
@@ -128,6 +139,20 @@ public class PaymentServiceTest {
 
         // then
         assertEquals(PaymentStatus.PAID, payment.getState());
+        assertNotNull(payment.getPaidAt());
+
+        final ArgumentCaptor<PaymentCompletedEvent> eventCaptor =
+                ArgumentCaptor.forClass(PaymentCompletedEvent.class);
+
+        verify(paymentCompletedEventPublisher).publish(eventCaptor.capture());
+
+        final PaymentCompletedEvent event = eventCaptor.getValue();
+        assertEquals(PAYMENT_ID, event.paymentId());
+        assertEquals(ORDER_ID, event.orderId());
+        assertEquals(OrderType.PURCHASE, event.orderType());
+        assertEquals(MEMBER_ID, event.memberId());
+        assertEquals(AMOUNT, event.amount());
+        assertEquals(payment.getPaidAt(), event.paidAt());
     }
 
     @Test
@@ -241,6 +266,45 @@ public class PaymentServiceTest {
 
         // then
         assertEquals(PaymentErrorCode.PAYMENT_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    void completePayment_whenTopUp_doesNotPublishPaymentCompletedEvent() {
+        // given
+        final Payment payment = Payment.createTopUp(MEMBER_ID, AMOUNT);
+        ReflectionTestUtils.setField(payment, "id", PAYMENT_ID);
+
+        when(paymentRepository.findById(PAYMENT_ID))
+                .thenReturn(Optional.of(payment));
+
+        // when
+        paymentService.completePayment(PAYMENT_ID);
+
+        // then
+        assertEquals(PaymentStatus.PAID, payment.getState());
+        assertEquals(PaymentPurpose.TOPUP, payment.getPurpose());
+        verifyNoInteractions(paymentCompletedEventPublisher);
+    }
+
+    @Test
+    void failPayment_doesNotPublishPaymentCompletedEvent() {
+        // given
+        final Payment payment = Payment.createOrderPayment(
+                MEMBER_ID,
+                ORDER_ID,
+                OrderType.PURCHASE,
+                AMOUNT
+        );
+
+        when(paymentRepository.findById(PAYMENT_ID))
+                .thenReturn(Optional.of(payment));
+
+        // when
+        paymentService.failPayment(PAYMENT_ID);
+
+        // then
+        assertEquals(PaymentStatus.FAILED, payment.getState());
+        verifyNoInteractions(paymentCompletedEventPublisher);
     }
 
     @Test

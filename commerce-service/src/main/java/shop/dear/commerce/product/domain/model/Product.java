@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 import shop.dear.commerce.product.domain.constant.ProductCategory;
 import shop.dear.commerce.product.domain.constant.ProductSaleType;
 import shop.dear.commerce.product.domain.constant.ProductStatus;
@@ -28,6 +29,7 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("deleted_at IS NULL")
 @Table(name = "product")
 @Entity
 public class Product extends BaseEntity {
@@ -78,6 +80,7 @@ public class Product extends BaseEntity {
     @Column(name = "description", length = 1000, nullable = true)
     private String description;
 
+    @SQLRestriction("deleted_at IS NULL")
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductImage> images = new ArrayList<>();
 
@@ -218,9 +221,21 @@ public class Product extends BaseEntity {
         this.price = price;
         this.description = validateDescription(description);
 
-        this.images.clear();
+        for (ProductImage image : this.images) {
+            if (!image.isDeleted()) {
+                image.delete();
+            }
+        }
 
         return this;
+    }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+
+        for (ProductImage image : this.images) {
+            image.delete();
+        }
     }
 
     public ProductImage addImage(final String url, final int sortOrder) {
@@ -234,17 +249,27 @@ public class Product extends BaseEntity {
     }
 
     private void validateImageCountLimit() {
-        if (this.images.size() >= PRODUCT_IMAGE_COUNT_LIMIT) {
+        long activeCount = this.images.stream()
+            .filter(image -> !image.isDeleted())
+            .count();
+
+        if (activeCount >= PRODUCT_IMAGE_COUNT_LIMIT) {
             throw new BusinessException(ProductErrorCode.EXCEEDED_PRODUCT_IMAGE_COUNT_LIMIT);
         }
     }
 
     private void validateDuplicateImageSortOrder(final int sortOrder) {
         for (ProductImage pi : this.images) {
-            if (pi.getSortOrder() == sortOrder) {
+            if (!pi.isDeleted() && pi.getSortOrder() == sortOrder) {
                 throw new BusinessException(ProductErrorCode.ALREADY_EXISTS_SORT_ORDER_NUMBER);
             }
         }
+    }
+
+    public List<ProductImage> getImages() {
+        return this.images.stream()
+            .filter(image -> !image.isDeleted())
+            .toList();
     }
 
     public void validateOwner(final Long memberId) {
@@ -271,10 +296,6 @@ public class Product extends BaseEntity {
 
     public boolean isVisible() {
         return this.status == ProductStatus.ON_SALE || this.status == ProductStatus.SOLD_OUT;
-    }
-
-    public void delete() {
-        this.deletedAt = LocalDateTime.now();
     }
 
     public boolean isDeleted() {
