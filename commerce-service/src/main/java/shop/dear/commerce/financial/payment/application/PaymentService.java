@@ -9,12 +9,14 @@ import shop.dear.commerce.financial.payment.application.dto.PayOrderCommand;
 import shop.dear.commerce.financial.payment.application.dto.PaymentInfo;
 import shop.dear.commerce.financial.payment.application.event.WalletDebitRequestedEvent;
 import shop.dear.commerce.financial.payment.application.port.PaymentCompletedEventPublisher;
+import shop.dear.commerce.financial.payment.application.port.PaymentFailedEventPublisher;
 import shop.dear.commerce.financial.payment.application.port.WalletDebitEventPublisher;
 import shop.dear.commerce.financial.payment.domain.constant.PaymentPurpose;
 import shop.dear.commerce.financial.payment.domain.exception.PaymentErrorCode;
 import shop.dear.commerce.financial.payment.domain.model.Payment;
 import shop.dear.commerce.financial.payment.domain.repository.PaymentRepository;
 import shop.dear.common.event.financial.PaymentCompletedEvent;
+import shop.dear.common.event.financial.PaymentFailedEvent;
 import shop.dear.common.exception.BusinessException;
 
 @Service
@@ -25,6 +27,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final WalletDebitEventPublisher walletDebitEventPublisher;
     private final PaymentCompletedEventPublisher paymentCompletedEventPublisher;
+    private final PaymentFailedEventPublisher paymentFailedEventPublisher;
 
     @Transactional
     public PaymentInfo payOrder(final PayOrderCommand command) {
@@ -73,7 +76,23 @@ public class PaymentService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void failPayment(final Long paymentId) {
-        findPayment(paymentId).fail();
+        final Payment payment = findPayment(paymentId);
+
+        payment.fail();
+
+        if (payment.getPurpose() != PaymentPurpose.ORDER) {
+            return;
+        }
+
+        paymentFailedEventPublisher.publish(
+                new PaymentFailedEvent(
+                        payment.getId(),
+                        payment.getOrderId(),
+                        payment.getOrderType(),
+                        payment.getMemberId(),
+                        payment.getAmount()
+                )
+        );
     }
 
     public PaymentInfo getPayment(
