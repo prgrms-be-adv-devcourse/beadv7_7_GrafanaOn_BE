@@ -21,7 +21,7 @@ public class OrderEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleFinishedOrder(final FinishedOrderEvent event) {
         try {
-            productService.changeProductStatus(event.productId());
+            productService.completeProductSale(event.productId());
         } catch (Exception e) {
             log.error("주문 완료 후 상품 상태 변경 실패 - productId: {}", event.productId(), e);
         }
