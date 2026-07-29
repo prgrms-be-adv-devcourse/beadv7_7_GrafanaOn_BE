@@ -18,10 +18,20 @@ public class ProductClientConfig {
     private final InternalRestClientFactory internalRestClientFactory;
 
     @Bean
-    RestClient productRestClient(@Value("${order.client.base-url}") final String baseUrl) {
+    RestClient productMemberRestClient(@Value("${member.client.base-url}") final String baseUrl) {
         return internalRestClientFactory.builder(baseUrl)
             .defaultStatusHandler(HttpStatusCode::isError, (request, response) -> {
-                log.error("[RestClient Error] URI: {}, Status: {}", request.getURI(), response.getStatusCode());
+                log.error("[MemberRestClient Error] URI: {}, Status: {}", request.getURI(), response.getStatusCode());
+                throw new BusinessException(ProductHttpErrorCode.EXTERNAL_API_ERROR);
+            })
+            .build();
+    }
+
+    @Bean
+    RestClient productOfferRestClient(@Value("${offer.client.base-url}") final String baseUrl) {
+        return internalRestClientFactory.builder(baseUrl)
+            .defaultStatusHandler(HttpStatusCode::isError, (request, response) -> {
+                log.error("[OfferRestClient Error] URI: {}, Status: {}", request.getURI(), response.getStatusCode());
                 throw new BusinessException(ProductHttpErrorCode.EXTERNAL_API_ERROR);
             })
             .build();

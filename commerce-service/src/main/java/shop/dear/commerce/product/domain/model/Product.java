@@ -294,8 +294,8 @@ public class Product extends BaseEntity {
         this.status = ProductStatus.ON_SALE;
     }
 
-    public boolean isVisible() {
-        return this.status == ProductStatus.ON_SALE || this.status == ProductStatus.SOLD_OUT;
+    public boolean validateVisible(final Long memberId) {
+        return this.sellerId.equals(memberId) || this.getStatus() != ProductStatus.PREPARING;
     }
 
     public boolean isDeleted() {

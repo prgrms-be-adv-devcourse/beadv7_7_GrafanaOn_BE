@@ -13,15 +13,15 @@ public class PurchaseClientConfig {
   private final InternalRestClientFactory internalRestClientFactory;
 
   @Bean
-  RestClient purchaseRestClient(
-          @Value("${order.client.base-url}") final String baseUrl
+  RestClient productRestClient(
+          @Value("${product.client.base-url}") final String baseUrl
   ) {
     return internalRestClientFactory.builder(baseUrl).build();
   }
 
   @Bean
   RestClient memberRestClient(
-          @Value("${member.client.base-url:${order.client.base-url}}") final String baseUrl
+          @Value("${member.client.base-url}") final String baseUrl
   ) {
     return internalRestClientFactory.builder(baseUrl).build();
   }

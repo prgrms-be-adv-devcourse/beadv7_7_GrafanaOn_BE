@@ -14,14 +14,14 @@ public class OfferClientConfig {
 
     @Bean
     RestClient offerProductRestClient(
-            @Value("${order.client.base-url}") final String baseUrl
+            @Value("${product.client.base-url}") final String baseUrl
     ) {
         return internalRestClientFactory.builder(baseUrl).build();
     }
 
     @Bean
     RestClient offerMemberRestClient(
-            @Value("${member.client.base-url:${order.client.base-url}}") final String baseUrl
+            @Value("${member.client.base-url}") final String baseUrl
     ) {
         return internalRestClientFactory.builder(baseUrl).build();
     }
