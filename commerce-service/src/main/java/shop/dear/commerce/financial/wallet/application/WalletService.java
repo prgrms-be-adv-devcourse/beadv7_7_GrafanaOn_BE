@@ -57,7 +57,7 @@ public class WalletService {
         walletRepository.save(wallet);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void hold(final HoldCommand command) {
         final Wallet wallet = findWallet(command.memberId());
 
