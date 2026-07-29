@@ -21,15 +21,15 @@ import java.time.Duration;
 public class PurchaseClientConfig {
 
   @Bean
-  RestClient purchaseRestClient(
-          @Value("${order.client.base-url}") final String baseUrl
+  RestClient productRestClient(
+          @Value("${product.client.base-url}") final String baseUrl
   ) {
     return createRestClient(baseUrl);
   }
 
   @Bean
   RestClient memberRestClient(
-          @Value("${member.client.base-url:${order.client.base-url}}") final String baseUrl
+          @Value("${member.client.base-url}") final String baseUrl
   ) {
     return createRestClient(baseUrl);
   }
