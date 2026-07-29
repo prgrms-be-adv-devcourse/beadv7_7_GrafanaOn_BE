@@ -9,8 +9,9 @@ import shop.dear.common.response.ErrorCode;
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 @Getter
 public enum CartErrorCode implements ErrorCode {
-    CART_ITEM_NOT_FOUND("CT-002", "존재하지 않는 장바구니 상품입니다."),
-    MIN_QUANTITY_REQUIRED("CT-004", "수량은 1개 이상이어야 합니다."),
+    CART_ITEM_NOT_FOUND("CT-001", "존재하지 않는 장바구니 상품입니다."),
+    MIN_QUANTITY_REQUIRED("CT-002", "수량은 1개 이상이어야 합니다."),
+    CART_NOT_FOUND("CT-003", "장바구니를 찾을 수 없습니다."),
     ;
 
     private final String value;
