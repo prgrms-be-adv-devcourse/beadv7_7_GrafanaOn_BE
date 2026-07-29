@@ -66,7 +66,7 @@ public class GatewayJwtValidator {
         String tokenType = claims.get(TOKEN_TYPE_CLAIM, String.class);
 
         if(!ACCESS_TOKEN_TYPE.equals(tokenType)) {
-            throw new BadCredentialsException("Access Token 형식이 아닙니다.");
+            throw new BadCredentialsException("Access Token이 아닙니다.");
         }
     }
 
