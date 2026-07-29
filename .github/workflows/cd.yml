@@ -3,8 +3,7 @@ name: CD - Deploy to EC2
 on:
   #테스트용 트리거
   #pull_request:
-   # branches:
-    #  - dev
+   # branches:  - dev
   push:
     branches:
       - main
