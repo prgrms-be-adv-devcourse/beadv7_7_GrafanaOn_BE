@@ -143,6 +143,13 @@ public class Offer extends BaseEntity {
         this.paymentStatus = PaymentStatus.PAYMENT_FAILED;
     }
 
+    public void markProductDeleted() {
+        if (this.status != OfferStatus.PENDING && this.status != OfferStatus.ACCEPTED) {
+            throw new BusinessException(OfferErrorCode.INVALID_OFFER_STATUS_TRANSITION);
+        }
+        this.status = OfferStatus.PRODUCT_DELETED;
+    }
+
     public boolean isSeller(final Long memberId) {
         return sellerId.equals(memberId);
     }
