@@ -292,7 +292,7 @@ public class ProductService {
     }
 
     @Transactional
-    public void changeProductStatus(final Long productId) {
+    public void completeProductSale(final Long productId) {
         final Product product = productRepository.findById(productId);
 
         if (product.getStatus() == ProductStatus.SOLD_OUT) {
