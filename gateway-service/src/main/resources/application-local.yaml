@@ -1,0 +1,16 @@
+# 8081, 8082 포트의 정적 라우팅
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: identity-api-route
+              uri: ${IDENTITY_SERVICE_URI:http://localhost:8081}
+              predicates:
+                - Path=/api/auth/**,/api/members/**,/api/scraps/**
+
+            - id: commerce-api-route
+              uri: ${COMMERCE_SERVICE_URI:http://localhost:8082}
+              predicates:
+                - Path=/api/products/**,/api/offers/**,/api/purchases/**,/api/deposits/**,/api/payments/**,/api/search/**
