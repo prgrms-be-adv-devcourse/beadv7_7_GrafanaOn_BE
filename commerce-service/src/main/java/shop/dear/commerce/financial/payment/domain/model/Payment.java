@@ -12,6 +12,7 @@ import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "payment")
@@ -51,6 +52,9 @@ public class Payment extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "state", nullable = false, length = 30)
     private PaymentStatus state;
+
+    @Column(name = "paid_at")
+    private OffsetDateTime paidAt;
 
     private Payment(
             final Long memberId,
@@ -121,6 +125,7 @@ public class Payment extends BaseEntity {
         }
 
         this.state = PaymentStatus.PAID;
+        this.paidAt = OffsetDateTime.now();
     }
 
     public void fail() {

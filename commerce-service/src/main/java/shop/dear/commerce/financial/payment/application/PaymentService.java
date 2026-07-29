@@ -8,10 +8,13 @@ import org.springframework.transaction.annotation.Propagation;
 import shop.dear.commerce.financial.payment.application.dto.PayOrderCommand;
 import shop.dear.commerce.financial.payment.application.dto.PaymentInfo;
 import shop.dear.commerce.financial.payment.application.event.WalletDebitRequestedEvent;
+import shop.dear.commerce.financial.payment.application.port.PaymentCompletedEventPublisher;
 import shop.dear.commerce.financial.payment.application.port.WalletDebitEventPublisher;
+import shop.dear.commerce.financial.payment.domain.constant.PaymentPurpose;
 import shop.dear.commerce.financial.payment.domain.exception.PaymentErrorCode;
 import shop.dear.commerce.financial.payment.domain.model.Payment;
 import shop.dear.commerce.financial.payment.domain.repository.PaymentRepository;
+import shop.dear.common.event.financial.PaymentCompletedEvent;
 import shop.dear.common.exception.BusinessException;
 
 @Service
@@ -21,6 +24,7 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final WalletDebitEventPublisher walletDebitEventPublisher;
+    private final PaymentCompletedEventPublisher paymentCompletedEventPublisher;
 
     @Transactional
     public PaymentInfo payOrder(final PayOrderCommand command) {
@@ -47,7 +51,24 @@ public class PaymentService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void completePayment(final Long paymentId) {
-        findPayment(paymentId).complete();
+        final Payment payment = findPayment(paymentId);
+
+        payment.complete();
+
+        if (payment.getPurpose() != PaymentPurpose.ORDER) {
+            return;
+        }
+
+        paymentCompletedEventPublisher.publish(
+                new PaymentCompletedEvent(
+                        payment.getId(),
+                        payment.getOrderId(),
+                        payment.getOrderType(),
+                        payment.getMemberId(),
+                        payment.getAmount(),
+                        payment.getPaidAt()
+                )
+        );
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
