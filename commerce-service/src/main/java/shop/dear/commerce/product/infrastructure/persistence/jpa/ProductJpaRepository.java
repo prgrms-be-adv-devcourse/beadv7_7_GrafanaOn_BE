@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ProductJpaRepository extends JpaRepository<Product, Long> {
-    boolean existsBySellerIdAndStatusInAndDeletedAtIsNull(final Long sellerId, final List<ProductStatus> statuses);
+    boolean existsBySellerIdAndStatusIn(final Long sellerId, final List<ProductStatus> statuses);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Product p SET p.viewCount = p.viewCount + 1 WHERE p.id = :productId AND p.deletedAt IS NULL")
