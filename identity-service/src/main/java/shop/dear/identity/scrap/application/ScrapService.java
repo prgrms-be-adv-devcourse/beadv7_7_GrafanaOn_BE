@@ -3,6 +3,7 @@ package shop.dear.identity.scrap.application;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,8 @@ import shop.dear.identity.scrap.domain.repository.ScrapRepository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -65,11 +68,17 @@ public class ScrapService {
             .distinct()
             .toList();
 
-        Map<Long, ProductSummary> productsById = productPort.getProducts(productIds)
-            .stream()
+        Map<Long, ProductSummary> productsById = productPort.getProducts(productIds).stream()
             .collect(Collectors.toMap(ProductSummary::id, Function.identity()));
 
-        return scraps.map(scrap -> ScrapDetail.of(scrap, productsById.get(scrap.getProductId())));
+        List<ScrapDetail> details = scraps.getContent().stream()
+            .map(scrap -> Optional.ofNullable(productsById.get(scrap.getProductId()))
+                .map(product -> ScrapDetail.of(scrap, product))
+                .orElse(null))
+            .filter(Objects::nonNull)
+            .toList();
+
+        return new PageImpl<>(details, scraps.getPageable(), scraps.getTotalElements());
     }
 
     @Transactional
