@@ -15,6 +15,10 @@ member:
   client:
     base-url: ${MEMBER_CLIENT_BASE_URL:${order.client.base-url}}
 
+wallet:
+  client:
+    base-url: ${WALLET_CLIENT_BASE_URL}
+
 secret:
   aws:
     s3:

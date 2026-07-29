@@ -14,6 +14,7 @@ import shop.dear.common.event.settlement.SettlementPayoutEvent;
 import shop.dear.common.event.settlement.SettlementPayoutItem;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
@@ -29,27 +30,28 @@ public class SettlementService {
 
 	//특정기간의 정산완료 이력 조회
 	public List<SettlementInfo> getHistory(
-		LocalDateTime startDate,
-		LocalDateTime endDate
+		Long memberId,
+		LocalDate startDate,
+		LocalDate endDate
 	) {
 
-		Long walletId = getWalletId();
+		Long walletId = getWalletId(memberId);
 
 		return settlementRepository.findByInsertedAtBetween(
-				startDate,
-				endDate,
-				walletId,
-				SettlementStatus.COMPLETED
-			)
-			.stream()
-			.map(SettlementInfo::from)
-			.toList();
+			startDate.atStartOfDay(),
+			endDate.plusDays(1).atStartOfDay(),
+			walletId,
+			SettlementStatus.COMPLETED
+		)
+		.stream()
+		.map(SettlementInfo::from)
+		.toList();
 	}
 
 	//회원의 정산예정금액(전월 1일 ~ 마지막일)
-	public BigDecimal getNetAmount(YearMonth targetMonth) {
+	public BigDecimal getNetAmount(Long memberId, YearMonth targetMonth) {
 
-		Long walletId = getWalletId();
+		Long walletId = getWalletId(memberId);
 
 		//정산예금 netAmount 합계
 		BigDecimal netAmount =  settlementRepository.findByInsertedAtBetween(
@@ -108,20 +110,22 @@ public class SettlementService {
 		);
 	}
 
+	// targetMonth 기준 전월 1일 0시
 	public LocalDateTime getStartDate(YearMonth targetMonth) {
-		return targetMonth.atDay(1)
-			.atStartOfDay();
-	}
-
-	public LocalDateTime getEndDate(YearMonth targetMonth) {
-		return targetMonth.plusMonths(1)
+		return targetMonth.minusMonths(1)
 			.atDay(1)
 			.atStartOfDay();
 	}
 
-	public Long getWalletId() {
+	// targetMonth 기준 전월 말일 다음날(=targetMonth 1일) 0시
+	public LocalDateTime getEndDate(YearMonth targetMonth) {
+		return targetMonth.atDay(1)
+			.atStartOfDay();
+	}
 
-		WalletInfo info = walletPort.getWalletId();
+	public Long getWalletId(Long memberId) {
+
+		WalletInfo info = walletPort.getWalletId(memberId);
 
 		return info.walletId();
 	}
