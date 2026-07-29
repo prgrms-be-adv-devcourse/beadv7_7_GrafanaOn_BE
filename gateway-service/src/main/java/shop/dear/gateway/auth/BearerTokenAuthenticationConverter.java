@@ -5,6 +5,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -14,6 +15,8 @@ import reactor.core.publisher.Mono;
  * 아직 인증되지 않은 Authentication을 생성하고
  * GatewayAuthenticationManager로 전달한다.
  */
+
+@Component
 public class BearerTokenAuthenticationConverter implements ServerAuthenticationConverter {
     private static final String BEARER_PREFIX = "Bearer ";
 
