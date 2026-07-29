@@ -4,5 +4,6 @@ public enum OfferStatus {
     PENDING,
     ACCEPTED,
     REJECTED,
-    CANCELLED
+    CANCELLED,
+    PRODUCT_DELETED
 }

@@ -13,6 +13,7 @@ import shop.dear.commerce.order.offer.domain.model.Offer;
 import shop.dear.commerce.order.offer.presentation.dto.CreateOfferRequest;
 import shop.dear.commerce.order.offer.presentation.dto.CreateOfferSnapshotRequest;
 import shop.dear.commerce.order.offer.presentation.dto.CreateOfferSnapshotResponse;
+import shop.dear.commerce.order.offer.presentation.dto.OfferDetailResponse;
 import shop.dear.commerce.order.offer.presentation.dto.OfferListResponse;
 import shop.dear.commerce.order.offer.presentation.dto.OfferResponse;
 
@@ -62,6 +63,15 @@ public class OfferController {
         final Offer offer = offerService.createOffer(request.toCommand(memberId));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(successWithData(OfferResponse.from(offer)));
+    }
+
+    @GetMapping("/{offerId}")
+    public ResponseEntity<ApiResponse<OfferDetailResponse>> findOffer(
+            @Positive @PathVariable final Long offerId,
+            @AuthUser final Long memberId
+    ) {
+        final Offer offer = offerService.findOfferById(offerId, memberId);
+        return ResponseEntity.ok(successWithData(OfferDetailResponse.from(offer)));
     }
 
     @PatchMapping("/{offerId}/accept")

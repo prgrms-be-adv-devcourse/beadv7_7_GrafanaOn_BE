@@ -96,16 +96,18 @@ public class ProductService {
         final Product savedProduct = productRepository.save(product);
 
         productEventPublisher.publish(new ProductChangedEvent(
-            savedProduct.getId(),
-            savedProduct.getName(),
-            savedProduct.getModelNumber(),
-            savedProduct.getCategory().toString(),
-            savedProduct.getReleaseDate(),
-            savedProduct.getPrice().getValue(),
-            savedProduct.getSaleType().toString(),
-            savedProduct.getViewCount(),
-            savedProduct.getDescription(),
-            fullStory.toString()
+                savedProduct.getId(),
+                savedProduct.getName(),
+                savedProduct.getModelNumber(),
+                savedProduct.getCategory().name(),
+                savedProduct.getReleaseDate(),
+                savedProduct.getPrice().getValue(),
+                savedProduct.getSaleType().name(),
+                savedProduct.getStatus().name(),
+                savedProduct.getViewCount(),
+                savedProduct.getDescription(),
+                fullStory.toString().trim(),
+                savedProduct.getInsertedAt()
         ));
     }
 
@@ -149,16 +151,18 @@ public class ProductService {
         final Product savedProduct = productRepository.save(updatedProduct);
 
         productEventPublisher.publish(new ProductChangedEvent(
-            savedProduct.getId(),
-            savedProduct.getName(),
-            savedProduct.getModelNumber(),
-            savedProduct.getCategory().toString(),
-            savedProduct.getReleaseDate(),
-            savedProduct.getPrice().getValue(),
-            savedProduct.getSaleType().toString(),
-            savedProduct.getViewCount(),
-            savedProduct.getDescription(),
-            fullStory.toString()
+                savedProduct.getId(),
+                savedProduct.getName(),
+                savedProduct.getModelNumber(),
+                savedProduct.getCategory().name(),
+                savedProduct.getReleaseDate(),
+                savedProduct.getPrice().getValue(),
+                savedProduct.getSaleType().name(),
+                savedProduct.getStatus().name(),
+                savedProduct.getViewCount(),
+                savedProduct.getDescription(),
+                fullStory.toString().trim(),
+                savedProduct.getInsertedAt()
         ));
     }
 
@@ -208,7 +212,7 @@ public class ProductService {
         validateSeller(sellerId);
 
         final List<ProductStatus> statuses = List.of(ProductStatus.PREPARING, ProductStatus.ON_SALE);
-        final boolean exists = productRepository.existsBySellerIdAndStatusIn(sellerId, statuses);
+        final boolean exists = productRepository.existsBySellerIdAndStatusInAndDeletedAtIsNull(sellerId, statuses);
 
         return new MemberProductExistsDto(exists);
     }
@@ -264,7 +268,7 @@ public class ProductService {
         validateMember(sellerId);
         validateSeller(sellerId);
 
-        final List<Product> products = productRepository.findAllBySellerId(sellerId);
+        final List<Product> products = productRepository.findAllBySellerIdAndDeletedAtIsNull(sellerId);
 
         return products.stream()
             .map(GetSellerProductDto::of)
@@ -280,7 +284,7 @@ public class ProductService {
             endDate = createdAt.atTime(LocalTime.MAX);
         }
 
-        final List<Product> products = productRepository.findAllBySaleTypeAndStatusAndCreatedAt(saleType, status, startDate, endDate);
+        final List<Product> products = productRepository.findAllBySaleTypeAndStatusAndCreatedAtAndDeletedAtIsNull(saleType, status, startDate, endDate);
 
         return products.stream()
             .map(GetProductDto::of)

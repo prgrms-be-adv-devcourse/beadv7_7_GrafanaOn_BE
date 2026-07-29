@@ -271,6 +271,85 @@ class OfferServiceTest {
     }
 
     @Nested
+    @DisplayName("findOfferById")
+    class FindOfferById {
+
+        @Test
+        @DisplayName("판매자가 본인 상품의 오퍼를 상세 조회한다")
+        void returnsOffer_whenSeller() {
+            // given
+            final Offer offer = createPendingPaidOffer();
+            given(offerRepository.findById(1L)).willReturn(Optional.of(offer));
+
+            // when
+            final Offer result = offerService.findOfferById(1L, 2L);
+
+            // then
+            assertThat(result.getId()).isEqualTo(offer.getId());
+            assertThat(result.getSellerId()).isEqualTo(2L);
+            verify(offerRepository).findById(1L);
+        }
+
+        @Test
+        @DisplayName("구매자가 본인이 요청한 오퍼를 상세 조회한다")
+        void returnsOffer_whenBuyer() {
+            // given
+            final Offer offer = createPendingPaidOffer();
+            given(offerRepository.findById(1L)).willReturn(Optional.of(offer));
+
+            // when
+            final Offer result = offerService.findOfferById(1L, 1L);
+
+            // then
+            assertThat(result.getId()).isEqualTo(offer.getId());
+            assertThat(result.getBuyerId()).isEqualTo(1L);
+            verify(offerRepository).findById(1L);
+        }
+
+        @Test
+        @DisplayName("오퍼가 존재하지 않으면 예외를 던진다")
+        void throwsException_whenOfferNotFound() {
+            // given
+            given(offerRepository.findById(1L)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> offerService.findOfferById(1L, 1L))
+                    .isInstanceOf(BusinessException.class);
+
+            verify(offerRepository).findById(1L);
+        }
+
+        @Test
+        @DisplayName("판매자도 구매자도 아니면 예외를 던진다")
+        void throwsException_whenNotAuthorized() {
+            // given
+            final Offer offer = createPendingPaidOffer();
+            given(offerRepository.findById(1L)).willReturn(Optional.of(offer));
+
+            // when & then
+            assertThatThrownBy(() -> offerService.findOfferById(1L, 999L))
+                    .isInstanceOf(BusinessException.class);
+
+            verify(offerRepository).findById(1L);
+        }
+
+        private Offer createPendingPaidOffer() {
+            final Offer offer = Offer.create(
+                    1L,
+                    2L,
+                    3L,
+                    10L,
+                    BigDecimal.valueOf(10000),
+                    "title",
+                    "story",
+                    "delivery"
+            );
+            offer.markPaid();
+            return offer;
+        }
+    }
+
+    @Nested
     @DisplayName("findOffersByProductId")
     class FindOffersByProductId {
 

@@ -57,18 +57,18 @@ public class ProductRepositoryAdapter implements ProductRepository {
     }
 
     @Override
-    public List<Product> findAllBySellerId(final Long sellerId) {
-        return productRepository.findAllBySellerId(sellerId);
+    public List<Product> findAllBySellerIdAndDeletedAtIsNull(final Long sellerId) {
+        return productRepository.findAllBySellerIdAndDeletedAtIsNull(sellerId);
     }
 
     @Override
-    public List<Product> findAllBySaleTypeAndStatusAndCreatedAt(
+    public List<Product> findAllBySaleTypeAndStatusAndCreatedAtAndDeletedAtIsNull(
         final ProductSaleType saleType,
         final ProductStatus status,
         final LocalDateTime startDate,
         final LocalDateTime endDate
     ) {
-        return productRepository.findAllBySaleTypeAndStatusAndCreatedAt(saleType, status, startDate, endDate);
+        return productRepository.findAllBySaleTypeAndStatusAndCreatedAtAndDeletedAtIsNull(saleType, status, startDate, endDate);
     }
 
     @Override

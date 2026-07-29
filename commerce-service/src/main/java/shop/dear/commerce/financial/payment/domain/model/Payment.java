@@ -4,10 +4,15 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import shop.dear.commerce.financial.payment.domain.constant.PaymentPurpose;
 import shop.dear.commerce.financial.payment.domain.constant.PaymentStatus;
+import shop.dear.commerce.financial.payment.domain.exception.PaymentErrorCode;
 import shop.dear.common.audit.BaseEntity;
+import shop.dear.common.event.order.OrderType;
+import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "payment")
@@ -15,22 +20,31 @@ import java.math.BigDecimal;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Payment extends BaseEntity {
 
+    private static final int MAX_SCALE = 2;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(mappedBy = "payment", cascade = CascadeType.PERSIST)
+    @OneToOne(
+            mappedBy = "payment",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE}
+    )
     private PGPayment pgPayment;
 
-    @Column(name = "wallet_id", nullable = false)
-    private Long walletId;
+    @Column(name = "member_id", nullable = false)
+    private Long memberId;
 
-    // 구매 상황 아니더라도 충전 가능
-    @Column(name = "purchase_id")
-    private Long purchaseId;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "purpose", nullable = false, length = 30)
+    private PaymentPurpose purpose;
 
-    @Column(name = "offer_id")
-    private Long offerId;
+    @Column(name = "order_id")
+    private Long orderId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_type", length = 30)
+    private OrderType orderType;
 
     @Column(name = "amount", precision = 15, scale = 2, nullable = false)
     private BigDecimal amount;
@@ -39,25 +53,116 @@ public class Payment extends BaseEntity {
     @Column(name = "state", nullable = false, length = 30)
     private PaymentStatus state;
 
+    @Column(name = "paid_at")
+    private OffsetDateTime paidAt;
+
     private Payment(
-            final Long walletId,
-            final Long purchaseId,
-            final Long offerId,
+            final Long memberId,
+            final PaymentPurpose purpose,
+            final Long orderId,
+            final OrderType orderType,
             final BigDecimal amount
     ) {
-            this.walletId = walletId;
-            this.purchaseId = purchaseId;
-            this.offerId = offerId;
-            this.amount = amount;
-            this.state = PaymentStatus.PENDING;
+        validate(memberId, purpose, orderId, orderType, amount);
+
+        this.memberId = memberId;
+        this.purpose = purpose;
+        this.orderId = orderId;
+        this.orderType = orderType;
+        this.amount = amount;
+        this.state = PaymentStatus.PENDING;
     }
 
-    public static Payment create(
-            final Long walletId,
-            final Long purchased,
-            final Long offerId,
+    private void validate(
+            final Long memberId,
+            final PaymentPurpose purpose,
+            final Long orderId,
+            final OrderType orderType,
             final BigDecimal amount
     ) {
-        return new Payment(walletId, purchased, offerId, amount);
+        if (memberId == null) {
+            throw new BusinessException(PaymentErrorCode.INVALID_MEMBER_ID);
+        }
+
+        if (purpose == null) {
+            throw new BusinessException(PaymentErrorCode.INVALID_PAYMENT_PURPOSE);
+        }
+
+        if (amount == null
+                || amount.compareTo(BigDecimal.ZERO) <= 0
+                || amount.scale() > MAX_SCALE) {
+            throw new BusinessException(PaymentErrorCode.INVALID_AMOUNT);
+        }
+
+        if (purpose == PaymentPurpose.ORDER
+                && (orderId == null || orderType == null)) {
+            throw new BusinessException(PaymentErrorCode.INVALID_ORDER_REFERENCE);
+        }
+
+        if (purpose == PaymentPurpose.TOPUP
+                && (orderId != null || orderType != null)) {
+            throw new BusinessException(PaymentErrorCode.INVALID_ORDER_REFERENCE);
+        }
+    }
+
+    public void preparePgPayment() {
+        if (this.purpose != PaymentPurpose.TOPUP) {
+            throw new BusinessException(PaymentErrorCode.INVALID_PAYMENT_PURPOSE);
+        }
+
+        if (this.pgPayment != null) {
+            throw new BusinessException(PaymentErrorCode.PG_PAYMENT_ALREADY_PREPARED);
+        }
+
+        this.pgPayment = PGPayment.create(this);
+    }
+
+    public void complete() {
+        if (this.state != PaymentStatus.PENDING) {
+            throw new BusinessException(
+                    PaymentErrorCode.INVALID_PAYMENT_STATUS_TRANSITION
+            );
+        }
+
+        this.state = PaymentStatus.PAID;
+        this.paidAt = OffsetDateTime.now();
+    }
+
+    public void fail() {
+        if (this.state != PaymentStatus.PENDING) {
+            throw new BusinessException(
+                    PaymentErrorCode.INVALID_PAYMENT_STATUS_TRANSITION
+            );
+        }
+
+        this.state = PaymentStatus.FAILED;
+    }
+
+    public static Payment createTopUp(
+            final Long memberId,
+            final BigDecimal amount
+    ) {
+        return new Payment(
+                memberId,
+                PaymentPurpose.TOPUP,
+                null,
+                null,
+                amount
+        );
+    }
+
+    public static Payment createOrderPayment(
+            final Long memberId,
+            final Long orderId,
+            final OrderType orderType,
+            final BigDecimal amount
+    ) {
+        return new Payment(
+                memberId,
+                PaymentPurpose.ORDER,
+                orderId,
+                orderType,
+                amount
+        );
     }
 }
