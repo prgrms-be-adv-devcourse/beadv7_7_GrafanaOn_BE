@@ -236,7 +236,7 @@ public class ProductService {
         final Product product = productRepository.findById(productId);
         validateDeleted(product);
 
-        validateProductVisible(product);
+        validateProductVisible(memberId, product);
 
         return GetProductDetailDto.of(product);
     }
@@ -247,8 +247,8 @@ public class ProductService {
         }
     }
 
-    private void validateProductVisible(final Product product) {
-        if (!product.isVisible()) {
+    private void validateProductVisible(final Long memberId, final Product product) {
+        if (product.validateVisible(memberId)) {
             throw new BusinessException(ProductErrorCode.INVALID_PRODUCT_VISIBLE);
         }
     }
@@ -259,7 +259,7 @@ public class ProductService {
         final Product product = productRepository.findById(productId);
 
         validateDeleted(product);
-        validateProductVisible(product);
+        validateProductVisible(memberId, product);
 
         return GetProductDetailDto.of(product);
     }
