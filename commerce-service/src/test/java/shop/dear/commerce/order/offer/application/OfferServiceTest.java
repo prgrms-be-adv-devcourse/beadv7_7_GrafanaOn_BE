@@ -21,6 +21,8 @@ import shop.dear.commerce.order.offersnapshot.domain.repository.OfferSnapshotRep
 import shop.dear.commerce.order.offer.application.port.MemberPort;
 import shop.dear.commerce.order.offer.application.port.ProductPort;
 import shop.dear.commerce.order.offer.application.port.dto.ProductInfo;
+import shop.dear.common.event.financial.PaymentHoldRequestedEvent;
+import shop.dear.common.event.financial.PaymentRequestedEvent;
 import shop.dear.common.event.order.FinishedOrderEvent;
 import shop.dear.common.exception.BusinessException;
 
@@ -40,6 +42,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class OfferServiceTest {
@@ -142,6 +145,15 @@ class OfferServiceTest {
             assertThat(event.sellerId()).isEqualTo(offer.getSellerId());
             assertThat(event.productId()).isEqualTo(offer.getProductId());
             assertThat(event.amount()).isEqualTo(offer.getAmount());
+
+            final ArgumentCaptor<PaymentRequestedEvent> paymentCaptor =
+                    ArgumentCaptor.forClass(PaymentRequestedEvent.class);
+            verify(offerEventPublisher).publish(paymentCaptor.capture());
+
+            final PaymentRequestedEvent paymentEvent = paymentCaptor.getValue();
+            assertThat(paymentEvent.orderId()).isEqualTo(offer.getId());
+            assertThat(paymentEvent.memberId()).isEqualTo(offer.getBuyerId());
+            assertThat(paymentEvent.amount()).isEqualTo(offer.getAmount());
         }
 
         @Test
@@ -154,7 +166,7 @@ class OfferServiceTest {
             assertThatThrownBy(() -> offerService.acceptOffer(1L, 2L))
                     .isInstanceOf(BusinessException.class);
 
-            verify(offerEventPublisher, never()).publish(any());
+            verifyNoInteractions(offerEventPublisher);
         }
 
         @Test
@@ -169,7 +181,7 @@ class OfferServiceTest {
             assertThatThrownBy(() -> offerService.acceptOffer(1L, 2L))
                     .isInstanceOf(BusinessException.class);
 
-            verify(offerEventPublisher, never()).publish(any());
+            verifyNoInteractions(offerEventPublisher);
         }
 
         private Offer createPendingPaidOffer() {
@@ -206,7 +218,7 @@ class OfferServiceTest {
             // then
             assertThat(offer.getStatus()).isEqualTo(OfferStatus.REJECTED);
             verify(offerRepository).save(offer);
-            verify(offerEventPublisher, never()).publish(any());
+            verifyNoInteractions(offerEventPublisher);
         }
 
         @Test
@@ -220,7 +232,7 @@ class OfferServiceTest {
                     .isInstanceOf(BusinessException.class);
 
             verify(offerRepository, never()).save(any());
-            verify(offerEventPublisher, never()).publish(any());
+            verifyNoInteractions(offerEventPublisher);
         }
 
         @Test
@@ -235,7 +247,7 @@ class OfferServiceTest {
                     .isInstanceOf(BusinessException.class);
 
             verify(offerRepository, never()).save(any());
-            verify(offerEventPublisher, never()).publish(any());
+            verifyNoInteractions(offerEventPublisher);
         }
 
         @Test
@@ -251,7 +263,7 @@ class OfferServiceTest {
                     .isInstanceOf(BusinessException.class);
 
             verify(offerRepository, never()).save(any());
-            verify(offerEventPublisher, never()).publish(any());
+            verifyNoInteractions(offerEventPublisher);
         }
 
         private Offer createPendingPaidOffer() {
@@ -536,6 +548,15 @@ class OfferServiceTest {
             verify(offerSnapshotRepository).findById(1L);
             verify(productPort).getProduct(10L);
             verify(offerRepository).save(any());
+
+            final ArgumentCaptor<PaymentHoldRequestedEvent> holdCaptor =
+                    ArgumentCaptor.forClass(PaymentHoldRequestedEvent.class);
+            verify(offerEventPublisher).publish(holdCaptor.capture());
+
+            final PaymentHoldRequestedEvent holdEvent = holdCaptor.getValue();
+            assertThat(holdEvent.orderId()).isEqualTo(offer.getId());
+            assertThat(holdEvent.memberId()).isEqualTo(offer.getBuyerId());
+            assertThat(holdEvent.amount()).isEqualTo(offer.getAmount());
         }
 
         @Test
