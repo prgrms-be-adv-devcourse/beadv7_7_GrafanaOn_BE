@@ -16,6 +16,8 @@ import java.io.IOException;
 public class InternalCallInterceptor implements ClientHttpRequestInterceptor {
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
+        request.getHeaders().remove(AuthUser.MEMBER_ID_HEADER);
+
         if (RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes attributes) {
             String memberId = attributes.getRequest()
                     .getHeader(AuthUser.MEMBER_ID_HEADER);
