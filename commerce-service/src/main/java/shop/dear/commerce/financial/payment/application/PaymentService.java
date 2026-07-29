@@ -35,7 +35,7 @@ public class PaymentService {
     private final PgPaymentApprovalPort pgPaymentApprovalPort;
     private final TopUpApprovalCompletionService topUpApprovalCompletionService;
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public PaymentInfo payOrder(final PayOrderCommand command) {
         final Payment payment = Payment.createOrderPayment(
                 command.memberId(),
