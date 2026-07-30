@@ -234,13 +234,13 @@ Spring Event Listener는 여러 곳에서 AFTER_COMMIT과 REQUIRES_NEW를 사용
 
 ### 인증과 회원
 
-- 이메일·비밀번호 회원가입 및 로그인
-- Access Token·Refresh Token 발급, 재발급, 로그아웃
+- 이메일 / 비밀번호 회원가입 및 로그인
+- Access Token / Refresh Token 발급, 재발급, 로그아웃
 - Refresh Token 회전 및 재사용 탐지
-- 구매자·판매자 역할 관리
-- 회원 프로필 조회·수정 및 회원 탈퇴
+- 구매자 / 판매자 역할 관리
+- 회원 프로필 조회, 수정 및 회원 탈퇴
 - 판매자 계좌 암호화 저장과 마스킹 응답
-- 상품 찜 등록·조회·삭제
+- 상품 스크랩, 등록, 조회, 삭제
 
 ### 상품과 검색
 
@@ -267,23 +267,34 @@ Spring Event Listener는 여러 곳에서 AFTER_COMMIT과 REQUIRES_NEW를 사용
 
 ## 실패와 남은 과제
 
-### Spring Event는 내구성 있는 메시지가 아니었습니다.
+### 멀티 모듈 분리와 통신 방식
 
-현재 이벤트는 JVM 메모리 안에서 전달됩니다. 프로세스가 종료되거나 Listener 처리가 계속 실패하면 이벤트가 사라질 수 있으며, 재시도·Dead Letter Queue·Replay·검색 인덱스 재구축 기능도 없습니다.
+Identity와 Commerce를 독립 실행 가능한 모듈로 분리했지만, 현재 로컬 환경에서는 하나의 PostgreSQL 인스턴스를 함께 사용하고 있습니다. 따라서 실행 단위는 분리되어 있어도 데이터 저장소까지 완전히 격리된 MSA 구조는 아닙니다.
 
-다음 단계에서는 Outbox Pattern과 Kafka를 도입하고, Product 전체 데이터를 기준으로 Search를 재구축하는 Reindex 기능을 마련해야 합니다.
+모듈 간 즉시 응답이 필요한 조회는 REST, 하나의 트랜잭션이 필요한 Auth와 Member의 협력은 동기 Port/Adapter, 후속 상태 전이는 Spring Event로 처리했습니다. 하지만 REST 통신 과정에서는 DTO와 URL 계약 불일치로 런타임 오류를 경험했고, Spring Event는 JVM 메모리 안에서만 전달되어 프로세스 종료나 Listener 실패 시 이벤트가 유실될 수 있습니다.
 
-### 인증과 인가는 아직 같은 수준으로 완성되지 않았습니다
+추후 다음 과제를 진행할 계획입니다.
+- 서비스별 데이터베이스 분리
+- Outbox Pattern과 Kafka를 이용한 이벤트 전달 보장
+- 실패 이벤트 재시도와 Saga 패턴 적용
+- Elasticsearch 도입
+
+### 인증과 인가의 고도화
 
 Gateway가 JWT 인증과 사용자 식별은 수행하지만, 대부분의 경로는 역할별 권한보다 인증 여부를 중심으로 검사합니다. 판매자 전용 API처럼 세부 권한이 필요한 경로는 Gateway 또는 하위 도메인에서 명시적인 인가 정책을 보강해야 합니다.
 
 또한 Access Token은 서버에 저장하지 않으므로 로그아웃 직후에도 최대 15분 동안 유효할 수 있습니다. 즉시 무효화가 필요해지면 짧은 만료 시간 외에 Token Blacklist 또는 토큰 버전 정책을 검토해야 합니다.
 
-### 배치와 배포 자동화는 복구 시나리오가 부족합니다
+### CI/CD, Blue, Green Container 무중단 배포의 숙제
 
-상품 공개 스케줄러가 실행되지 않은 시간대의 상품을 복구하는 보정 작업과 명시적인 타임존 정책이 필요합니다. CI는 현재 일부 모듈만 테스트를 제외하고 빌드하며, 배포 Workflow와 실제 Dockerfile·운영 Profile 구성도 완전히 일치하지 않습니다.
+GitHub Actions를 이용한 빌드와 배포 Workflow를 구성했지만, 현재 CD에서 매끄러운 배포가 진행되고 있지는 않습니다. Blue-Green 배포에서는 새로운 Green Container를 실행하고 Health Check가 성공하면 Gateway의 라우팅 대상을 전환하려고 했습니다. 그러나 트래픽 전환을 실행할 안정적인 트리거와 전환 실패 시 Blue Container로 되돌리는 자동 Rollback까지는 구현하지 못했습니다.
 
-다음 단계에서는 모든 모듈의 테스트를 필수 Check로 만들고, 동일한 이미지와 설정으로 로컬·CI·운영 환경을 검증해야 합니다.
+추후 다음 과제를 진행할 계획입니다.
+
+- Green Container Health Check 이후 Gateway 라우팅 자동 전환
+- 전환 실패 시 Blue Container로 자동 Rollback
+- 배포 완료 후 이전 Container를 안전하게 종료하는 절차 구성
+- 로컬, CI, 운영 환경에서 동일한 이미지와 설정 사용
 
 ## 프로젝트 구조
 
@@ -370,3 +381,11 @@ OFFER_CLIENT_BASE_URL=http://localhost:8082
 - Gateway 공개·인증 경로 및 위조 헤더 제거
 
 ## 구성원
+ 이름 | 깃허브 아이디      |
+| --- |--------------|
+|김세하|	@aio19581|
+|김진범|	@bum0w0|
+|김태우|	@KAITOKIDDA|
+|유도훈|	@phdcoco|
+|양화영|	@sanchaehwa|
+|황서은|	@Hwangseoeun|
