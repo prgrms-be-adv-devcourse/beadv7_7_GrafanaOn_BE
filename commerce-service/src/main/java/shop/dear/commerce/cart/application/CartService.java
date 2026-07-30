@@ -13,6 +13,8 @@ import shop.dear.commerce.cart.domain.model.Cart;
 import shop.dear.commerce.cart.domain.model.CartItem;
 import shop.dear.commerce.cart.domain.repository.CartItemRepository;
 import shop.dear.commerce.cart.domain.repository.CartRepository;
+import shop.dear.common.event.order.FinishedOrderEvent;
+import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
 
 import java.util.List;
@@ -62,4 +64,33 @@ public class CartService {
 
         return GetAllCartItemProductResponse.of(cart.getId(), allCartItems);
     }
+    @Transactional
+    public void deleteAllCartItems(Long memberId) {
+        Cart cart = cartRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new BusinessException(CartErrorCode.CART_NOT_FOUND));
+        cartItemRepository.deleteByCartId(cart.getId());
+    }
+
+    @Transactional
+    public void deleteSelectedCartItemsByUser(Long memberId,List<Long> productIds) {
+        if(productIds == null || productIds.isEmpty()) {
+            throw new BusinessException(CartErrorCode.INVALID_DELETE_REQUEST);
+        }
+        Cart cart = cartRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new BusinessException(CartErrorCode.CART_NOT_FOUND));
+        cartItemRepository.deleteByCartIdAndProductIdIn(cart.getId(), productIds);
+    }
+
+    @Transactional
+    public void removeProductOnOrderFinished(FinishedOrderEvent event) {{
+        if(event.orderType() != OrderType.PURCHASE) {
+            return;
+        }
+        cartRepository.findByMemberId(event.buyerId())
+                .ifPresent(cart -> cartItemRepository.deleteByCartIdAndProductId(
+                        cart.getId(),
+                        event.productId()
+                ));
+    }}
+
 }
