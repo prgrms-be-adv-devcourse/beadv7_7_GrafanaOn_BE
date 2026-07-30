@@ -17,15 +17,13 @@ on:
         required: false
         type: string
         default: "Dockerfile"
-      db_url:
-        required: false
-        type: string
-        default: ""
       use_blue_green:
         required: false
         type: boolean
         default: true
     secrets:
+      DB_URL:
+        required: false
       DB_USERNAME:
         required: false
       DB_PASSWORD:
@@ -50,7 +48,7 @@ jobs:
             --network dear-network \
             -p ${{ inputs.green_port }}:${{ inputs.service_port }} \
             -e SPRING_PROFILES_ACTIVE=prod \
-            ${{ inputs.db_url != '' && format('-e SPRING_DATASOURCE_URL={0}', inputs.db_url) || '' }} \
+            ${{ secrets.DB_URL != '' && format('-e SPRING_DATASOURCE_URL={0}', secrets.DB_URL) || '' }} \
             ${{ secrets.DB_USERNAME != '' && format('-e SPRING_DATASOURCE_USERNAME={0}', secrets.DB_USERNAME) || '' }} \
             ${{ secrets.DB_PASSWORD != '' && format('-e SPRING_DATASOURCE_PASSWORD={0}', secrets.DB_PASSWORD) || '' }} \
             ${{ inputs.service_name }}:${{ github.sha }}
