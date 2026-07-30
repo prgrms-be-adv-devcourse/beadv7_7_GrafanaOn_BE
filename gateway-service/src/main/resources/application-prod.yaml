@@ -1,15 +1,43 @@
-# 운영 관리 포트의 Blue/Green 동적 라우팅 설정
+server:
+  forward-headers-strategy: framework
+
 spring:
   cloud:
     gateway:
       server:
         webflux:
+          globalcors:
+            add-to-simple-url-handler-mapping: true
+            cors-configurations:
+              '[/**]':
+                allowedOrigins:
+                  - ${FRONTEND_ORIGIN}
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - PATCH
+                  - DELETE
+                  - OPTIONS
+                allowedHeaders:
+                  - Authorization
+                  - Content-Type
+                  - Accept
+                allowCredentials: true
+                maxAge: 3600
+
           routes:
-            - id: commerce-product-route
-              uri: http://${TARGET_CONTAINER:blue-container}:8080
+            - id: identity-api-route
+              uri: ${IDENTITY_SERVICE_URI:http://identity-service-blue:8081}
               predicates:
-                - Path=/api/products/**
+                - Path=/api/auth/**,/api/members/**,/api/scraps/**
+
+            - id: commerce-api-route
+              uri: ${COMMERCE_SERVICE_URI:http://commerce-service-blue:8082}
+              predicates:
+                - Path=/api/products/**,/api/purchases/**,/api/offers/**,/api/search/**,/api/carts/**,/api/payments/**,/api/deposits/**,/api/settlements/**
 
 logging:
   level:
     root: INFO
+    org.springframework.cloud.gateway: INFO
