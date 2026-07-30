@@ -29,7 +29,7 @@ public class CartProductClient implements CartProductPort {
     @Override
     public CartProductInfo getProduct(final Long productId) {
         final CartProductApiData data = requestProduct(productId);
-        return toCartProductInfo(data);
+        return toCartProductInfo(productId, data);
     }
 
     @Override
@@ -62,9 +62,9 @@ public class CartProductClient implements CartProductPort {
         }
     }
 
-    private CartProductInfo toCartProductInfo(final CartProductApiData data) {
+    private CartProductInfo toCartProductInfo(final Long productId, final CartProductApiData data) {
         return new CartProductInfo(
-                data.id(),
+                productId,
                 data.name(),
                 data.price(),
                 extractThumbnailUrl(data.images()),

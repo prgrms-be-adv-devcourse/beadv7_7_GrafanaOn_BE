@@ -12,7 +12,8 @@ public record CartProductApiData(
         BigDecimal price,
         List<ImageInfo> images,
         String status
-        ) {
+) {
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public record ImageInfo(
             String url
     ) {

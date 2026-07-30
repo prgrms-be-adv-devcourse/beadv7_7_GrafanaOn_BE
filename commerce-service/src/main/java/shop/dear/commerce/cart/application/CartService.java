@@ -1,8 +1,9 @@
 package shop.dear.commerce.cart.application;
 
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.cart.application.dto.CartItemDto;
 import shop.dear.commerce.cart.application.dto.GetAllCartItemProductResponse;
 import shop.dear.commerce.cart.application.port.CartProductPort;
@@ -13,6 +14,7 @@ import shop.dear.commerce.cart.domain.model.Cart;
 import shop.dear.commerce.cart.domain.model.CartItem;
 import shop.dear.commerce.cart.domain.repository.CartItemRepository;
 import shop.dear.commerce.cart.domain.repository.CartRepository;
+import shop.dear.commerce.cart.infrastructure.event.CartItemAddRequestedEvent;
 import shop.dear.common.event.order.FinishedOrderEvent;
 import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -72,8 +75,8 @@ public class CartService {
     }
 
     @Transactional
-    public void deleteSelectedCartItemsByUser(final Long memberId,final List<Long> productIds) {
-        if(productIds == null || productIds.isEmpty()) {
+    public void deleteSelectedCartItemsByUser(final Long memberId, final List<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
             throw new BusinessException(CartErrorCode.INVALID_DELETE_REQUEST);
         }
         Cart cart = cartRepository.findByMemberId(memberId)
@@ -83,7 +86,7 @@ public class CartService {
 
     @Transactional
     public void removeProductOnOrderFinished(final FinishedOrderEvent event) {
-        if(event.orderType() != OrderType.PURCHASE) {
+        if (event.orderType() != OrderType.PURCHASE) {
             return;
         }
         cartRepository.findByMemberId(event.buyerId())
@@ -91,6 +94,26 @@ public class CartService {
                         cart.getId(),
                         event.productId()
                 ));
+    }
+
+    @Transactional
+    public void addCartItem(final CartItemAddRequestedEvent event) {
+        addCartItem(event.memberId(), event.productId());
+    }
+
+    @Transactional
+    public void addCartItem(final Long memberId, final Long productId) {
+        cartProductPort.getProduct(productId);
+
+        final Cart cart = cartRepository.findByMemberId(memberId)
+                .orElseGet(() -> cartRepository.save(Cart.create(memberId)));
+
+        cartItemRepository.findByCartIdAndProductId(cart.getId(), productId).stream()
+                .findFirst()
+                .ifPresentOrElse(
+                        item -> log.info("[CartService] 이미 장바구니에 존재하는 상품입니다. cartId={}, productId={}", cart.getId(), productId),
+                        () -> cartItemRepository.save(CartItem.create(cart.getId(), productId))
+                );
     }
 
 }

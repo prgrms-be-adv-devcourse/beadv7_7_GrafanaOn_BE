@@ -29,10 +29,10 @@ public class CartItem extends BaseEntity {
     @Column(name = "cart_item_status", nullable = false)
     private CartItemStatus status = CartItemStatus.BEFORE_PAYMENT;
 
-    public static CartItem create(Long cartId, Long proudctId, int quantity) {
+    public static CartItem create(Long cartId, Long productId) {
         return CartItem.builder()
                 .cartId(cartId)
-                .productId(proudctId)
+                .productId(productId)
                 .build();
     }
 
