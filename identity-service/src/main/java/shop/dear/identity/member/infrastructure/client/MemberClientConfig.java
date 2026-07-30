@@ -17,4 +17,10 @@ public class MemberClientConfig {
 
         return internalRestClientFactory.builder(baseUrl).build();
     }
+
+    @Bean
+    RestClient walletRestClient(@Value("${identity.client.commerce-base-url}") String baseUrl) {
+
+        return internalRestClientFactory.builder(baseUrl).build();
+    }
 }

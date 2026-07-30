@@ -16,6 +16,7 @@ import shop.dear.identity.member.application.dto.UpdateProfileCommand;
 import shop.dear.identity.member.application.dto.UpdateSellerAccountCommand;
 import shop.dear.identity.member.application.dto.external.ExistsProduct;
 import shop.dear.identity.member.application.port.ProductPort;
+import shop.dear.identity.member.application.port.WalletPort;
 import shop.dear.identity.member.domain.constract.SellerStatus;
 import shop.dear.identity.member.domain.exception.MemberErrorCode;
 import shop.dear.identity.member.domain.model.Member;
@@ -39,6 +40,9 @@ public class MemberServiceTest {
     @Mock
     private ProductPort productPort;
 
+    @Mock
+    private WalletPort walletPort;
+
     @InjectMocks
     private MemberService memberService;
 
@@ -52,13 +56,21 @@ public class MemberServiceTest {
             "010-1234-5678"
         );
 
+        Member member = Member.create(
+            "테스트",
+            "서울시 강남구",
+            "010-1234-5678",
+            "user_000001");
+        ReflectionTestUtils.setField(member, "id", 1L);
+
         given(memberRepository
             .save(any()))
-            .willAnswer(invocation -> invocation.getArgument(0));
+            .willReturn(member);
 
         memberService.createProfile(command);
 
         verify(memberRepository).save(any());
+        verify(walletPort).createWallet(1L);
     }
 
     @Test

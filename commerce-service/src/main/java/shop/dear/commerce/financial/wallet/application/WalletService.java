@@ -114,4 +114,13 @@ public class WalletService {
 
         walletRepository.save(wallet);
     }
+
+    @Transactional
+    public void saveWallet(final Long memberId) {
+        if (walletRepository.findByMemberId(memberId).isPresent()) {
+            return;
+        }
+
+        walletRepository.save(Wallet.create(memberId));
+    }
 }

@@ -1,4 +1,8 @@
 package shop.dear.commerce.financial.wallet.presentation.dto.request;
 
-public class WalletRequest {
+import jakarta.validation.constraints.NotNull;
+
+public record WalletRequest(
+        @NotNull Long memberId
+) {
 }

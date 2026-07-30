@@ -3,9 +3,7 @@ package shop.dear.identity.member.application;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import shop.dear.common.event.member.MemberCreatedEvent;
 import shop.dear.common.exception.BusinessException;
-import shop.dear.identity.auth.authentication.application.port.MemberEventPublisher;
 import shop.dear.identity.member.application.dto.CreateProfileCommand;
 import shop.dear.identity.member.application.dto.MemberInfo;
 import shop.dear.identity.member.application.dto.RegisterSellerCommand;
@@ -18,6 +16,7 @@ import shop.dear.identity.member.domain.model.Member;
 import shop.dear.identity.member.domain.model.Seller;
 import shop.dear.identity.member.domain.repository.MemberRepository;
 import shop.dear.identity.member.application.port.ProductPort;
+import shop.dear.identity.member.application.port.WalletPort;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -29,7 +28,7 @@ public class MemberService  {
     private final MemberRepository memberRepository;
     private final ProductPort productPort;
     private final Encryptor encryptor;
-    private final MemberEventPublisher eventPublisher;
+    private final WalletPort walletPort;
 
     @Transactional
     public MemberInfo createProfile(final CreateProfileCommand command) {
@@ -44,11 +43,9 @@ public class MemberService  {
 
         Member savedMember = memberRepository.save(member);
 
-        eventPublisher.publish(new MemberCreatedEvent(
-            savedMember.getId()
-        ));
+        walletPort.createWallet(savedMember.getId());
 
-        return MemberInfo.from(memberRepository.save(savedMember));
+        return MemberInfo.from(savedMember);
     }
 
     public MemberInfo getProfile(final Long memberId){
