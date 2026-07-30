@@ -91,6 +91,9 @@ public class OfferService {
         final OfferSnapshot snapshot = offerSnapshotRepository.findById(command.snapshotId())
                 .orElseThrow(() -> new BusinessException(OfferSnapshotErrorCode.OFFER_SNAPSHOT_NOT_FOUND));
 
+        final ProductInfo currentProduct = productPort.getProduct(snapshot.getProductId());
+        validatePriceSnapshot(snapshot.getPriceSnapshot(), currentProduct.price());
+
         final Offer offer = Offer.create(
                 command.writerId(),
                 snapshot.getSellerId(),
@@ -104,9 +107,6 @@ public class OfferService {
 
         final Offer savedOffer = offerRepository.save(offer);
         snapshot.linkToOffer(savedOffer.getId(), command.writerId());
-
-        final ProductInfo currentProduct = productPort.getProduct(snapshot.getProductId());
-        validatePriceSnapshot(snapshot.getPriceSnapshot(), currentProduct.price());
 
         offerEventPublisher.publish(new PaymentHoldRequestedEvent(
                 savedOffer.getId(),
