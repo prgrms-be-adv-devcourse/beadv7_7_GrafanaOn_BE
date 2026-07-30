@@ -16,6 +16,10 @@ import shop.dear.commerce.financial.settlement.application.port.WalletPort;
 import shop.dear.commerce.financial.settlement.domain.constant.SettlementStatus;
 import shop.dear.commerce.financial.settlement.domain.model.Settlement;
 import shop.dear.commerce.financial.settlement.domain.repository.SettlementRepository;
+import shop.dear.commerce.financial.settlementpolicy.application.SettlementPolicyService;
+import shop.dear.commerce.financial.settlementpolicy.domain.model.SettlementPolicy;
+import shop.dear.common.event.order.FinishedOrderEvent;
+import shop.dear.common.event.order.OrderType;
 import shop.dear.common.event.settlement.SettlementPayoutEvent;
 import shop.dear.common.event.settlement.SettlementPayoutItem;
 
@@ -44,6 +48,8 @@ class SettlementServiceTest {
 	private static final LocalDate HISTORY_END_DATE = LocalDate.of(2026, 7, 31);
 	private static final LocalDateTime HISTORY_START_DATE_TIME = HISTORY_START_DATE.atStartOfDay();
 	private static final LocalDateTime HISTORY_END_DATE_TIME = HISTORY_END_DATE.plusDays(1).atStartOfDay();
+	private static final Long SELLER_ID = 2L;
+	private static final Long POLICY_ID = 100L;
 
 	@Mock
 	private SettlementRepository settlementRepository;
@@ -56,6 +62,9 @@ class SettlementServiceTest {
 
 	@InjectMocks
 	private SettlementService settlementService;
+
+	@Mock
+	private SettlementPolicyService settlementPolicyService;
 
 	// 헬퍼 함수
 	private Settlement settlement(final Long id, final BigDecimal netAmount) {
@@ -72,6 +81,17 @@ class SettlementServiceTest {
 		ReflectionTestUtils.setField(settlement, "id", id);
 
 		return settlement;
+	}
+
+	private SettlementPolicy defaultPolicy() {
+		final SettlementPolicy policy = SettlementPolicy.create(
+				new BigDecimal("0.10"),
+				BigDecimal.ZERO
+		);
+
+		ReflectionTestUtils.setField(policy, "id", POLICY_ID);
+
+		return policy;
 	}
 
 	private void stubWalletId() {
@@ -299,5 +319,47 @@ class SettlementServiceTest {
 			// then
 			assertThat(walletId).isEqualTo(WALLET_ID);
 		}
+	}
+
+	@Test
+	void createPendingSettlement_savesSettlementWithTenPercentFee() {
+		// given
+		final FinishedOrderEvent event = new FinishedOrderEvent(
+				200L,
+				MEMBER_ID,
+				SELLER_ID,
+				300L,
+				new BigDecimal("10000.00"),
+				OrderType.PURCHASE
+		);
+
+		given(settlementPolicyService.getOrCreateDefaultPolicy())
+				.willReturn(defaultPolicy());
+
+		given(walletPort.getWalletId(SELLER_ID))
+				.willReturn(new WalletInfo(SELLER_ID, WALLET_ID));
+
+		// when
+		settlementService.createPendingSettlement(event);
+
+		// then
+		final ArgumentCaptor<Settlement> captor =
+				ArgumentCaptor.forClass(Settlement.class);
+
+		verify(settlementRepository).save(captor.capture());
+
+		final Settlement settlement = captor.getValue();
+
+		assertThat(settlement.getSettlementPolicyId()).isEqualTo(POLICY_ID);
+		assertThat(settlement.getWalletId()).isEqualTo(WALLET_ID);
+		assertThat(settlement.getPurchaseId()).isEqualTo(200L);
+		assertThat(settlement.getOfferId()).isNull();
+		assertThat(settlement.getGrossAmount())
+				.isEqualByComparingTo("10000.00");
+		assertThat(settlement.getFeeAmount())
+				.isEqualByComparingTo("1000.00");
+		assertThat(settlement.getNetAmount())
+				.isEqualByComparingTo("9000.00");
+		assertThat(settlement.getState()).isEqualTo(SettlementStatus.PENDING);
 	}
 }
