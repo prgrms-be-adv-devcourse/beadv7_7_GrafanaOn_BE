@@ -341,6 +341,31 @@ public class WalletServiceTest {
         assertEquals(WalletErrorCode.WALLET_NOT_FOUND, exception.getErrorCode());
     }
 
+    @Test
+    @DisplayName("지갑이 없는 회원이면 새 지갑을 생성한다.")
+    void saveWallet_whenWalletNotExists_createsWallet() {
+        // when
+        walletService.saveWallet(1L);
+
+        // then
+        Wallet savedWallet = walletRepository.findByMemberId(1L).orElseThrow();
+        assertEquals(1L, savedWallet.getMemberId());
+    }
+
+    @Test
+    @DisplayName("이미 지갑이 있는 회원이면 재요청해도 중복 생성하지 않는다.")
+    void saveWallet_whenWalletAlreadyExists_doesNothing() {
+        // given
+        walletService.saveWallet(1L);
+        walletRepository.resetSaveCount();
+
+        // when
+        walletService.saveWallet(1L);
+
+        // then
+        assertEquals(0, walletRepository.getSaveCount());
+    }
+
     private static class FakeWalletRepository implements WalletRepository {
 
         private final Map<Long, Wallet> wallets = new HashMap<>();
