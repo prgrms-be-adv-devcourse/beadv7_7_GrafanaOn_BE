@@ -13,6 +13,8 @@ import shop.dear.commerce.cart.application.dto.GetAllCartItemProductResponse;
 import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
 
+import java.util.List;
+
 import static shop.dear.common.response.ApiResponse.success;
 import static shop.dear.common.response.ApiResponse.successWithData;
 
@@ -30,6 +32,25 @@ public class CartController {
     ) {
         final GetAllCartItemProductResponse cartItems = cartService.getCartItems(memberId);
         return ResponseEntity.ok(successWithData(cartItems));
+    }
+
+    @DeleteMapping("/items/all")
+
+    public ResponseEntity<ApiResponse<Void>> deleteAllCartItems(
+            @AuthUser final Long memberId
+    ) {
+        cartService.deleteAllCartItems(memberId);
+        return ResponseEntity.ok(success());
+    }
+
+    @DeleteMapping("/items")
+
+    public ResponseEntity<ApiResponse<Void>> deleteSelectedCartItems(
+            @AuthUser final Long memberId,
+            @RequestParam final List<Long> productIds
+    ) {
+        cartService.deleteSelectedCartItemsByUser(memberId, productIds);
+        return ResponseEntity.ok(success());
     }
 
 }
