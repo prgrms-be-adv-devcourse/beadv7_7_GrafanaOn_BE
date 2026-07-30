@@ -13,4 +13,4 @@ spring:
             - id: commerce-api-route
               uri: ${COMMERCE_SERVICE_URI:http://localhost:8082}
               predicates:
-                - Path=/api/products/**,/api/offers/**,/api/purchases/**,/api/deposits/**,/api/payments/**,/api/search/**,/api/carts/**
+                - Path=/api/products/**,/api/offers/**,/api/purchases/**,/api/deposits/**,/api/payments/**,/api/search/**,/api/carts/**,/api/settlements/**
