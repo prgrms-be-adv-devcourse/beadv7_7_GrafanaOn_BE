@@ -15,9 +15,17 @@ spring:
         highlight_sql: true
         default_batch_fetch_size: 100
 
-order:
+member:
   client:
-    base-url: ${ORDER_CLIENT_BASE_URL:http://localhost:8080}
+    base-url: ${MEMBER_CLIENT_BASE_URL:http://localhost:8081}
+
+product:
+  client:
+    base-url: ${PRODUCT_CLIENT_BASE_URL:http://localhost:8082}
+
+offer:
+  client:
+    base-url: ${OFFER_CLIENT_BASE_URL:http://localhost:8082}
 
 secret:
   aws:

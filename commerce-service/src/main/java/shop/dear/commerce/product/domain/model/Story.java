@@ -14,6 +14,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.dear.common.audit.BaseEntity;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "story")
@@ -31,6 +33,9 @@ public class Story extends BaseEntity {
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     static Story create(final ProductImage productImage, final String content) {
         return new Story(productImage, content);
     }
@@ -38,5 +43,13 @@ public class Story extends BaseEntity {
     private Story(final ProductImage productImage, final String content) {
         this.productImage = productImage;
         this.content = content;
+    }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public boolean isDeleted() {
+        return this.deletedAt != null;
     }
 }

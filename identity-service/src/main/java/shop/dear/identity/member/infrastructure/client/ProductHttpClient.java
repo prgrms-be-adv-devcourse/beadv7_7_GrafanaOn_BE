@@ -18,7 +18,7 @@ public class ProductHttpClient implements ProductPort {
     @Override
     public ExistsProduct existsProduct() {
         ApiResponse<ProductApiData> body = productRestClient.get()
-            .uri("/api/products/me/exists")
+            .uri("/internal/products/me/exists")
             .retrieve()
             .body(new ParameterizedTypeReference<>() {
             });

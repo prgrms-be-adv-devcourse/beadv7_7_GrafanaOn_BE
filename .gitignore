@@ -183,15 +183,3 @@ gradle-app.setting
 **/docker/local_postgres/data/*
 
 # End of https://www.toptal.com/developers/gitignore/api/java,gradle,intellij+all,macos
-
-# Spring Local Config
-
-**/src/main/resources/application-local.yml
-**/src/main/resources/application-local.yaml
-# Environment
-*.env
-**/*.env
-# Env Example
-!*.env.example
-!**/*.env.example
-common/deploy/env/.env.prod

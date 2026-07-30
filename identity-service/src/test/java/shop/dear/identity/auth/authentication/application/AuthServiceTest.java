@@ -239,7 +239,7 @@ class AuthServiceTest {
         TokenResult reissuedTokens = new TokenResult(
                 "new-access-token",
                 "new-refresh-token",
-                3600L,
+                900L,
                 1209600L
         );
 
@@ -247,10 +247,10 @@ class AuthServiceTest {
                 "old-refresh-token"
         )).willReturn(1L);
 
-        given(refreshTokenStorePort.matches(
+        given(refreshTokenStorePort.verify(
                 1L,
                 "old-refresh-token"
-        )).willReturn(true);
+        )).willReturn(RefreshTokenVerificationResult.MATCHED);
 
         given(authAccountRepository.findByMemberId(1L))
                 .willReturn(Optional.of(authAccount));
@@ -281,10 +281,10 @@ class AuthServiceTest {
                 "invalid-refresh-token"
         )).willReturn(1L);
 
-        given(refreshTokenStorePort.matches(
+        given(refreshTokenStorePort.verify(
                 1L,
                 "invalid-refresh-token"
-        )).willReturn(false);
+        )).willReturn(RefreshTokenVerificationResult.NOT_FOUND);
 
         BusinessException exception = assertThrows(
                 BusinessException.class,
@@ -295,6 +295,41 @@ class AuthServiceTest {
                 AuthErrorCode.INVALID_REFRESH_TOKEN,
                 exception.getErrorCode()
         );
+
+        verify(authAccountRepository, never())
+                .findByMemberId(anyLong());
+
+        verify(tokenProviderPort, never())
+                .issueTokens(anyLong(), any(Role.class));
+    }
+
+    @Test
+    @DisplayName("교체된 Refresh Token이 재사용되면 현재 세션을 폐기한다")
+    void reissueRevokesSessionWhenRefreshTokenIsReused() {
+        ReissueTokenCommand command =
+                new ReissueTokenCommand("reused-refresh-token");
+
+        given(tokenProviderPort.parseMemberIdFromRefreshToken(
+                "reused-refresh-token"
+        )).willReturn(1L);
+
+        given(refreshTokenStorePort.verify(
+                1L,
+                "reused-refresh-token"
+        )).willReturn(RefreshTokenVerificationResult.MISMATCHED);
+
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> authService.reissue(command)
+        );
+
+        assertSame(
+                AuthErrorCode.REFRESH_TOKEN_REUSE_DETECTED,
+                exception.getErrorCode()
+        );
+
+        verify(refreshTokenStorePort)
+                .revokeCompromisedSession(1L);
 
         verify(authAccountRepository, never())
                 .findByMemberId(anyLong());

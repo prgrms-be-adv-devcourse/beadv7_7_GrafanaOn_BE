@@ -21,12 +21,14 @@ import shop.dear.commerce.order.offersnapshot.domain.repository.OfferSnapshotRep
 import shop.dear.commerce.order.offer.application.port.MemberPort;
 import shop.dear.commerce.order.offer.application.port.ProductPort;
 import shop.dear.commerce.order.offer.application.port.dto.ProductInfo;
+import shop.dear.common.event.financial.PaymentHoldRequestedEvent;
+import shop.dear.common.event.financial.PaymentRequestedEvent;
 import shop.dear.common.event.order.FinishedOrderEvent;
 import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,6 +42,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class OfferServiceTest {
@@ -142,6 +145,15 @@ class OfferServiceTest {
             assertThat(event.sellerId()).isEqualTo(offer.getSellerId());
             assertThat(event.productId()).isEqualTo(offer.getProductId());
             assertThat(event.amount()).isEqualTo(offer.getAmount());
+
+            final ArgumentCaptor<PaymentRequestedEvent> paymentCaptor =
+                    ArgumentCaptor.forClass(PaymentRequestedEvent.class);
+            verify(offerEventPublisher).publish(paymentCaptor.capture());
+
+            final PaymentRequestedEvent paymentEvent = paymentCaptor.getValue();
+            assertThat(paymentEvent.orderId()).isEqualTo(offer.getId());
+            assertThat(paymentEvent.memberId()).isEqualTo(offer.getBuyerId());
+            assertThat(paymentEvent.amount()).isEqualTo(offer.getAmount());
         }
 
         @Test
@@ -154,7 +166,7 @@ class OfferServiceTest {
             assertThatThrownBy(() -> offerService.acceptOffer(1L, 2L))
                     .isInstanceOf(BusinessException.class);
 
-            verify(offerEventPublisher, never()).publish(any());
+            verifyNoInteractions(offerEventPublisher);
         }
 
         @Test
@@ -169,7 +181,7 @@ class OfferServiceTest {
             assertThatThrownBy(() -> offerService.acceptOffer(1L, 2L))
                     .isInstanceOf(BusinessException.class);
 
-            verify(offerEventPublisher, never()).publish(any());
+            verifyNoInteractions(offerEventPublisher);
         }
 
         private Offer createPendingPaidOffer() {
@@ -206,7 +218,7 @@ class OfferServiceTest {
             // then
             assertThat(offer.getStatus()).isEqualTo(OfferStatus.REJECTED);
             verify(offerRepository).save(offer);
-            verify(offerEventPublisher, never()).publish(any());
+            verifyNoInteractions(offerEventPublisher);
         }
 
         @Test
@@ -220,7 +232,7 @@ class OfferServiceTest {
                     .isInstanceOf(BusinessException.class);
 
             verify(offerRepository, never()).save(any());
-            verify(offerEventPublisher, never()).publish(any());
+            verifyNoInteractions(offerEventPublisher);
         }
 
         @Test
@@ -235,7 +247,7 @@ class OfferServiceTest {
                     .isInstanceOf(BusinessException.class);
 
             verify(offerRepository, never()).save(any());
-            verify(offerEventPublisher, never()).publish(any());
+            verifyNoInteractions(offerEventPublisher);
         }
 
         @Test
@@ -251,7 +263,7 @@ class OfferServiceTest {
                     .isInstanceOf(BusinessException.class);
 
             verify(offerRepository, never()).save(any());
-            verify(offerEventPublisher, never()).publish(any());
+            verifyNoInteractions(offerEventPublisher);
         }
 
         private Offer createPendingPaidOffer() {
@@ -536,6 +548,15 @@ class OfferServiceTest {
             verify(offerSnapshotRepository).findById(1L);
             verify(productPort).getProduct(10L);
             verify(offerRepository).save(any());
+
+            final ArgumentCaptor<PaymentHoldRequestedEvent> holdCaptor =
+                    ArgumentCaptor.forClass(PaymentHoldRequestedEvent.class);
+            verify(offerEventPublisher).publish(holdCaptor.capture());
+
+            final PaymentHoldRequestedEvent holdEvent = holdCaptor.getValue();
+            assertThat(holdEvent.orderId()).isEqualTo(offer.getId());
+            assertThat(holdEvent.memberId()).isEqualTo(offer.getBuyerId());
+            assertThat(holdEvent.amount()).isEqualTo(offer.getAmount());
         }
 
         @Test
@@ -563,9 +584,23 @@ class OfferServiceTest {
             // given
             final OfferSnapshot snapshot = createSnapshot(1L, 2L, 10L, new BigDecimal("10000"));
             final CreateOfferCommand command = new CreateOfferCommand(999L, 1L, "title", "story", "delivery");
+            final ProductInfo productInfo = new ProductInfo(
+                    2L,
+                    List.of(),
+                    "상품명",
+                    "브랜드",
+                    new BigDecimal("10000"),
+                    "MDL-001",
+                    "카테고리",
+                    LocalDate.now(),
+                    0L,
+                    "설명",
+                    LocalDateTime.now()
+            );
 
             stubMemberExists(999L);
             given(offerSnapshotRepository.findById(1L)).willReturn(Optional.of(snapshot));
+            given(productPort.getProduct(anyLong())).willReturn(productInfo);
             given(offerRepository.save(any()))
                     .willAnswer(invocation -> invocation.getArgument(0));
 
@@ -575,8 +610,8 @@ class OfferServiceTest {
 
             verifyMemberExists(999L);
             verify(offerSnapshotRepository).findById(1L);
+            verify(productPort).getProduct(anyLong());
             verify(offerRepository).save(any());
-            verify(productPort, never()).getProduct(anyLong());
         }
 
         @Test
@@ -600,11 +635,9 @@ class OfferServiceTest {
                             LocalDate.of(2026, 1, 1),
                             0L,
                             "상품 설명",
-                            OffsetDateTime.now()
+                            LocalDateTime.now()
                     )
             );
-            given(offerRepository.save(any()))
-                    .willAnswer(invocation -> invocation.getArgument(0));
 
             // when & then
             assertThatThrownBy(() -> offerService.createOffer(command))
@@ -613,7 +646,7 @@ class OfferServiceTest {
             verifyMemberExists(1L);
             verify(offerSnapshotRepository).findById(1L);
             verify(productPort).getProduct(10L);
-            verify(offerRepository).save(any());
+            verify(offerRepository, never()).save(any());
         }
     }
 
@@ -640,7 +673,7 @@ class OfferServiceTest {
                 LocalDate.of(2026, 1, 1),
                 0L,
                 "상품 설명",
-                OffsetDateTime.now()
+                LocalDateTime.now()
         );
     }
 

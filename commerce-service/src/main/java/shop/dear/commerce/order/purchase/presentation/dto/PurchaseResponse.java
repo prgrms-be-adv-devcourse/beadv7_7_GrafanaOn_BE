@@ -3,7 +3,7 @@ package shop.dear.commerce.order.purchase.presentation.dto;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 public record PurchaseResponse(
     Long id,
@@ -11,8 +11,8 @@ public record PurchaseResponse(
     String status,
     Long productId,
     BigDecimal amount,
-    OffsetDateTime purchasedAt,
-    OffsetDateTime paymentDueAt,
+    LocalDateTime purchasedAt,
+    LocalDateTime paymentDueAt,
     String delivery
 ) {
 

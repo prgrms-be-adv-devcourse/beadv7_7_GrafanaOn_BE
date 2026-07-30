@@ -83,4 +83,8 @@ public class Settlement extends BaseEntity {
                 netAmount
         );
     }
+
+    public void payout(){
+        this.state = SettlementStatus.COMPLETED;
+    }
 }

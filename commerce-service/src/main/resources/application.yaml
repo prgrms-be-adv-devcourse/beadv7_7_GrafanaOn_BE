@@ -7,17 +7,25 @@ spring:
 server:
   port: 8082
 
-cart:
-  client:
-    base-url: ${CART_CLIENT_BASE_URL:${order.client.base-url}}
-
-order:
-  client:
-    base-url: ${ORDER_CLIENT_BASE_URL}
-
 member:
   client:
-    base-url: ${MEMBER_CLIENT_BASE_URL:${order.client.base-url}}
+    base-url: ${MEMBER_CLIENT_BASE_URL}
+
+product:
+  client:
+    base-url: ${PRODUCT_CLIENT_BASE_URL}
+
+offer:
+  client:
+    base-url: ${OFFER_CLIENT_BASE_URL}
+
+wallet:
+  client:
+    base-url: ${WALLET_CLIENT_BASE_URL}
+
+cart:
+  client:
+    base-url: ${CART_CLIENT_BASE_URL}
 
 secret:
   aws:
@@ -27,3 +35,7 @@ secret:
     credentials:
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}
+
+toss:
+  base-url: ${TOSS_BASE_URL:https://api.tosspayments.com}
+  secret-key: ${TOSS_SECRET_KEY:}

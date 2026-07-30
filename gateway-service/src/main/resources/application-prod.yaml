@@ -1,3 +1,4 @@
+# 운영 관리 포트의 Blue/Green 동적 라우팅 설정
 spring:
   cloud:
     gateway:

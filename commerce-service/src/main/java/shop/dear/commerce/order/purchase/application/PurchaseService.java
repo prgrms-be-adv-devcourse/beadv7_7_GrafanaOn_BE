@@ -10,11 +10,12 @@ import shop.dear.commerce.order.purchase.application.port.PurchaseEventPublisher
 import shop.dear.commerce.order.purchase.application.port.dto.ProductInfo;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.commerce.order.purchase.domain.repository.PurchaseRepository;
+import shop.dear.common.event.financial.PaymentRequestedEvent;
 import shop.dear.common.event.order.FinishedOrderEvent;
 import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -60,8 +61,8 @@ public class PurchaseService {
         validateMemberExists(command.buyerId());
 
         final ProductInfo product = productPort.getProduct(command.productId());
-        final OffsetDateTime paymentDueAt =
-                OffsetDateTime.now().plusMinutes(PAYMENT_DUE_MINUTES);
+        final LocalDateTime paymentDueAt =
+                LocalDateTime.now().plusMinutes(PAYMENT_DUE_MINUTES);
 
         final Purchase purchase = Purchase.create(
                 command.buyerId(),
@@ -72,7 +73,16 @@ public class PurchaseService {
                 paymentDueAt
         );
 
-        return purchaseRepository.save(purchase);
+        final Purchase savedPurchase = purchaseRepository.save(purchase);
+
+        purchaseEventPublisher.publish(new PaymentRequestedEvent(
+                savedPurchase.getId(),
+                OrderType.PURCHASE,
+                savedPurchase.getBuyerId(),
+                savedPurchase.getAmount()
+        ));
+
+        return savedPurchase;
     }
 
     @Transactional

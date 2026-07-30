@@ -224,8 +224,8 @@ class ProductServiceTest {
 
         //Then
         final List<Product> products = productRepository.findAll();
-        assertThat(products.size()).isEqualTo(1);
-        assertThat(products.get(0).isDeleted()).isEqualTo(true);
+
+        assertThat(products).isEmpty();
     }
 
     @DisplayName("유효한 값(sellerId)이 들어오면 해당 사용자가 등록한 판매 예정 및 판매중인 상품이 존재하는지 여부를 반환한다.")
@@ -287,7 +287,7 @@ class ProductServiceTest {
     @Test
     void givenMemberIdAndProductId_whenGetProductDetail_thenReturnProductDetail() {
         //Given
-        final Long memberId = 1L;
+        final Long memberId = 2L;
 
         final Long sellerId = 2L;
         final String name = "Dear Sneakers";
@@ -451,5 +451,28 @@ class ProductServiceTest {
         //Then
         assertThat(info.count()).isEqualTo(1);
         assertThat(updatedProduct.getStatus().toString()).isEqualTo("ON_SALE");
+    }
+
+    @DisplayName("판매 완료된 상품의 상태를 변경한다.")
+    @Test
+    void givenProductId_whenCompleteProductSale_thenChangeProductStatus() {
+        //Given
+        final Long member1 = 1L;
+        final Product product1 = createProduct(member1);
+        product1.changeStatusToOnSale();
+        final Product savedProduct1 = productRepository.save(product1);
+
+        final Long member2 = 1L;
+        final Product product2 = createProduct(member2);
+        product2.changeStatusToSoldOut();
+        final Product savedProduct2 = productRepository.save(product2);
+
+        //When
+        productService.completeProductSale(product1.getId());
+        productService.completeProductSale(product2.getId());
+
+        //Then
+        assertThat(savedProduct1.getStatus()).isEqualTo(ProductStatus.SOLD_OUT);
+        assertThat(savedProduct2.getStatus()).isEqualTo(ProductStatus.SOLD_OUT);
     }
 }

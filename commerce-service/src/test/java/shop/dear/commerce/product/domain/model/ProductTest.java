@@ -542,36 +542,44 @@ class ProductTest {
         assertThat(product.getStatus()).isEqualTo(ProductStatus.ON_SALE);
     }
 
-    @DisplayName("상품 상태가 ON_SALE 또는 SOLD_OUT이면 isVisible은 true를 반환한다.")
+    @DisplayName("판매자가 아닌 사용자가 아직 판매전인 상품의 상세 정보를 조회할 때 false를 반환한다.")
     @Test
     void givenOnSaleOrSoldOutStatus_whenCheckIsVisible_thenReturnTrue() {
         // Given
-        final Product onSaleProduct = createProduct();
+        final Long memberId = 2L;
+
+        final Product preparingProduct = createProduct();  // sellerId = 1
+
+        final Product onSaleProduct = createProduct();  // sellerId = 1
         onSaleProduct.changeStatusToOnSale();
 
-        final Product soldOutProduct = createProduct();
-        soldOutProduct.changeStatusToSoldOut();
+        // When
+        final boolean onSaleVisible = preparingProduct.validateVisible(memberId);
+        final boolean soldOutVisible = onSaleProduct.validateVisible(memberId);
+
+        // Then
+        assertThat(onSaleVisible).isFalse();
+        assertThat(soldOutVisible).isTrue();
+    }
+
+    @DisplayName("판매자인 사용자가 아직 판매전인 상품의 상세 정보를 조회할 때 true를 반환한다.")
+    @Test
+    void givenNotVisibleStatus_whenCheckIsVisible_thenReturnFalse() {
+        // Given
+        final Long memberId = 1L;
+
+        final Product preparingProduct = createProduct();  // sellerId = 1
+
+        final Product onSaleProduct = createProduct();  // sellerId = 1
+        onSaleProduct.changeStatusToOnSale();
 
         // When
-        final boolean onSaleVisible = onSaleProduct.isVisible();
-        final boolean soldOutVisible = soldOutProduct.isVisible();
+        final boolean onSaleVisible = preparingProduct.validateVisible(memberId);
+        final boolean soldOutVisible = onSaleProduct.validateVisible(memberId);
 
         // Then
         assertThat(onSaleVisible).isTrue();
         assertThat(soldOutVisible).isTrue();
-    }
-
-    @DisplayName("상품 상태가 ON_SALE 또는 SOLD_OUT이 아니면 isVisible은 false를 반환한다.")
-    @Test
-    void givenNotVisibleStatus_whenCheckIsVisible_thenReturnFalse() {
-        // Given
-        final Product hiddenProduct = createProduct();
-
-        // When
-        final boolean isVisible = hiddenProduct.isVisible();
-
-        // Then
-        assertThat(isVisible).isFalse();
     }
 
     @DisplayName("상품 삭제 시 삭제되는 시점의 시간을 저장한다.")

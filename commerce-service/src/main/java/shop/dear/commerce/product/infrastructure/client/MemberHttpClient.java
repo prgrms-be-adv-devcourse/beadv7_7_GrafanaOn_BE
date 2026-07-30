@@ -1,7 +1,7 @@
 package shop.dear.commerce.product.infrastructure.client;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -15,17 +15,20 @@ import shop.dear.commerce.product.infrastructure.client.dto.MemberProfileApiData
 import shop.dear.common.response.ApiResponse;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component("productMemberHttpClient")
 public class MemberHttpClient implements MemberPort {
 
-    private final RestClient productRestClient;
+    private final RestClient memberRestClient;
+
+    public MemberHttpClient(@Qualifier("productMemberRestClient") final RestClient memberRestClient) {
+        this.memberRestClient = memberRestClient;
+    }
 
     @Override
     public ExistsMember existsMember(final Long memberId) {
         log.info("[MemberHttpClient] member - 사용자 검증 요청. memberId={}", memberId);
 
-        final ApiResponse<ExistsMemberApiData> body = productRestClient.get()
+        final ApiResponse<ExistsMemberApiData> body = memberRestClient.get()
             .uri("/internal/members")
             .retrieve()
             .body(new ParameterizedTypeReference<>() {
@@ -42,7 +45,7 @@ public class MemberHttpClient implements MemberPort {
     public MemberProfile getMemberProfile(final Long memberId) {
         log.info("[MemberHttpClient] member - 프로필 조회 요청. memberId={}", memberId);
 
-        final ApiResponse<MemberProfileApiData> body = productRestClient.get()
+        final ApiResponse<MemberProfileApiData> body = memberRestClient.get()
             .uri("/api/members/profile?memberId=" + memberId)
             .retrieve()
             .body(new ParameterizedTypeReference<>() {
@@ -65,7 +68,7 @@ public class MemberHttpClient implements MemberPort {
     public IsSeller isSeller(final Long memberId) {
         log.info("[MemberHttpClient] member - 판매자 등록 여부 조회 요청. memberId={}", memberId);
 
-        final ApiResponse<IsSellerApiData> body = productRestClient.get()
+        final ApiResponse<IsSellerApiData> body = memberRestClient.get()
             .uri("/internal/members/seller")
             .retrieve()
             .body(new ParameterizedTypeReference<>() {

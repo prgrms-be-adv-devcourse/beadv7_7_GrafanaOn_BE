@@ -1,7 +1,7 @@
 package shop.dear.commerce.product.infrastructure.client;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -11,17 +11,20 @@ import shop.dear.commerce.product.infrastructure.client.dto.ExistsOfferApiData;
 import shop.dear.common.response.ApiResponse;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
 public class OfferHttpClient implements OfferPort {
 
-    private final RestClient productRestClient;
+    private final RestClient offerRestClient;
+
+    public OfferHttpClient(@Qualifier("productOfferRestClient") final RestClient offerRestClient) {
+        this.offerRestClient = offerRestClient;
+    }
 
     @Override
     public ExistsOffer existsOffer(final Long productId) {
         log.info("[OfferHttpClient] offer - 오퍼 존재 여부 조회 요청. productId={}", productId);
 
-        final ApiResponse<ExistsOfferApiData> body = productRestClient.get()
+        final ApiResponse<ExistsOfferApiData> body = offerRestClient.get()
             .uri("/internal/offers/{productId}/status", productId)
             .retrieve()
             .body(new ParameterizedTypeReference<>() {

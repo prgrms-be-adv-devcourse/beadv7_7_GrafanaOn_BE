@@ -9,6 +9,7 @@ import org.springframework.web.client.RestClient;
 import shop.dear.commerce.order.purchase.application.port.ProductPort;
 import shop.dear.commerce.order.purchase.application.port.dto.ProductInfo;
 import shop.dear.commerce.order.purchase.infrastructure.client.dto.ProductApiData;
+import shop.dear.commerce.order.purchase.infrastructure.client.dto.ProductImageData;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.common.response.ApiResponse;
 
@@ -22,7 +23,7 @@ public class ProductHttpClient implements ProductPort {
 
   private final RestClient restClient;
 
-  public ProductHttpClient(@Qualifier("purchaseRestClient") final RestClient restClient) {
+  public ProductHttpClient(@Qualifier("productRestClient") final RestClient restClient) {
     this.restClient = restClient;
   }
 
@@ -58,7 +59,9 @@ public class ProductHttpClient implements ProductPort {
   private ProductInfo toProductInfo(final ProductApiData data) {
     return new ProductInfo(
             data.sellerId(),
-            data.images(),
+            data.images().stream()
+                    .map(ProductImageData::imageUrl)
+                    .toList(),
             data.name(),
             data.brand(),
             data.price(),

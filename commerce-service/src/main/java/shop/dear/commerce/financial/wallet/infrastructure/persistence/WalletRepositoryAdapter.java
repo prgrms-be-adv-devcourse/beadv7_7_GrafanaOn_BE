@@ -15,6 +15,11 @@ public class WalletRepositoryAdapter implements WalletRepository {
     private final WalletJpaRepository walletJpaRepository;
 
     @Override
+    public Optional<Wallet> findById(final Long walletId) {
+        return walletJpaRepository.findById(walletId);
+    }
+
+    @Override
     public Optional<Wallet> findByMemberId(final Long memberId) {
         return walletJpaRepository.findByMemberId(memberId);
     }

@@ -9,6 +9,7 @@ import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -176,13 +177,14 @@ public class PaymentTest {
         Payment payment = Payment.createTopUp(memberId, amount);
 
         // when
-        payment.preparePgPayment();
+        payment.preparePgPayment("TOPUP_test-order-001");
 
         // then
         PGPayment pgPayment = payment.getPgPayment();
         assertNotNull(pgPayment);
         assertSame(payment, pgPayment.getPayment());
         assertEquals(PGPaymentStatus.READY, pgPayment.getState());
+        assertEquals("TOPUP_test-order-001", pgPayment.getMerchantOrderId());
         assertNull(pgPayment.getTransactionKey());
         assertNull(pgPayment.getApprovedAmount());
     }
@@ -200,7 +202,7 @@ public class PaymentTest {
         // when
         BusinessException exception = assertThrows(
                 BusinessException.class,
-                payment::preparePgPayment
+                () -> payment.preparePgPayment("TOPUP_test-order-001")
         );
 
         // then
@@ -218,12 +220,12 @@ public class PaymentTest {
                 1L,
                 new BigDecimal("10000.00")
         );
-        payment.preparePgPayment();
+        payment.preparePgPayment("TOPUP_test-order-001");
 
         // when
         BusinessException exception = assertThrows(
                 BusinessException.class,
-                payment::preparePgPayment
+                () -> payment.preparePgPayment("TOPUP_test-order-001")
         );
 
         // then
@@ -248,6 +250,7 @@ public class PaymentTest {
 
         // then
         assertEquals(PaymentStatus.PAID, payment.getState());
+        assertNotNull(payment.getPaidAt());
     }
 
     @Test
@@ -260,6 +263,7 @@ public class PaymentTest {
                 new BigDecimal("10000.00")
         );
         payment.complete();
+        final OffsetDateTime paidAt = payment.getPaidAt();
 
         // when
         BusinessException exception = assertThrows(
@@ -272,6 +276,7 @@ public class PaymentTest {
                 PaymentErrorCode.INVALID_PAYMENT_STATUS_TRANSITION,
                 exception.getErrorCode()
         );
+        assertEquals(paidAt, payment.getPaidAt());
     }
 
     @Test

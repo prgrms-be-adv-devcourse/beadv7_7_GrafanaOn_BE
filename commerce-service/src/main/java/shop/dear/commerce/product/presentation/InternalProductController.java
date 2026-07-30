@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,7 +39,7 @@ public class InternalProductController {
         return ResponseEntity.ok(successWithData(response));
     }
 
-    @GetMapping("/me/scraps")
+    @PostMapping("/me/scraps")
     public ResponseEntity<ApiResponse<List<GetScrapProductResponse>>> getScrapProducts(@AuthUser final Long memberId, @RequestBody final GetScrapProductsRequest request) {
         final GetScrapProductCommand command = request.toCommand();
         final List<ScrapProductInfoDto> result = productService.getScrapProducts(memberId, command);

@@ -107,7 +107,6 @@ public class Offer extends BaseEntity {
 
     public void accept() {
         validateOfferStatus(OfferStatus.PENDING);
-        validatePaymentStatus(PaymentStatus.PAID);
         this.status = OfferStatus.ACCEPTED;
     }
 
@@ -123,6 +122,9 @@ public class Offer extends BaseEntity {
         }
     }
 
+    // 만약 “수락 취소 후 거절”을 허용하고 싶다면 reject()가 ACCEPTED도 허용하도록 바꿔야 함
+    // 그러나 허용을 하면 FinishedOrderEvent 이벤트를 취소/보상(Saga, Cancel 이벤트 등) 처리해야 함
+    // 현재는 수락 취소 후 거절을 허용하지 않도록
     public void reject() {
         validateOfferStatus(OfferStatus.PENDING);
         this.status = OfferStatus.REJECTED;
@@ -141,6 +143,13 @@ public class Offer extends BaseEntity {
     public void markPaymentFailed() {
         validatePaymentStatus(PaymentStatus.PAYMENT_PENDING);
         this.paymentStatus = PaymentStatus.PAYMENT_FAILED;
+    }
+
+    public void markProductDeleted() {
+        if (this.status != OfferStatus.PENDING && this.status != OfferStatus.ACCEPTED) {
+            throw new BusinessException(OfferErrorCode.INVALID_OFFER_STATUS_TRANSITION);
+        }
+        this.status = OfferStatus.PRODUCT_DELETED;
     }
 
     public boolean isSeller(final Long memberId) {
