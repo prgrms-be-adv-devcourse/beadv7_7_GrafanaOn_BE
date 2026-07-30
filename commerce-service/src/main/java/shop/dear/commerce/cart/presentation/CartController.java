@@ -1,7 +1,6 @@
 package shop.dear.commerce.cart.presentation;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import shop.dear.commerce.cart.application.CartService;
 import shop.dear.commerce.cart.application.dto.GetAllCartItemProductResponse;
-import shop.dear.commerce.cart.infrastructure.event.CartItemAddRequestedEvent;
 import shop.dear.commerce.cart.presentation.dto.request.AddCartItemRequest;
 import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
@@ -30,7 +28,6 @@ import static shop.dear.common.response.ApiResponse.successWithData;
 public class CartController {
 
     private final CartService cartService;
-    private final ApplicationEventPublisher eventPublisher;
 
     @GetMapping
     public ResponseEntity<ApiResponse<GetAllCartItemProductResponse>> findAllCartItems(
@@ -62,7 +59,7 @@ public class CartController {
             @AuthUser final Long memberId,
             @RequestBody final AddCartItemRequest request
     ) {
-        eventPublisher.publishEvent(new CartItemAddRequestedEvent(memberId, request.productId()));
+        cartService.addCartItem(memberId, request.productId());
         return ResponseEntity.ok(success());
     }
 
