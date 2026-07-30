@@ -3,7 +3,9 @@ package shop.dear.identity.member.application;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import shop.dear.common.event.member.MemberCreatedEvent;
 import shop.dear.common.exception.BusinessException;
+import shop.dear.identity.auth.authentication.application.port.MemberEventPublisher;
 import shop.dear.identity.member.application.dto.CreateProfileCommand;
 import shop.dear.identity.member.application.dto.MemberInfo;
 import shop.dear.identity.member.application.dto.RegisterSellerCommand;
@@ -27,6 +29,7 @@ public class MemberService  {
     private final MemberRepository memberRepository;
     private final ProductPort productPort;
     private final Encryptor encryptor;
+    private final MemberEventPublisher eventPublisher;
 
     @Transactional
     public MemberInfo createProfile(final CreateProfileCommand command) {
@@ -39,7 +42,13 @@ public class MemberService  {
             command.phoneNumber(),
             nickname);
 
-        return MemberInfo.from(memberRepository.save(member));
+        Member savedMember = memberRepository.save(member);
+
+        eventPublisher.publish(new MemberCreatedEvent(
+            savedMember.getId()
+        ));
+
+        return MemberInfo.from(memberRepository.save(savedMember));
     }
 
     public MemberInfo getProfile(final Long memberId){
