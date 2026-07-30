@@ -30,7 +30,7 @@ public class CartService {
     private final CartItemRepository cartItemRepository;
     private final CartProductPort cartProductPort;
 
-    public GetAllCartItemProductResponse getCartItems(Long memberId) {
+    public GetAllCartItemProductResponse getCartItems(final Long memberId) {
         Cart cart = cartRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new BusinessException(CartErrorCode.CART_NOT_FOUND));
 
@@ -65,14 +65,14 @@ public class CartService {
         return GetAllCartItemProductResponse.of(cart.getId(), allCartItems);
     }
     @Transactional
-    public void deleteAllCartItems(Long memberId) {
+    public void deleteAllCartItems(final Long memberId) {
         Cart cart = cartRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new BusinessException(CartErrorCode.CART_NOT_FOUND));
         cartItemRepository.deleteByCartId(cart.getId());
     }
 
     @Transactional
-    public void deleteSelectedCartItemsByUser(Long memberId,List<Long> productIds) {
+    public void deleteSelectedCartItemsByUser(final Long memberId,final List<Long> productIds) {
         if(productIds == null || productIds.isEmpty()) {
             throw new BusinessException(CartErrorCode.INVALID_DELETE_REQUEST);
         }
@@ -82,7 +82,7 @@ public class CartService {
     }
 
     @Transactional
-    public void removeProductOnOrderFinished(FinishedOrderEvent event) {{
+    public void removeProductOnOrderFinished(final FinishedOrderEvent event) {
         if(event.orderType() != OrderType.PURCHASE) {
             return;
         }
@@ -91,6 +91,6 @@ public class CartService {
                         cart.getId(),
                         event.productId()
                 ));
-    }}
+    }
 
 }

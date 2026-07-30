@@ -7,7 +7,7 @@ import shop.dear.common.audit.BaseEntity;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "cart")
+@Table
 @Getter
 @Builder
 public class Cart extends BaseEntity {

@@ -26,10 +26,6 @@ public class CartItem extends BaseEntity {
     private Long productId;
 
     @Builder.Default
-    @Column(name = "quantity", nullable = false)
-    private int quantity = 0;
-
-    @Builder.Default
     @Column(name = "cart_item_status", nullable = false)
     private CartItemStatus status = CartItemStatus.BEFORE_PAYMENT;
 
@@ -37,27 +33,7 @@ public class CartItem extends BaseEntity {
         return CartItem.builder()
                 .cartId(cartId)
                 .productId(proudctId)
-                .quantity(quantity)
                 .build();
-    }
-
-    public void increaseQuantity(int amount) {
-        this.quantity += amount;
-    }
-
-    public void markPaymentCompleted() {
-        this.status = CartItemStatus.PAYMENT_COMPLETED;
-    }
-
-    public void markPaymentBefore() {
-        this.status = CartItemStatus.BEFORE_PAYMENT;
-    }
-
-    public void chageQuantity(int quantity) {
-        if(quantity <= 0) {
-            throw new BusinessException(CartErrorCode.MIN_QUANTITY_REQUIRED);
-        }
-        this.quantity = quantity;
     }
 
 }
