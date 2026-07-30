@@ -8,6 +8,7 @@ import org.springframework.web.client.RestClient;
 import shop.dear.commerce.financial.settlement.application.dto.WalletInfo;
 import shop.dear.commerce.financial.settlement.application.port.WalletPort;
 import shop.dear.commerce.financial.settlement.infrastructure.client.dto.WalletApiResponse;
+import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
 
 @Slf4j
@@ -22,6 +23,7 @@ public class WalletApiClient implements WalletPort {
 
 		ApiResponse<WalletApiResponse> body = walletRestClient.get()
 			.uri("/internal/deposits")
+			.header(AuthUser.MEMBER_ID_HEADER, memberId.toString())
 			.retrieve()
 			.body(new ParameterizedTypeReference<>() {
 			});
