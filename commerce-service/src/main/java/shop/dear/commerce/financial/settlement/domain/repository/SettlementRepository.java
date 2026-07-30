@@ -22,5 +22,8 @@ public interface SettlementRepository {
 		SettlementStatus status
 	);
 
+
+	Settlement save(final Settlement settlement);
+
 	List<Settlement> saveAll(List<Settlement> settlements);
 }
