@@ -28,7 +28,7 @@ import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -584,9 +584,23 @@ class OfferServiceTest {
             // given
             final OfferSnapshot snapshot = createSnapshot(1L, 2L, 10L, new BigDecimal("10000"));
             final CreateOfferCommand command = new CreateOfferCommand(999L, 1L, "title", "story", "delivery");
+            final ProductInfo productInfo = new ProductInfo(
+                    2L,
+                    List.of(),
+                    "상품명",
+                    "브랜드",
+                    new BigDecimal("10000"),
+                    "MDL-001",
+                    "카테고리",
+                    LocalDate.now(),
+                    0L,
+                    "설명",
+                    LocalDateTime.now()
+            );
 
             stubMemberExists(999L);
             given(offerSnapshotRepository.findById(1L)).willReturn(Optional.of(snapshot));
+            given(productPort.getProduct(anyLong())).willReturn(productInfo);
             given(offerRepository.save(any()))
                     .willAnswer(invocation -> invocation.getArgument(0));
 
@@ -596,8 +610,8 @@ class OfferServiceTest {
 
             verifyMemberExists(999L);
             verify(offerSnapshotRepository).findById(1L);
+            verify(productPort).getProduct(anyLong());
             verify(offerRepository).save(any());
-            verify(productPort, never()).getProduct(anyLong());
         }
 
         @Test
@@ -621,11 +635,9 @@ class OfferServiceTest {
                             LocalDate.of(2026, 1, 1),
                             0L,
                             "상품 설명",
-                            OffsetDateTime.now()
+                            LocalDateTime.now()
                     )
             );
-            given(offerRepository.save(any()))
-                    .willAnswer(invocation -> invocation.getArgument(0));
 
             // when & then
             assertThatThrownBy(() -> offerService.createOffer(command))
@@ -634,7 +646,7 @@ class OfferServiceTest {
             verifyMemberExists(1L);
             verify(offerSnapshotRepository).findById(1L);
             verify(productPort).getProduct(10L);
-            verify(offerRepository).save(any());
+            verify(offerRepository, never()).save(any());
         }
     }
 
@@ -661,7 +673,7 @@ class OfferServiceTest {
                 LocalDate.of(2026, 1, 1),
                 0L,
                 "상품 설명",
-                OffsetDateTime.now()
+                LocalDateTime.now()
         );
     }
 

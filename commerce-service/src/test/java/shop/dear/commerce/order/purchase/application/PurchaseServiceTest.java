@@ -24,7 +24,7 @@ import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -131,7 +131,7 @@ class PurchaseServiceTest {
                     LocalDate.of(2026, 1, 1),
                     0L,
                     "상품 설명",
-                    OffsetDateTime.now()
+                    LocalDateTime.now()
             );
         }
 

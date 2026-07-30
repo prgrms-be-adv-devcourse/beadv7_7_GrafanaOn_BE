@@ -13,7 +13,7 @@ import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.common.auth.AuthUser;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -48,7 +48,7 @@ class PurchaseControllerTest {
                 10L,
                 new BigDecimal("10000"),
                 "서울시 강남구",
-                OffsetDateTime.now().plusMinutes(5)
+                LocalDateTime.now()
         );
         given(purchaseService.createPurchase(any())).willReturn(purchase);
 
@@ -145,7 +145,7 @@ class PurchaseControllerTest {
                 10L,
                 new BigDecimal("10000"),
                 "서울시 강남구",
-                OffsetDateTime.now().plusMinutes(5)
+                LocalDateTime.now().plusMinutes(5)
         );
         final Purchase purchase2 = Purchase.create(
                 1L,
@@ -153,7 +153,7 @@ class PurchaseControllerTest {
                 11L,
                 new BigDecimal("20000"),
                 "서울시 서초구",
-                OffsetDateTime.now().plusMinutes(5)
+                LocalDateTime.now().plusMinutes(5)
         );
         given(purchaseService.getPurchasesByBuyerId(1L)).willReturn(List.of(purchase1, purchase2));
 
@@ -179,7 +179,7 @@ class PurchaseControllerTest {
                 10L,
                 new BigDecimal("10000"),
                 "서울시 강남구",
-                OffsetDateTime.now().plusMinutes(5)
+                LocalDateTime.now().plusMinutes(5)
         );
         given(purchaseService.getPurchase(1L, 1L)).willReturn(purchase);
 
