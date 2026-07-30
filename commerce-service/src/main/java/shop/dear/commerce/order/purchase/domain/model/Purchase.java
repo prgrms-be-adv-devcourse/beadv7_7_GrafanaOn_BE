@@ -11,7 +11,7 @@ import shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
@@ -47,13 +47,13 @@ public class Purchase extends BaseEntity {
     private PurchaseStatus status;
 
     @Column(name = "purchased_at", nullable = false)
-    private OffsetDateTime purchasedAt;
+    private LocalDateTime purchasedAt;
 
     @Column(name = "payment_due_at")
-    private OffsetDateTime paymentDueAt;
+    private LocalDateTime paymentDueAt;
 
     @Column(name = "paid_at")
-    private OffsetDateTime paidAt;
+    private LocalDateTime paidAt;
 
     @Column(nullable = false, length = 255)
     private String delivery;
@@ -64,7 +64,7 @@ public class Purchase extends BaseEntity {
         final Long productId,
         final BigDecimal amount,
         final String delivery,
-        final OffsetDateTime paymentDueAt
+        final LocalDateTime paymentDueAt
     ) {
         this.number = generateNumber(sellerId);
         this.buyerId = buyerId;
@@ -74,7 +74,7 @@ public class Purchase extends BaseEntity {
         this.delivery = delivery;
         this.paymentDueAt = paymentDueAt;
         this.status = PurchaseStatus.PENDING_PAYMENT;
-        this.purchasedAt = OffsetDateTime.now();
+        this.purchasedAt = LocalDateTime.now();
     }
 
     public static Purchase create(
@@ -83,7 +83,7 @@ public class Purchase extends BaseEntity {
         final Long productId,
         final BigDecimal amount,
         final String delivery,
-        final OffsetDateTime paymentDueAt
+        final LocalDateTime paymentDueAt
     ) {
         return new Purchase(buyerId, sellerId, productId, amount, delivery, paymentDueAt);
     }
@@ -99,7 +99,7 @@ public class Purchase extends BaseEntity {
     public void pay() {
         validateStatus(PurchaseStatus.PENDING_PAYMENT);
         this.status = PurchaseStatus.PAID;
-        this.paidAt = OffsetDateTime.now();
+        this.paidAt = LocalDateTime.now();
     }
 
     private void validateStatus(final PurchaseStatus... expected) {
