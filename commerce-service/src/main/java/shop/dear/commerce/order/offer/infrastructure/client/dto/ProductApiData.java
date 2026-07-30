@@ -2,12 +2,12 @@ package shop.dear.commerce.order.offer.infrastructure.client.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record ProductApiData(
         Long sellerId,
-        List<String> images,
+        List<ProductImageData> images,
         String name,
         String brand,
         BigDecimal price,
@@ -16,6 +16,6 @@ public record ProductApiData(
         LocalDate releaseDate,
         Long viewCount,
         String description,
-        OffsetDateTime insertedAt
+        LocalDateTime insertedAt
 ) {
 }
