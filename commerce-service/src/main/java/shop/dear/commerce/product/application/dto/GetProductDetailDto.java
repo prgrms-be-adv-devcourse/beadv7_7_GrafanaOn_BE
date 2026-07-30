@@ -32,7 +32,7 @@ public record GetProductDetailDto(
             .map(img -> new GetProductDetailDto.ImageInfo(
                 img.getSortOrder(),
                 img.getUrl(),
-                img.getStory().getContent()
+                img.getStory() != null ? img.getStory().getContent() : null
             ))
             .toList();
 
