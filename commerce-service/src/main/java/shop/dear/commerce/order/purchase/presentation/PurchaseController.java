@@ -70,13 +70,4 @@ public class PurchaseController {
         purchaseService.cancelPurchase(purchaseId, buyerId);
         return ResponseEntity.ok(success());
     }
-
-    @PostMapping("/{purchaseId}/confirm")
-    public ResponseEntity<ApiResponse<Void>> confirmPurchase(
-            @Positive @PathVariable final Long purchaseId,
-            @AuthUser final Long memberId
-    ) {
-        purchaseService.confirmPurchase(purchaseId, memberId);
-        return ResponseEntity.ok(success());
-    }
 }

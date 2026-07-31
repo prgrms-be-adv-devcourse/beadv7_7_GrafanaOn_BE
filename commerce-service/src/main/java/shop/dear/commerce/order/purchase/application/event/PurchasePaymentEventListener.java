@@ -6,10 +6,12 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import shop.dear.commerce.order.purchase.application.port.PurchaseEventPublisher;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.commerce.order.purchase.domain.repository.PurchaseRepository;
 import shop.dear.common.event.financial.PaymentCompletedEvent;
 import shop.dear.common.event.financial.PaymentFailedEvent;
+import shop.dear.common.event.order.FinishedOrderEvent;
 import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
 
@@ -20,6 +22,7 @@ import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCo
 public class PurchasePaymentEventListener {
 
     private final PurchaseRepository purchaseRepository;
+    private final PurchaseEventPublisher purchaseEventPublisher;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -27,8 +30,20 @@ public class PurchasePaymentEventListener {
         if (event.orderType() != OrderType.PURCHASE) {
             return;
         }
+        Purchase purchase = findPurchase(event.orderId());
 
-        findPurchase(event.orderId()).pay();
+        purchase.pay();
+
+        purchaseEventPublisher.publish(
+                new FinishedOrderEvent(
+                        purchase.getId(),
+                        purchase.getBuyerId(),
+                        purchase.getSellerId(),
+                        purchase.getProductId(),
+                        purchase.getAmount(),
+                        OrderType.PURCHASE
+                )
+        );
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
