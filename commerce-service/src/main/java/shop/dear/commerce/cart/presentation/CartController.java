@@ -29,6 +29,15 @@ public class CartController {
 
     private final CartService cartService;
 
+    @PostMapping("/items")
+    public ResponseEntity<ApiResponse<Void>> addCartItem(
+            @AuthUser final Long memberId,
+            @RequestBody final AddCartItemRequest request
+    ) {
+        cartService.addCartItem(memberId, request.productId());
+        return ResponseEntity.ok(success());
+    }
+
     @GetMapping
     public ResponseEntity<ApiResponse<GetAllCartItemProductResponse>> findAllCartItems(
             @AuthUser final Long memberId
@@ -51,15 +60,6 @@ public class CartController {
             @RequestParam final List<Long> productIds
     ) {
         cartService.deleteSelectedCartItemsByUser(memberId, productIds);
-        return ResponseEntity.ok(success());
-    }
-
-    @PostMapping("/items")
-    public ResponseEntity<ApiResponse<Void>> addCartItem(
-            @AuthUser final Long memberId,
-            @RequestBody final AddCartItemRequest request
-    ) {
-        cartService.addCartItem(memberId, request.productId());
         return ResponseEntity.ok(success());
     }
 

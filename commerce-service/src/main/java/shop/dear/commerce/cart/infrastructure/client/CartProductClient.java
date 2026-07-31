@@ -9,40 +9,32 @@ import org.springframework.web.client.RestClient;
 import shop.dear.commerce.cart.application.port.CartProductPort;
 import shop.dear.commerce.cart.application.port.dto.CartProductInfo;
 import shop.dear.commerce.cart.domain.exception.CartErrorCode;
-import shop.dear.commerce.cart.infrastructure.client.dto.CartProductApiData;
+import shop.dear.commerce.order.offer.infrastructure.client.dto.ProductApiData;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.common.response.ApiResponse;
 
 import java.util.List;
 
-@Component
+@Component("cartProductClient")
 public class CartProductClient implements CartProductPort {
 
     private static final String PRODUCT_URI = "/internal/products/{productId}";
 
     private final RestClient restClient;
 
-    public CartProductClient(@Qualifier("cartRestClient") final RestClient restClient) {
+    public CartProductClient(@Qualifier("cartProductRestClient") final RestClient restClient) {
         this.restClient = restClient;
     }
 
     @Override
     public CartProductInfo getProduct(final Long productId) {
-        final CartProductApiData data = requestProduct(productId);
-        return toCartProductInfo(productId, data);
+        final ProductApiData data = requestProduct(productId);
+        return  CartProductInfo.create(data,productId);
     }
 
-    @Override
-    public List<CartProductInfo> getProducts(final List<Long> productIds) {
-        return  productIds.stream()
-                .map(this::getProduct)
-                .toList();
-        //TODO: product 벌크 조회API
-    }
-
-    private CartProductApiData requestProduct(final Long productId) {
+    private ProductApiData requestProduct(final Long productId) {
         try {
-            final ApiResponse<CartProductApiData> response = restClient.get()
+            final ApiResponse<ProductApiData> response = restClient.get()
                     .uri(PRODUCT_URI, productId)
                     .retrieve()
                     .onStatus(status -> status.value() == 404, (request, responseSpec) -> {
@@ -51,7 +43,7 @@ public class CartProductClient implements CartProductPort {
                     .onStatus(HttpStatusCode::isError, (request, responseSpec) -> {
                         throw new BusinessException(CartErrorCode.PRODUCT_LOOKUP_FAILED);
                     })
-                    .body(new ParameterizedTypeReference<ApiResponse<CartProductApiData>>() {
+                    .body(new ParameterizedTypeReference<ApiResponse<ProductApiData>>() {
                     });
             if(response == null || response.getData() == null) {
                 throw new BusinessException(CartErrorCode.PRODUCT_LOOKUP_FAILED);
@@ -62,20 +54,12 @@ public class CartProductClient implements CartProductPort {
         }
     }
 
-    private CartProductInfo toCartProductInfo(final Long productId, final CartProductApiData data) {
-        return new CartProductInfo(
-                productId,
-                data.name(),
-                data.price(),
-                extractThumbnailUrl(data.images()),
-                data.status()
-        );
+    @Override
+    public List<CartProductInfo> getProducts(final List<Long> productIds) {
+        return  productIds.stream()
+                .map(this::getProduct)
+                .toList();
+        //TODO: product 벌크 조회API
     }
 
-    private String extractThumbnailUrl(final List<CartProductApiData.ImageInfo> images) {
-        if (images == null || images.isEmpty()) {
-            return null;
-        }
-        return images.get(0).url();
-    }
 }
