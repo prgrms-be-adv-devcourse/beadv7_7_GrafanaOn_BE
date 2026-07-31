@@ -113,29 +113,6 @@ class PurchaseControllerTest {
     }
 
     @Test
-    @DisplayName("즉시구매 확정에 성공하면 200을 반환한다")
-    void confirmPurchaseSuccess() throws Exception {
-        // when & then
-        mockMvc.perform(post("/api/purchases/1/confirm")
-                        .header(AuthUser.MEMBER_ID_HEADER, "1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value("success"));
-
-        verify(purchaseService).confirmPurchase(1L, 1L);
-    }
-
-    @Test
-    @DisplayName("구매 식별자가 양수가 아니면 400을 반환한다")
-    void rejectInvalidPurchaseIdForConfirm() throws Exception {
-        // when & then
-        mockMvc.perform(post("/api/purchases/0/confirm")
-                        .header(AuthUser.MEMBER_ID_HEADER, "1"))
-                .andExpect(status().isBadRequest());
-
-        verify(purchaseService, never()).confirmPurchase(anyLong(), anyLong());
-    }
-
-    @Test
     @DisplayName("내 즉시구매 목록 조회에 성공하면 200을 반환한다")
     void getPurchasesByMeSuccess() throws Exception {
         // given

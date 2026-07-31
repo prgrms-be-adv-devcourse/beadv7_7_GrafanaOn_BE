@@ -98,27 +98,4 @@ public class PurchaseService {
 
         purchase.cancel();
     }
-
-    @Transactional
-    public void confirmPurchase(final Long purchaseId, final Long memberId) {
-        validateMemberExists(memberId);
-
-        final Purchase purchase = purchaseRepository.findById(purchaseId)
-                .orElseThrow(() -> new BusinessException(PURCHASE_NOT_FOUND));
-
-        if (!Objects.equals(memberId, purchase.getBuyerId())) {
-            throw new BusinessException(PURCHASE_NOT_FOUND);
-        }
-
-        purchase.confirmPurchase();
-
-        purchaseEventPublisher.publish(new FinishedOrderEvent(
-                purchase.getId(),
-                purchase.getBuyerId(),
-                purchase.getSellerId(),
-                purchase.getProductId(),
-                purchase.getAmount(),
-                OrderType.PURCHASE
-        ));
-    }
 }
