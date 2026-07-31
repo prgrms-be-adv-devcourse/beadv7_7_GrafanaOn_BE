@@ -8,7 +8,15 @@ import shop.dear.common.audit.BaseEntity;
 import shop.dear.common.exception.BusinessException;
 
 @Entity
-@Table(name = "cart_item")
+@Table(
+        name = "cart_item",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_cart_item_cart_product",
+                        columnNames = {"cart_id", "product_id"}
+                )
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)

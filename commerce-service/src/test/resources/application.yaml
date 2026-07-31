@@ -27,6 +27,10 @@ offer:
   client:
     base-url: ${OFFER_CLIENT_BASE_URL:http://localhost:8082}
 
+wallet:
+  client:
+    base-url: ${WALLET_CLIENT_BASE_URL:http://localhost:8082}
+
 secret:
   aws:
     s3:

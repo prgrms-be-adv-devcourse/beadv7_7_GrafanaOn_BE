@@ -28,7 +28,7 @@ public class CartEventHandler {
     public void handle(final CartItemAddRequestedEvent event) {
         log.info("[CartEventHandler] 장바구니 추가 요청 수신: memberId={}, productId={}",
                 event.memberId(), event.productId());
-        cartService.addCartItem(event);
+        cartService.addCartItem(event.memberId(), event.productId());
     }
 
 }
