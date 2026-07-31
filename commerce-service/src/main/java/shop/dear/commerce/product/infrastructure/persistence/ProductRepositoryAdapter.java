@@ -2,6 +2,7 @@ package shop.dear.commerce.product.infrastructure.persistence;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import shop.dear.commerce.product.domain.constant.ProductCategory;
 import shop.dear.commerce.product.domain.constant.ProductSaleType;
 import shop.dear.commerce.product.domain.constant.ProductStatus;
 import shop.dear.commerce.product.domain.model.Product;
@@ -62,13 +63,14 @@ public class ProductRepositoryAdapter implements ProductRepository {
     }
 
     @Override
-    public List<Product> findAllBySaleTypeAndStatusAndCreatedAtAndDeletedAtIsNull(
+    public List<Product> findAllBySaleTypeAndStatusAndCreatedAtAndCategoryAndDeletedAtIsNull(
         final ProductSaleType saleType,
         final ProductStatus status,
         final LocalDateTime startDate,
-        final LocalDateTime endDate
-    ) {
-        return productRepository.findAllBySaleTypeAndStatusAndCreatedAtAndDeletedAtIsNull(saleType, status, startDate, endDate);
+        final LocalDateTime endDate,
+        final ProductCategory category
+        ) {
+        return productRepository.findAllBySaleTypeAndStatusAndCreatedAtAndCategoryAndDeletedAtIsNull(saleType, status, startDate, endDate, category);
     }
 
     @Override

@@ -19,6 +19,7 @@ import shop.dear.commerce.product.application.port.MemberPort;
 import shop.dear.commerce.product.application.port.OfferPort;
 import shop.dear.commerce.product.application.port.PresignedUrlGenerator;
 import shop.dear.commerce.product.application.port.ProductEventPublisher;
+import shop.dear.commerce.product.domain.constant.ProductCategory;
 import shop.dear.commerce.product.domain.constant.ProductSaleType;
 import shop.dear.commerce.product.domain.constant.ProductStatus;
 import shop.dear.commerce.product.domain.exception.ProductErrorCode;
@@ -275,7 +276,12 @@ public class ProductService {
             .toList();
     }
 
-    public List<GetProductDto> getAllProduct(final ProductSaleType saleType, final ProductStatus status, final LocalDate createdAt) {
+    public List<GetProductDto> getAllProduct(
+        final ProductSaleType saleType,
+        final ProductStatus status,
+        final LocalDate createdAt,
+        final ProductCategory category
+        ) {
         LocalDateTime startDate = null;
         LocalDateTime endDate = null;
 
@@ -284,7 +290,7 @@ public class ProductService {
             endDate = createdAt.atTime(LocalTime.MAX);
         }
 
-        final List<Product> products = productRepository.findAllBySaleTypeAndStatusAndCreatedAtAndDeletedAtIsNull(saleType, status, startDate, endDate);
+        final List<Product> products = productRepository.findAllBySaleTypeAndStatusAndCreatedAtAndCategoryAndDeletedAtIsNull(saleType, status, startDate, endDate, category);
 
         return products.stream()
             .map(GetProductDto::of)
