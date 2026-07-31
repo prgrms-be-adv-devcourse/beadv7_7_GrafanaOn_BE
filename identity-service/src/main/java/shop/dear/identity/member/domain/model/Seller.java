@@ -57,6 +57,12 @@ public class Seller extends BaseEntity {
         this.account = account;
     }
 
+    public void reRegister(final String bank, final String account) {
+        this.bank = bank;
+        this.account = account;
+        this.status = SellerStatus.ACTIVE;
+    }
+
     void withdrawing(){
         this.status = SellerStatus.WITHDRAWING;
     }

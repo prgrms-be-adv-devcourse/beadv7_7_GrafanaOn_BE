@@ -19,6 +19,7 @@ import shop.dear.commerce.product.application.dto.PresignedUrlInfoDto;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
 import shop.dear.commerce.product.application.dto.command.GeneratePresignedUrlsCommand;
 import shop.dear.commerce.product.application.dto.command.UpdateProductCommand;
+import shop.dear.commerce.product.domain.constant.ProductCategory;
 import shop.dear.commerce.product.domain.constant.ProductSaleType;
 import shop.dear.commerce.product.domain.constant.ProductStatus;
 import shop.dear.commerce.product.presentation.dto.request.CreateProductRequest;
@@ -102,9 +103,10 @@ public class ProductController {
     public ResponseEntity<ApiResponse<List<GetProductResponse>>> getAllProduct(
         @RequestParam(value = "saleType",required = false) final ProductSaleType saleType,
         @RequestParam(value = "status", required = false) final ProductStatus status,
-        @RequestParam(value = "createdAt", required = false) final LocalDate createdAt
+        @RequestParam(value = "createdAt", required = false) final LocalDate createdAt,
+        @RequestParam(value = "category", required = false) final ProductCategory category
     ) {
-        final List<GetProductDto> result = productService.getAllProduct(saleType, status, createdAt);
+        final List<GetProductDto> result = productService.getAllProduct(saleType, status, createdAt, category);
 
         final List<GetProductResponse> response = result.stream()
             .map(GetProductResponse::of)

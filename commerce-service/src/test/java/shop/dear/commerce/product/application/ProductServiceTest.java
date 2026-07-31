@@ -387,9 +387,10 @@ class ProductServiceTest {
         final ProductSaleType targetSaleType = ProductSaleType.OFFER;
         final ProductStatus targetStatus = ProductStatus.PREPARING;
         final LocalDate date = LocalDate.now();
+        final ProductCategory category = ProductCategory.SNEAKERS;
 
         // When
-        final List<GetProductDto> result = productService.getAllProduct(targetSaleType, targetStatus, date);
+        final List<GetProductDto> result = productService.getAllProduct(targetSaleType, targetStatus, date, category);
 
         // Then
         assertThat(result).hasSize(1);
@@ -414,7 +415,7 @@ class ProductServiceTest {
         productRepository.save(product2);
 
         // When
-        final List<GetProductDto> result = productService.getAllProduct(null, null, null);
+        final List<GetProductDto> result = productService.getAllProduct(null, null, null, null);
 
         // Then
         assertThat(result).hasSize(2);
@@ -429,7 +430,12 @@ class ProductServiceTest {
         productRepository.save(product);
 
         // When
-        final List<GetProductDto> result = productService.getAllProduct(ProductSaleType.IMMEDIATE, ProductStatus.SOLD_OUT, null);
+        final List<GetProductDto> result = productService.getAllProduct(
+            ProductSaleType.IMMEDIATE,
+            ProductStatus.SOLD_OUT,
+            null,
+            ProductCategory.BOOTS
+        );
 
         // Then
         assertThat(result).isEmpty();

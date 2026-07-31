@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import shop.dear.commerce.product.domain.constant.ProductCategory;
 import shop.dear.commerce.product.domain.constant.ProductSaleType;
 import shop.dear.commerce.product.domain.constant.ProductStatus;
 import shop.dear.commerce.product.domain.model.Product;
@@ -26,13 +27,15 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
             AND (:status IS NULL OR p.status = :status)
             AND (cast(:startDate as timestamp) IS NULL OR p.insertedAt >= :startDate)
             AND (cast(:endDate as timestamp) IS NULL OR p.insertedAt <= :endDate)
+            AND (:category IS NULL OR p.category = :category)
             ORDER BY p.viewCount DESC, p.insertedAt DESC
     """)
-    List<Product> findAllBySaleTypeAndStatusAndCreatedAtAndDeletedAtIsNull(
+    List<Product> findAllBySaleTypeAndStatusAndCreatedAtAndCategoryAndDeletedAtIsNull(
         @Param("saleType") final ProductSaleType saleType,
         @Param("status") final ProductStatus status,
         @Param("startDate") final LocalDateTime startDate,
-        @Param("endDate") final LocalDateTime endDate
+        @Param("endDate") final LocalDateTime endDate,
+        @Param("category") final ProductCategory category
     );
 
     @Modifying(clearAutomatically = true)
