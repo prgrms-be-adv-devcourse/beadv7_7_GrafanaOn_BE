@@ -89,10 +89,23 @@ public class Member extends BaseEntity {
         return this.status == MemberStatus.ACTIVE;
     }
 
+    public boolean isSellerRejoin(){
+        return this.seller != null && this.seller.getStatus() == SellerStatus.WITHDRAWN;
+    }
+
     public void registerSeller(final String bank, final String account) {
         if (this.isSeller()) {
             throw new BusinessException(MemberErrorCode.ALREADY_SELLER);
         }
+
+        if (this.seller != null) {
+            if (!this.isSellerRejoin()) {
+                throw new BusinessException(MemberErrorCode.ALREADY_SELLER);
+            }
+            this.seller.reRegister(bank, account);
+            return;
+        }
+
         this.seller = new Seller(
             bank,
             account,
