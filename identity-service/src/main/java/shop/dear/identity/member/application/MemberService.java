@@ -17,6 +17,7 @@ import shop.dear.identity.member.domain.model.Seller;
 import shop.dear.identity.member.domain.repository.MemberRepository;
 import shop.dear.identity.member.application.port.ProductPort;
 import shop.dear.identity.member.application.port.WalletPort;
+import shop.dear.identity.member.domain.repository.SellerRepository;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -26,6 +27,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class MemberService  {
 
     private final MemberRepository memberRepository;
+    private final SellerRepository sellerRepository;
     private final ProductPort productPort;
     private final Encryptor encryptor;
     private final WalletPort walletPort;
@@ -88,7 +90,14 @@ public class MemberService  {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        member.registerSeller(command.bank(), encryptor.encode(command.account()));
+        Seller seller = sellerRepository.findByMemberId(memberId)
+            .orElse(null);
+
+        if (seller == null) {
+            member.registerSeller(command.bank(), encryptor.encode(command.account()));
+        } else {
+            seller.reRegister(command.bank(), encryptor.encode(command.account()));
+        }
     }
 
     public SellerInfo getMyAccount(final Long memberId) {
