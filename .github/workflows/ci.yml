@@ -14,7 +14,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_db
+          POSTGRES_DB: postgres
         ports:
           - 5432:5432
         options: >-
@@ -35,19 +35,38 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
+      - name: Create test databases
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -c "CREATE DATABASE commerce_test;"
+          PGPASSWORD=postgres psql -h localhost -U postgres -c "CREATE DATABASE identity_test;"
+
       - name: Build & Test commerce-service
         run: ./gradlew :commerce-service:build
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/test_db
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/commerce_test
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: postgres
 
-      - name: Upload commerce-service test report
+      - name: Upload commerce-service test report on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: commerce-service-test-report
           path: commerce-service/build/reports/tests/test
 
-      - name: Build & Test gateway
+      - name: Build & Test identity
+        run: ./gradlew :identity:build
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/identity_test
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+
+      - name: Upload identity test report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: identity-test-report
+          path: identity/build/reports/tests/test
+
+      - name: Build gateway
         run: ./gradlew :gateway-service:build
