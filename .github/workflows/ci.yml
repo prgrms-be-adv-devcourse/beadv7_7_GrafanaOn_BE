@@ -42,5 +42,12 @@ jobs:
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: postgres
 
+      - name: Upload commerce-service test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: commerce-service-test-report
+          path: commerce-service/build/reports/tests/test
+
       - name: Build & Test gateway
         run: ./gradlew :gateway-service:build
