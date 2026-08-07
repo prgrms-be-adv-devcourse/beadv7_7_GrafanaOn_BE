@@ -6,7 +6,30 @@ on:
       - dev
 
 jobs:
+  changes:
+    runs-on: self-hosted
+    outputs:
+      commerce: ${{ steps.filter.outputs.commerce }}
+      identity: ${{ steps.filter.outputs.identity }}
+      gateway: ${{ steps.filter.outputs.gateway }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            commerce:
+              - 'commerce-service/**'
+              - 'common/**'
+            identity:
+              - 'identity-service/**'
+              - 'common/**'
+            gateway:
+              - 'gateway-service/**'
+              - 'common/**'
+
   deploy:
+    needs: changes
     runs-on: self-hosted
 
     steps:
@@ -18,12 +41,15 @@ jobs:
           chmod +x ./deploy/scripts/deploy-container.sh
 
       - name: Ensure Docker network exists
+        if: needs.changes.outputs.commerce == 'true' || needs.changes.outputs.identity == 'true' || needs.changes.outputs.gateway == 'true'
         run: docker network inspect dear-net >/dev/null 2>&1 || docker network create dear-net
 
       - name: Build commerce-service image
+        if: needs.changes.outputs.commerce == 'true'
         run: docker build -t commerce-service:latest -f commerce-service/Dockerfile .
 
       - name: Create commerce-service .env
+        if: needs.changes.outputs.commerce == 'true'
         run: |
           cat > commerce-service/.env << EOF
           SPRING_PROFILES_ACTIVE=prod
@@ -44,16 +70,19 @@ jobs:
           chmod 600 commerce-service/.env
 
       - name: Deploy commerce-service
+        if: needs.changes.outputs.commerce == 'true'
         run: ./deploy/scripts/deploy-container.sh commerce-service 8082 8082 commerce-service/.env
 
       - name: Remove commerce-service .env
-        if: always()
+        if: always() && needs.changes.outputs.commerce == 'true'
         run: rm -f commerce-service/.env
 
       - name: Build identity-service image
+        if: needs.changes.outputs.identity == 'true'
         run: docker build -t identity-service:latest -f identity-service/Dockerfile .
 
       - name: Create identity-service .env
+        if: needs.changes.outputs.identity == 'true'
         run: |
           cat > identity-service/.env << EOF
           SPRING_PROFILES_ACTIVE=prod
@@ -75,16 +104,19 @@ jobs:
           chmod 600 identity-service/.env
 
       - name: Deploy identity-service
+        if: needs.changes.outputs.identity == 'true'
         run: ./deploy/scripts/deploy-container.sh identity-service 8081 8081 identity-service/.env
 
       - name: Remove identity-service .env
-        if: always()
+        if: always() && needs.changes.outputs.identity == 'true'
         run: rm -f identity-service/.env
 
       - name: Build gateway-service image
+        if: needs.changes.outputs.gateway == 'true'
         run: docker build -t gateway-service:latest -f gateway-service/Dockerfile .
 
       - name: Create gateway-service .env
+        if: needs.changes.outputs.gateway == 'true'
         run: |
           cat > gateway-service/.env << EOF
           SPRING_PROFILES_ACTIVE=prod
@@ -95,8 +127,9 @@ jobs:
           chmod 600 gateway-service/.env
 
       - name: Deploy gateway-service
+        if: needs.changes.outputs.gateway == 'true'
         run: ./deploy/scripts/deploy-container.sh gateway-service 8080 8080 gateway-service/.env
 
       - name: Remove gateway-service .env
-        if: always()
+        if: always() && needs.changes.outputs.gateway == 'true'
         run: rm -f gateway-service/.env
