@@ -34,6 +34,7 @@ import shop.dear.commerce.product.domain.repository.ProductRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -334,7 +335,7 @@ class ProductServiceTest {
         assertThat(result.releaseDate()).isEqualTo(releaseDate);
         assertThat(result.viewCount()).isEqualTo(1);
         assertThat(result.description()).isEqualTo(description);
-        assertThat(result.insertedAt()).isEqualTo(savedProduct.getInsertedAt());
+        assertThat(result.insertedAt()).isEqualTo(savedProduct.getInsertedAt().truncatedTo(ChronoUnit.MICROS));
 
         assertThat(result.images().size()).isEqualTo(1);
         assertThat(result.images().getFirst().sortOrder()).isEqualTo(sortOrder);
