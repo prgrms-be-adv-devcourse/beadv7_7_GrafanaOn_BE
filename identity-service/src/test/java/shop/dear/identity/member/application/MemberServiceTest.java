@@ -21,9 +21,12 @@ import shop.dear.identity.member.domain.constract.SellerStatus;
 import shop.dear.identity.member.domain.exception.MemberErrorCode;
 import shop.dear.identity.member.domain.model.Member;
 import shop.dear.identity.member.domain.repository.MemberRepository;
+import shop.dear.identity.member.domain.repository.SellerRepository;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -33,6 +36,9 @@ public class MemberServiceTest {
 
     @Mock
     private MemberRepository memberRepository;
+
+    @Mock
+    private SellerRepository sellerRepository;
 
     @Mock
     private Encryptor encryptor;
@@ -111,9 +117,9 @@ public class MemberServiceTest {
 
         memberService.updateProfile(command, 1L);
 
-        Assertions.assertEquals("테스트", member.getName());
-        Assertions.assertEquals("부산시 해운대구", member.getDefaultShippingAddress());
-        Assertions.assertEquals("010-9999-9999", member.getPhoneNumber());
+        assertEquals("테스트", member.getName());
+        assertEquals("부산시 해운대구", member.getDefaultShippingAddress());
+        assertEquals("010-9999-9999", member.getPhoneNumber());
         verify(memberRepository, never()).existsByNickname(any());
         verify(memberRepository, never()).save(any());
     }
@@ -139,7 +145,7 @@ public class MemberServiceTest {
         BusinessException exception = Assertions.assertThrows(BusinessException.class,
             () -> memberService.updateProfile(command, 1L));
 
-        Assertions.assertEquals(MemberErrorCode.DUPLICATE_NICKNAME, exception.getErrorCode());
+        assertEquals(MemberErrorCode.DUPLICATE_NICKNAME, exception.getErrorCode());
     }
 
 
@@ -157,7 +163,7 @@ public class MemberServiceTest {
 
         boolean exists = memberService.existsMember(1L);
 
-        Assertions.assertTrue(exists);
+        assertTrue(exists);
     }
 
     @Test
@@ -181,24 +187,28 @@ public class MemberServiceTest {
 
     @Test
     @DisplayName("판매자 등록 성공")
-    void registerSellerTest(){
+    void registerSellerTest() {
 
         Member member = Member.create(
-            "테스트",
-            "서울시 강남구",
-            "010-1234-5678",
-            "user_000001");
+                "테스트",
+                "서울시 강남구",
+                "010-1234-5678",
+                "user_000001"
+        );
 
-        RegisterSellerCommand command = new RegisterSellerCommand("국민은행", "123-456-789");
+        RegisterSellerCommand command =
+                new RegisterSellerCommand("국민은행", "123-456-789");
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
-        given(encryptor.encode("123-456-789")).willReturn("encrypted-123-456-789");
+        given(sellerRepository.findByMemberId(1L)).willReturn(Optional.empty());
+        given(encryptor.encode("123-456-789"))
+                .willReturn("encrypted-123-456-789");
 
         memberService.registerSeller(1L, command);
 
-        Assertions.assertTrue(member.isSeller());
-        Assertions.assertEquals(SellerStatus.ACTIVE, member.getSeller().getStatus());
-        Assertions.assertEquals("encrypted-123-456-789", member.getSeller().getAccount());
+        assertTrue(member.isSeller());
+        assertEquals(SellerStatus.ACTIVE, member.getSeller().getStatus());
+        assertEquals("encrypted-123-456-789", member.getSeller().getAccount());
     }
 
     @Test
@@ -219,8 +229,8 @@ public class MemberServiceTest {
 
         memberService.updateSellerAccount(1L, command);
 
-        Assertions.assertEquals("신한은행", member.getSeller().getBank());
-        Assertions.assertEquals("encrypted-987-654-321", member.getSeller().getAccount());
+        assertEquals("신한은행", member.getSeller().getBank());
+        assertEquals("encrypted-987-654-321", member.getSeller().getAccount());
     }
 
     @Test
@@ -240,7 +250,7 @@ public class MemberServiceTest {
         BusinessException exception = Assertions.assertThrows(BusinessException.class,
             () -> memberService.updateSellerAccount(1L, command));
 
-        Assertions.assertEquals(MemberErrorCode.NOT_SELLER, exception.getErrorCode());
+        assertEquals(MemberErrorCode.NOT_SELLER, exception.getErrorCode());
     }
 
     @Test
@@ -259,8 +269,8 @@ public class MemberServiceTest {
 
         SellerInfo sellerInfo = memberService.getMyAccount(1L);
 
-        Assertions.assertEquals("국민은행", sellerInfo.bank());
-        Assertions.assertEquals("123*****789", sellerInfo.account());
+        assertEquals("국민은행", sellerInfo.bank());
+        assertEquals("123*****789", sellerInfo.account());
     }
 
     @Test
@@ -278,7 +288,7 @@ public class MemberServiceTest {
         BusinessException exception = Assertions.assertThrows(BusinessException.class,
             () -> memberService.getMyAccount(1L));
 
-        Assertions.assertEquals(MemberErrorCode.NOT_SELLER, exception.getErrorCode());
+        assertEquals(MemberErrorCode.NOT_SELLER, exception.getErrorCode());
     }
 
     @Test
@@ -296,7 +306,7 @@ public class MemberServiceTest {
 
         boolean isSeller = memberService.isSeller(1L);
 
-        Assertions.assertTrue(isSeller);
+        assertTrue(isSeller);
     }
 
     @Test
@@ -333,9 +343,9 @@ public class MemberServiceTest {
         memberService.unRegister(1L);
 
         Assertions.assertFalse(member.isSeller());
-        Assertions.assertEquals(SellerStatus.WITHDRAWN, member.getSeller().getStatus());
-        Assertions.assertEquals("****", member.getSeller().getBank());
-        Assertions.assertEquals("****", member.getSeller().getAccount());
+        assertEquals(SellerStatus.WITHDRAWN, member.getSeller().getStatus());
+        assertEquals("****", member.getSeller().getBank());
+        assertEquals("****", member.getSeller().getAccount());
     }
 
     @Test
@@ -355,9 +365,9 @@ public class MemberServiceTest {
         BusinessException exception = Assertions.assertThrows(BusinessException.class,
             () -> memberService.unRegister(1L));
 
-        Assertions.assertEquals(MemberErrorCode.WITHDRAWAL_FAILED, exception.getErrorCode());
-        Assertions.assertTrue(member.isSeller());
-        Assertions.assertEquals(SellerStatus.ACTIVE, member.getSeller().getStatus());
+        assertEquals(MemberErrorCode.WITHDRAWAL_FAILED, exception.getErrorCode());
+        assertTrue(member.isSeller());
+        assertEquals(SellerStatus.ACTIVE, member.getSeller().getStatus());
     }
 
     @Test
@@ -380,10 +390,10 @@ public class MemberServiceTest {
         memberService.withdrawProfile(1L);
 
         // then
-        Assertions.assertEquals("탈퇴한 회원", member.getName());
-        Assertions.assertEquals("", member.getDefaultShippingAddress());
-        Assertions.assertEquals("", member.getPhoneNumber());
-        Assertions.assertEquals("withdrawn_1", member.getNickname());
+        assertEquals("탈퇴한 회원", member.getName());
+        assertEquals("", member.getDefaultShippingAddress());
+        assertEquals("", member.getPhoneNumber());
+        assertEquals("withdrawn_1", member.getNickname());
 
         verifyNoInteractions(productPort);
     }
@@ -415,20 +425,20 @@ public class MemberServiceTest {
         memberService.withdrawProfile(1L);
 
         // then
-        Assertions.assertEquals("탈퇴한 회원", member.getName());
-        Assertions.assertEquals("", member.getDefaultShippingAddress());
-        Assertions.assertEquals("", member.getPhoneNumber());
-        Assertions.assertEquals("withdrawn_1", member.getNickname());
+        assertEquals("탈퇴한 회원", member.getName());
+        assertEquals("", member.getDefaultShippingAddress());
+        assertEquals("", member.getPhoneNumber());
+        assertEquals("withdrawn_1", member.getNickname());
 
-        Assertions.assertEquals(
+        assertEquals(
                 SellerStatus.WITHDRAWN,
                 member.getSeller().getStatus()
         );
-        Assertions.assertEquals(
+        assertEquals(
                 "****",
                 member.getSeller().getBank()
         );
-        Assertions.assertEquals(
+        assertEquals(
                 "****",
                 member.getSeller().getAccount()
         );
