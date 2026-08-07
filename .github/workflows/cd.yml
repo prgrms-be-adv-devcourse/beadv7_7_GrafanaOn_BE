@@ -1,9 +1,9 @@
 name: CD - Build & Deploy
 
 on:
-  push:
+  pull_request:
     branches:
-      - main
+      - dev
 
 jobs:
   deploy:
