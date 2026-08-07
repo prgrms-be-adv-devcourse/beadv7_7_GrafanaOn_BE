@@ -21,9 +21,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build commerce-service
-        run: ./gradlew :commerce-service:build -x test
+        run: ./gradlew :commerce-service:build
 
       - name: Build gateway
-        run: ./gradlew :gateway-service:build -x test
-
-  # TODO: SonarQube
+        run: ./gradlew :gateway-service:build
