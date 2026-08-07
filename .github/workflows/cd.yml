@@ -1,42 +1,84 @@
-name: CD - Deploy to EC2
+name: CD - Build & Deploy
 
 on:
-  #테스트용 트리거
-  #pull_request:
-   # branches:  - dev
   push:
     branches:
       - main
 
 jobs:
-  deploy-commerce:
-    uses: ./.github/workflows/deploy-service.yml
-    with:
-      service_name: commerce-service
-      service_port: "8082"
-      green_port: "8091"
-      use_blue_green: true
-    secrets:
-      DB_URL: ${{ secrets.DB_URL }}
-      DB_USERNAME: ${{ secrets.DB_USERNAME }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  deploy:
+    runs-on: self-hosted
 
-  deploy-identity:
-    uses: ./.github/workflows/deploy-service.yml
-    with:
-      service_name: identity-service
-      service_port: "8081"
-      green_port: "8092"
-      use_blue_green: true
-    secrets:
-      DB_URL: ${{ secrets.DB_URL }}
-      DB_USERNAME: ${{ secrets.DB_USERNAME }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
 
-  deploy-gateway:
-    needs: [deploy-commerce, deploy-identity]
-    uses: ./.github/workflows/deploy-service.yml
-    with:
-      service_name: gateway-service
-      service_port: "8080"
-      use_blue_green: false
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Cache Gradle
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
+      - name: Grant execute permission for scripts
+        run: |
+          chmod +x ./gradlew
+          chmod +x ./deploy/scripts/deploy-container.sh
+
+      - name: Build commerce-service jar
+        run: ./gradlew :commerce-service:build -x test
+
+      - name: Build commerce-service image
+        run: docker build -t commerce-service:latest ./commerce-service
+
+      - name: Create commerce-service .env
+        run: |
+          cat > commerce-service/.env << EOF
+          SPRING_DATASOURCE_URL=${{ secrets.DB_URL}}
+          SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }}
+          EOF
+          chmod 600 commerce-service/.env
+
+      - name: Deploy commerce-service
+        run: ./deploy/scripts/deploy-container.sh commerce-service 8081 commerce-service/.env
+
+      - name: Build identity-service jar
+        run: ./gradlew :identity:build -x test
+
+      - name: Build identity-service image
+        run: docker build -t identity-service:latest ./identity-service
+
+      - name: Create identity-service .env
+        run: |
+          cat > identity-service/.env << EOF
+          SPRING_DATASOURCE_URL=${{ secrets.DB_URL }}
+          SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }}
+          EOF
+          chmod 600 identity-service/.env
+
+      - name: Deploy identity-service
+        run: ./deploy/scripts/deploy-container.sh identity-service 8082 identity-service/.env
+
+      - name: Build gateway-service jar
+        run: ./gradlew :gateway-service:build -x test
+
+      - name: Build gateway-service image
+        run: docker build -t gateway-service:latest ./gateway-service
+
+      - name: Deploy gateway-service
+        run: |
+          docker stop gateway-service || true
+          docker rm gateway-service || true
+          docker run -d \
+            --name gateway-service \
+            --restart unless-stopped \
+            -p 8080:8080 \
+            gateway-service:latest
