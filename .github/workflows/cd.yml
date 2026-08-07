@@ -46,6 +46,10 @@ jobs:
       - name: Deploy commerce-service
         run: ./deploy/scripts/deploy-container.sh commerce-service 8082 8082 commerce-service/.env
 
+      - name: Remove commerce-service .env
+        if: always()
+        run: rm -f commerce-service/.env
+
       - name: Build identity-service image
         run: docker build -t identity-service:latest -f identity-service/Dockerfile .
 
@@ -73,6 +77,10 @@ jobs:
       - name: Deploy identity-service
         run: ./deploy/scripts/deploy-container.sh identity-service 8081 8081 identity-service/.env
 
+      - name: Remove identity-service .env
+        if: always()
+        run: rm -f identity-service/.env
+
       - name: Build gateway-service image
         run: docker build -t gateway-service:latest -f gateway-service/Dockerfile .
 
@@ -88,3 +96,7 @@ jobs:
 
       - name: Deploy gateway-service
         run: ./deploy/scripts/deploy-container.sh gateway-service 8080 8080 gateway-service/.env
+
+      - name: Remove gateway-service .env
+        if: always()
+        run: rm -f gateway-service/.env
