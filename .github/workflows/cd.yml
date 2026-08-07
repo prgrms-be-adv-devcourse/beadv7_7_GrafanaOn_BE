@@ -27,9 +27,9 @@ jobs:
         run: |
           cat > commerce-service/.env << EOF
           SPRING_PROFILES_ACTIVE=prod
-          DB_URL=${{ secrets.COMMERCE_DB_URL }}
-          DB_USERNAME=${{ secrets.COMMERCE_DB_USERNAME }}
-          DB_PASSWORD=${{ secrets.COMMERCE_DB_PASSWORD }}
+          DB_URL=${{ secrets.DB_URL }}
+          DB_USERNAME=${{ secrets.DB_USERNAME }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           DB_DRIVER=${{ vars.DB_DRIVER }}
           MEMBER_CLIENT_BASE_URL=${{ secrets.MEMBER_CLIENT_BASE_URL }}
           PRODUCT_CLIENT_BASE_URL=${{ secrets.PRODUCT_CLIENT_BASE_URL }}
@@ -53,9 +53,9 @@ jobs:
         run: |
           cat > identity-service/.env << EOF
           SPRING_PROFILES_ACTIVE=prod
-          DB_URL=${{ secrets.IDENTITY_DB_URL }}
-          DB_USERNAME=${{ secrets.IDENTITY_DB_USERNAME }}
-          DB_PASSWORD=${{ secrets.IDENTITY_DB_PASSWORD }}
+          DB_URL=${{ secrets.DB_URL }}
+          DB_USERNAME=${{ secrets.DB_USERNAME }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           JWT_ISSUER=${{ vars.JWT_ISSUER }}
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           JWT_ACCESS_TOKEN_EXPIRATION=${{ vars.JWT_ACCESS_TOKEN_EXPIRATION }}
