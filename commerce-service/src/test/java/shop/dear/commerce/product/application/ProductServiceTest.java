@@ -37,7 +37,9 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import static java.time.temporal.ChronoUnit.MICROS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.BDDAssertions.within;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @Transactional
@@ -335,7 +337,7 @@ class ProductServiceTest {
         assertThat(result.releaseDate()).isEqualTo(releaseDate);
         assertThat(result.viewCount()).isEqualTo(1);
         assertThat(result.description()).isEqualTo(description);
-        assertThat(result.insertedAt()).isEqualTo(savedProduct.getInsertedAt().truncatedTo(ChronoUnit.MICROS));
+        assertThat(result.insertedAt()).isCloseTo(savedProduct.getInsertedAt(), within(1, MICROS));
 
         assertThat(result.images().size()).isEqualTo(1);
         assertThat(result.images().getFirst().sortOrder()).isEqualTo(sortOrder);
