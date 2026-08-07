@@ -28,12 +28,12 @@ spring:
 
           routes:
             - id: identity-api-route
-              uri: ${IDENTITY_SERVICE_URI:http://identity-service-blue:8081}
+              uri: ${IDENTITY_SERVICE_URI:http://identity-service:8081}
               predicates:
                 - Path=/api/auth/**,/api/members/**,/api/scraps/**
 
             - id: commerce-api-route
-              uri: ${COMMERCE_SERVICE_URI:http://commerce-service-blue:8082}
+              uri: ${COMMERCE_SERVICE_URI:http://commerce-service:8082}
               predicates:
                 - Path=/api/products/**,/api/purchases/**,/api/offers/**,/api/search/**,/api/carts/**,/api/payments/**,/api/deposits/**,/api/settlements/**
 
