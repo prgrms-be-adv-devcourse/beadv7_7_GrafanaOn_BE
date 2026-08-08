@@ -7,7 +7,7 @@ dependencies {
     implementation project(':common:common-web')
     implementation project(':common:common-jpa')
 
-    // PostgresSQL
+    // PostgreSQL
     runtimeOnly 'org.postgresql:postgresql'
 
     // AWS S3
