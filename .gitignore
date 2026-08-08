@@ -182,4 +182,7 @@ gradle-app.setting
 # PostgreSQL local data
 **/docker/local_postgres/data/*
 
+# local monitoring
+**/docker/local_monitoring/
+
 # End of https://www.toptal.com/developers/gitignore/api/java,gradle,intellij+all,macos

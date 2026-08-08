@@ -1,6 +1,9 @@
 spring:
   application:
     name: identity-service
+  config:
+    import:
+      - optional:classpath:application-monitoring.yaml
   profiles:
     active: local
 

@@ -87,8 +87,8 @@ public class GatewaySecurityConfig {
                         ).permitAll()
 
                         .pathMatchers(
-                                "/actuator/health",
-                                "/actuator/info"
+                                "/api/actuator/health",
+                                "/api/actuator/prometheus"
                         ).permitAll()
 
                         .anyExchange().authenticated()
