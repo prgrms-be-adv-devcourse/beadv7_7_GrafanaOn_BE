@@ -52,7 +52,7 @@ class GatewaySecurityConfigTest {
     @Test
     void healthCheckIsPublic() {
         webTestClient.get()
-                .uri("/actuator/health")
+                .uri("/api/actuator/health")
                 .exchange()
                 .expectStatus()
                 .isOk();
