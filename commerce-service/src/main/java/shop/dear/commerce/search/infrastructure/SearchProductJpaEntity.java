@@ -5,7 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
-import shop.dear.common.audit.BaseEntity;
+import shop.dear.audit.BaseEntity;
 import shop.dear.commerce.search.domain.SearchProduct;
 
 import java.math.BigDecimal;

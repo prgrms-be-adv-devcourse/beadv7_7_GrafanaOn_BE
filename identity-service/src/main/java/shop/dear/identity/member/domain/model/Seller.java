@@ -14,7 +14,7 @@ import jakarta.persistence.FetchType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import shop.dear.common.audit.BaseEntity;
+import shop.dear.audit.BaseEntity;
 import shop.dear.identity.member.domain.constract.SellerStatus;
 
 @Entity

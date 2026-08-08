@@ -5,7 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.dear.commerce.financial.settlement.domain.constant.SettlementStatus;
-import shop.dear.common.audit.BaseEntity;
+import shop.dear.audit.BaseEntity;
 
 import java.math.BigDecimal;
 

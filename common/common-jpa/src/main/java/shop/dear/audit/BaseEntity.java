@@ -1,4 +1,4 @@
-package shop.dear.common.audit;
+package shop.dear.audit;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;

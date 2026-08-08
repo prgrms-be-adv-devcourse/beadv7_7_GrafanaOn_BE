@@ -5,7 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.dear.commerce.financial.wallet.domain.costant.WalletLogType;
-import shop.dear.common.audit.BaseEntity;
+import shop.dear.audit.BaseEntity;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.commerce.financial.wallet.domain.exception.WalletErrorCode;
 

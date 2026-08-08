@@ -12,7 +12,7 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import shop.dear.common.audit.BaseEntity;
+import shop.dear.audit.BaseEntity;
 
 import java.time.LocalDateTime;
 

@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.dear.commerce.financial.payment.domain.constant.PGPaymentStatus;
 import shop.dear.commerce.financial.payment.domain.exception.PaymentErrorCode;
-import shop.dear.common.audit.BaseEntity;
+import shop.dear.audit.BaseEntity;
 import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;

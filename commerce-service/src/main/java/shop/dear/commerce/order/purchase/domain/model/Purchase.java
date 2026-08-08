@@ -5,7 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.dear.commerce.order.purchase.domain.constant.PurchaseStatus;
-import shop.dear.common.audit.BaseEntity;
+import shop.dear.audit.BaseEntity;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode;
 
