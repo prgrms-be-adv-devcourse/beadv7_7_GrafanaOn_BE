@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import shop.dear.common.audit.BaseEntity;
+import shop.dear.audit.BaseEntity;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.identity.member.domain.constract.MemberStatus;
 import shop.dear.identity.member.domain.constract.SellerStatus;

@@ -3,8 +3,7 @@ package shop.dear.commerce.cart.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 import shop.dear.commerce.cart.domain.constant.CartItemStatus;
-import shop.dear.commerce.cart.domain.exception.CartErrorCode;
-import shop.dear.common.audit.BaseEntity;
+import shop.dear.audit.BaseEntity;
 import shop.dear.common.exception.BusinessException;
 
 @Entity

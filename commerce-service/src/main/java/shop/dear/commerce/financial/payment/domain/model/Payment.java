@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import shop.dear.commerce.financial.payment.domain.constant.PaymentPurpose;
 import shop.dear.commerce.financial.payment.domain.constant.PaymentStatus;
 import shop.dear.commerce.financial.payment.domain.exception.PaymentErrorCode;
-import shop.dear.common.audit.BaseEntity;
+import shop.dear.audit.BaseEntity;
 import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
 
