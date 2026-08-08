@@ -15,7 +15,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0' // 실제 JWT 구현체
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0' // Claim을 JSON으로 변경
 
-    // PostgresSQL
+    // PostgreSQL
     runtimeOnly 'org.postgresql:postgresql'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
