@@ -6,6 +6,10 @@ spring:
       - optional:classpath:application-monitoring.yaml
   profiles:
     active: local
+  elasticsearch:
+    uris: ${ES_URIS:http://localhost:9200}
+    connection-timeout: 3s
+    socket-timeout: 10s
 
 server:
   port: 8082
@@ -38,3 +42,9 @@ secret:
 toss:
   base-url: ${TOSS_BASE_URL:https://api.tosspayments.com}
   secret-key: ${TOSS_SECRET_KEY:}
+
+# ES를 켰다 껐다 할 수 있기 때문에 헬스 체크 false합니다.
+management:
+  health:
+    elasticsearch:
+      enabled: false
