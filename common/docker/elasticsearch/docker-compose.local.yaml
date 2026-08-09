@@ -1,0 +1,25 @@
+# 로컬 개발용
+name: dear-elasticsearch-local
+
+services:
+  elasticsearch:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dear-elasticsearch:9.4.2
+    container_name: elasticsearch-local
+    restart: always
+
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      # 로컬은 힙을 줄여 부담을 낮춘다.
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+      TZ: Asia/Seoul
+
+    # 로컬에서는 개발 편의를 위해 포트를 연다.
+    ports:
+      - "9200:9200"
+
+    volumes:
+      - ./data:/usr/share/elasticsearch/data
