@@ -1,0 +1,43 @@
+server:
+  forward-headers-strategy: framework
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          globalcors:
+            add-to-simple-url-handler-mapping: true
+            cors-configurations:
+              '[/**]':
+                allowedOrigins:
+                  - ${FRONTEND_ORIGIN}
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - PATCH
+                  - DELETE
+                  - OPTIONS
+                allowedHeaders:
+                  - Authorization
+                  - Content-Type
+                  - Accept
+                allowCredentials: true
+                maxAge: 3600
+
+          routes:
+            - id: identity-api-route
+              uri: ${IDENTITY_SERVICE_URI:http://identity-service:8081}
+              predicates:
+                - Path=/api/auth/**,/api/members/**,/api/scraps/**
+
+            - id: commerce-api-route
+              uri: ${COMMERCE_SERVICE_URI:http://commerce-service:8082}
+              predicates:
+                - Path=/api/products/**,/api/purchases/**,/api/offers/**,/api/search/**,/api/carts/**,/api/payments/**,/api/deposits/**,/api/settlements/**
+
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway: INFO

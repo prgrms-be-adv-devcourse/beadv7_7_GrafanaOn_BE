@@ -1,0 +1,25 @@
+# 공통 설록
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: gateway-service
+  config:
+    import:
+      - optional:classpath:application-monitoring.yaml
+
+# Profile을 주지 않으면 local, prod를 주면 prod로.
+  profiles:
+    default: local
+
+management:
+  endpoint:
+    gateway:
+      access: read-only
+
+# JWT 설정 추가
+auth:
+  jwt:
+    issuer: ${JWT_ISSUER:dear-identity-service}
+    secret: ${JWT_SECRET}

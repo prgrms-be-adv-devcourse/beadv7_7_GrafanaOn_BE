@@ -1,0 +1,11 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    // Actuator
+    api 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // Prometheus
+    api 'io.micrometer:micrometer-registry-prometheus'
+}

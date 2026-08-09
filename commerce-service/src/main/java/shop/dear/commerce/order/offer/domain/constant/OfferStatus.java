@@ -1,0 +1,9 @@
+package shop.dear.commerce.order.offer.domain.constant;
+
+public enum OfferStatus {
+    PENDING,
+    ACCEPTED,
+    REJECTED,
+    CANCELLED,
+    PRODUCT_DELETED
+}

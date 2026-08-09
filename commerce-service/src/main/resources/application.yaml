@@ -1,3 +1,40 @@
 spring:
   application:
     name: commerce-service
+  config:
+    import:
+      - optional:classpath:application-monitoring.yaml
+  profiles:
+    active: local
+
+server:
+  port: 8082
+
+member:
+  client:
+    base-url: ${MEMBER_CLIENT_BASE_URL}
+
+product:
+  client:
+    base-url: ${PRODUCT_CLIENT_BASE_URL}
+
+offer:
+  client:
+    base-url: ${OFFER_CLIENT_BASE_URL}
+
+wallet:
+  client:
+    base-url: ${WALLET_CLIENT_BASE_URL}
+
+secret:
+  aws:
+    s3:
+      bucket-name: ${AWS_S3_BUCKET_NAME}
+    region: ${AWS_REGION}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+
+toss:
+  base-url: ${TOSS_BASE_URL:https://api.tosspayments.com}
+  secret-key: ${TOSS_SECRET_KEY:}

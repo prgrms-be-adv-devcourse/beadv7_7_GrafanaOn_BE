@@ -1,0 +1,22 @@
+# 빌드 산출물
+build/
+out/
+**/build/
+**/out/
+
+# Gradle
+.gradle/
+
+# IDE
+.idea/
+*.iml
+
+# Git
+.git
+.gitignore
+
+# OS
+.DS_Store
+
+# 로컬 전용 설정 제외
+**/application-local.yaml

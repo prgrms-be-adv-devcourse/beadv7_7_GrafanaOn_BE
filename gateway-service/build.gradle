@@ -1,0 +1,37 @@
+plugins {
+    id 'org.springframework.boot'
+}
+
+dependencies {
+    implementation project(':common:common-monitoring')
+
+    // Spring Cloud Gateway는 WebFlux 기반
+    implementation 'org.springframework.cloud:spring-cloud-starter-gateway-server-webflux'
+
+    // Gateway 인증 정책
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // ConfigurationProperties 검증
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // JWT 검증
+    implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
+
+    testImplementation 'io.projectreactor:reactor-test'
+}
+
+ext {
+    set('springCloudVersion', '2025.1.2')
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+tasks.named('jar') {
+    enabled = false
+}
