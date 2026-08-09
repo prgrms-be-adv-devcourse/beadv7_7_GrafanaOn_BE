@@ -52,7 +52,7 @@ public class OfferService {
     @Transactional
     public OfferSnapshot createOfferSnapshot(final CreateOfferSnapshotCommand command) {
         validateWriterId(command.writerId());
-        validateMemberExists(command.writerId());
+        validateMemberExists();
 
         final ProductInfo product = productPort.getProduct(command.productId());
 
@@ -79,14 +79,14 @@ public class OfferService {
         }
     }
 
-    private void validateMemberExists(final Long memberId) {
-        memberPort.validateMemberExists(memberId);
+    private void validateMemberExists() {
+        memberPort.validateMemberExists();
     }
 
     @Transactional
     public Offer createOffer(final CreateOfferCommand command) {
         validateWriterId(command.writerId());
-        validateMemberExists(command.writerId());
+        validateMemberExists();
 
         final OfferSnapshot snapshot = offerSnapshotRepository.findById(command.snapshotId())
                 .orElseThrow(() -> new BusinessException(OfferSnapshotErrorCode.OFFER_SNAPSHOT_NOT_FOUND));
