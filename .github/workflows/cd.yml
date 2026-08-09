@@ -4,14 +4,22 @@ on:
   push:
     branches:
       - dev
+  workflow_dispatch:
+    inputs:
+      force_all:
+        description: '전체 모듈 재배포'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   changes:
     runs-on: self-hosted
     outputs:
-      commerce: ${{ steps.filter.outputs.commerce }}
-      identity: ${{ steps.filter.outputs.identity }}
-      gateway: ${{ steps.filter.outputs.gateway }}
+      outputs:
+      commerce: ${{ steps.filter.outputs.commerce == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
+      identity: ${{ steps.filter.outputs.identity == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
+      gateway: ${{ steps.filter.outputs.gateway == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -27,6 +35,9 @@ jobs:
             gateway:
               - 'gateway-service/**'
               - 'common/**'
+            root:
+              - 'build.gradle'
+              - 'settings.gradle'
 
   deploy:
     needs: changes
