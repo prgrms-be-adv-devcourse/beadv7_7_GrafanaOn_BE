@@ -653,12 +653,12 @@ class OfferServiceTest {
     private void stubMemberExists(final Long memberId) {
         willDoNothing()
                 .given(memberPort)
-                .validateMemberExists(memberId);
+                .validateMemberExists();
     }
 
     private void verifyMemberExists(final Long memberId) {
         verify(memberPort)
-                .validateMemberExists(memberId);
+                .validateMemberExists();
     }
 
     private ProductInfo productInfo(final Long sellerId) {
