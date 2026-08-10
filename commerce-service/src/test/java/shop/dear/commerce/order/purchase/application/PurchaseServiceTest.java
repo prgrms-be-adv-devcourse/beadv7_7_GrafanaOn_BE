@@ -20,8 +20,9 @@ import shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.commerce.order.purchase.domain.repository.PurchaseRepository;
 import shop.dear.common.event.financial.PaymentRequestedEvent;
-import shop.dear.common.event.order.FinishedOrderEvent;
 import shop.dear.common.event.order.OrderType;
+import shop.dear.common.event.order.PurchaseReleasedEvent;
+import shop.dear.common.event.order.ReleaseReason;
 import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
@@ -34,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
@@ -87,15 +89,15 @@ class PurchaseServiceTest {
             verifyMemberExists(1L);
             verify(purchaseRepository).save(any(Purchase.class));
 
-            final ArgumentCaptor<PaymentRequestedEvent> captor =
+            final ArgumentCaptor<PaymentRequestedEvent> paymentCaptor =
                     ArgumentCaptor.forClass(PaymentRequestedEvent.class);
-            verify(purchaseEventPublisher).publish(captor.capture());
+            verify(purchaseEventPublisher).publish(paymentCaptor.capture());
 
-            final PaymentRequestedEvent event = captor.getValue();
-            assertThat(event.orderId()).isEqualTo(purchase.getId());
-            assertThat(event.memberId()).isEqualTo(purchase.getBuyerId());
-            assertThat(event.amount()).isEqualTo(purchase.getAmount());
-            assertThat(event.orderType()).isEqualTo(OrderType.PURCHASE);
+            final PaymentRequestedEvent paymentEvent = paymentCaptor.getValue();
+            assertThat(paymentEvent.orderId()).isEqualTo(purchase.getId());
+            assertThat(paymentEvent.memberId()).isEqualTo(purchase.getBuyerId());
+            assertThat(paymentEvent.amount()).isEqualTo(purchase.getAmount());
+            assertThat(paymentEvent.orderType()).isEqualTo(OrderType.PURCHASE);
         }
 
         @Test
@@ -242,6 +244,15 @@ class PurchaseServiceTest {
             // then
             assertThat(purchase.getStatus())
                     .isEqualTo(PurchaseStatus.CANCELLED);
+
+            final ArgumentCaptor<PurchaseReleasedEvent> captor =
+                    ArgumentCaptor.forClass(PurchaseReleasedEvent.class);
+            verify(purchaseEventPublisher).publish(captor.capture());
+
+            final PurchaseReleasedEvent event = captor.getValue();
+            assertThat(event.purchaseId()).isEqualTo(purchase.getId());
+            assertThat(event.productId()).isEqualTo(purchase.getProductId());
+            assertThat(event.reason()).isEqualTo(ReleaseReason.CANCELLED);
 
             verifyMemberExists(1L);
         }
@@ -421,6 +432,68 @@ class PurchaseServiceTest {
             assertThat(result).isEmpty();
 
             verifyMemberExists(1L);
+        }
+    }
+
+    @Nested
+    @DisplayName("expireOverduePurchases")
+    class ExpireOverduePurchases {
+
+        @Test
+        @DisplayName("결제 기한이 지난 PENDING_PAYMENT 구매를 EXPIRED로 변경하고 이벤트를 발행한다")
+        void expiresOverduePurchases() {
+            // given
+            final Purchase overduePurchase = Purchase.create(
+                    1L,
+                    2L,
+                    3L,
+                    BigDecimal.valueOf(10000),
+                    "delivery",
+                    LocalDateTime.now().minusMinutes(1)
+            );
+            final Purchase pendingPurchase = Purchase.create(
+                    4L,
+                    5L,
+                    6L,
+                    BigDecimal.valueOf(10000),
+                    "delivery",
+                    LocalDateTime.now().plusMinutes(10)
+            );
+
+            given(purchaseRepository.findAllByStatusAndPaymentDueAtBefore(
+                    eq(PurchaseStatus.PENDING_PAYMENT), any(LocalDateTime.class)))
+                    .willReturn(List.of(overduePurchase));
+
+            // when
+            purchaseService.expireOverduePurchases();
+
+            // then
+            assertThat(overduePurchase.getStatus()).isEqualTo(PurchaseStatus.EXPIRED);
+            assertThat(pendingPurchase.getStatus()).isEqualTo(PurchaseStatus.PENDING_PAYMENT);
+
+            final ArgumentCaptor<PurchaseReleasedEvent> captor =
+                    ArgumentCaptor.forClass(PurchaseReleasedEvent.class);
+            verify(purchaseEventPublisher).publish(captor.capture());
+
+            final PurchaseReleasedEvent event = captor.getValue();
+            assertThat(event.purchaseId()).isEqualTo(overduePurchase.getId());
+            assertThat(event.productId()).isEqualTo(overduePurchase.getProductId());
+            assertThat(event.reason()).isEqualTo(ReleaseReason.EXPIRED);
+        }
+
+        @Test
+        @DisplayName("만료 대상이 없으면 이벤트를 발행하지 않는다")
+        void doesNothing_whenNoOverduePurchases() {
+            // given
+            given(purchaseRepository.findAllByStatusAndPaymentDueAtBefore(
+                    eq(PurchaseStatus.PENDING_PAYMENT), any(LocalDateTime.class)))
+                    .willReturn(List.of());
+
+            // when
+            purchaseService.expireOverduePurchases();
+
+            // then
+            verify(purchaseEventPublisher, never()).publish(any(PurchaseReleasedEvent.class));
         }
     }
 

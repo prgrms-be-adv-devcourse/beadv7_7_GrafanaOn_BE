@@ -1,7 +1,9 @@
 package shop.dear.commerce.order.purchase.application.event;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import shop.dear.commerce.order.purchase.domain.constant.PurchaseStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
@@ -13,10 +15,13 @@ import shop.dear.common.event.financial.PaymentCompletedEvent;
 import shop.dear.common.event.financial.PaymentFailedEvent;
 import shop.dear.common.event.order.FinishedOrderEvent;
 import shop.dear.common.event.order.OrderType;
+import shop.dear.common.event.order.PurchaseReleasedEvent;
+import shop.dear.common.event.order.ReleaseReason;
 import shop.dear.common.exception.BusinessException;
 
 import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.PURCHASE_NOT_FOUND;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class PurchasePaymentEventListener {
@@ -30,7 +35,14 @@ public class PurchasePaymentEventListener {
         if (event.orderType() != OrderType.PURCHASE) {
             return;
         }
-        Purchase purchase = findPurchase(event.orderId());
+        final Purchase purchase = findPurchase(event.orderId());
+
+        // TODO: 환불 로직 필요
+        if (purchase.getStatus() != PurchaseStatus.PENDING_PAYMENT) {
+            log.error("결제 완료 시점에 구매가 이미 만료/취소됨. 환불 필요. purchaseId={}, status={}",
+                    purchase.getId(), purchase.getStatus());
+            return;
+        }
 
         purchase.pay();
 
@@ -53,7 +65,16 @@ public class PurchasePaymentEventListener {
             return;
         }
 
-        findPurchase(event.orderId()).failPayment();
+        final Purchase purchase = findPurchase(event.orderId());
+        purchase.failPayment();
+
+        purchaseEventPublisher.publish(new PurchaseReleasedEvent(
+                purchase.getId(),
+                purchase.getBuyerId(),
+                purchase.getSellerId(),
+                purchase.getProductId(),
+                ReleaseReason.PAYMENT_FAILED
+        ));
     }
 
     private Purchase findPurchase(final Long purchaseId) {
