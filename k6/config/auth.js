@@ -76,16 +76,35 @@ export function registerSeller(session) {
         }
     );
 
-    check(res, { '[setup] 판매자 등록 성공': (r) => r.status === 200 });
+    // 고정 계정은 한 번 판매자가 되면 그 상태가 유지된다.
+    // 재실행 시 ALREADY_SELLER(400)가 오는데 이는 정상이므로 성공으로 본다.
+    check(res, {
+        '[setup] 판매자 상태 확보': (r) =>
+            r.status === 200 || (r.status === 400 && r.body.includes('MB-004')),
+    });
     return res;
 }
 
 // VU별 세션 캐시. 첫 반복에서만 계정을 만들고 이후 반복은 재사용한다.
 let cachedSession = null;
 
-export function getSession() {
+// 회원가입으로 새 계정을 만들어 쓰는 세션.
+// 계정 생성·소모 자체가 측정 대상인 스크립트에서만 사용한다.
+// 그 외에는 getSession()(고정 계정)을 쓸 것.
+export function getFreshSession() {
     if (cachedSession === null) {
-        cachedSession = signUpAndLogin();
+        const session = signUpAndLogin();
+
+        // 계정 생성에 실패한 세션을 캐싱하면 그 VU는 테스트가 끝날 때까지
+        // 인증 없는 요청을 반복해 서버를 때린다. 즉시 중단시킨다.
+        if (!session.accessToken) {
+            throw new Error(
+                'VU 계정 생성 실패. 서버 부하 또는 장애 가능성이 있습니다. ' +
+                'VU 수를 낮추거나 서버 상태를 확인하세요.'
+            );
+        }
+
+        cachedSession = session;
     }
     return cachedSession;
 }
@@ -151,12 +170,33 @@ export function loginAsBuyer(index) {
     return { email, memberId, accessToken: res.json('data.accessToken') };
 }
 
-// 구매 시나리오용 VU별 세션 캐시. VU 번호와 구매 계정 번호를 1:1로 매핑한다.
+// seed.js가 만들어 둔 고정 계정 수. 시딩 때 준 BUYER_COUNT와 같아야 한다.
+export const BUYER_COUNT = Number(__ENV.BUYER_COUNT || 200);
+
+// 고정 계정 세션 캐시 (VU별).
+//
+// 부하 테스트 중 회원가입을 하지 않는 이유:
+//   회원가입은 identity-service가 commerce-service의 /internal/deposits 를 호출해
+//   지갑을 만드는 구조다(MemberService.createProfile). 즉 측정 대상과 무관한
+//   서비스 간 호출이 섞여, commerce가 바쁘면 회원가입이 통째로 실패한다.
+//   실제로 VU 50 측정에서 회원가입 성공률이 9%까지 떨어졌다.
+//
+//   그래서 조회·수정 계열은 미리 만들어 둔 고정 계정으로 로그인만 한다.
+//   계정 생성 자체가 측정 대상인 스크립트(auth/signup, auth/withdraw,
+//   member/seller-register, member/seller-unregister)만 예외적으로 가입을 수행한다.
 let cachedBuyerSession = null;
 
 export function getBuyerSession() {
     if (cachedBuyerSession === null) {
-        cachedBuyerSession = loginAsBuyer(__VU);
+        // VU 수가 계정 수를 넘어도 순환하도록 나머지 연산을 쓴다.
+        const index = ((__VU - 1) % BUYER_COUNT) + 1;
+        cachedBuyerSession = loginAsBuyer(index);
     }
     return cachedBuyerSession;
+}
+
+// 인증이 필요한 대부분의 시나리오가 쓰는 기본 세션.
+// 이제 회원가입 없이 고정 계정 로그인만 수행한다.
+export function getSession() {
+    return getBuyerSession();
 }
