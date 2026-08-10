@@ -1,4 +1,4 @@
-package shop.dear.gateway.auth;
+package shop.dear.gateway.auth.filter;
 
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import shop.dear.gateway.auth.AuthenticatedUser;
 
 import java.util.Optional;
 
