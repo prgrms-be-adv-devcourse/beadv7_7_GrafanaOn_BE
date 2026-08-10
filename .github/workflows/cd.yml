@@ -16,7 +16,6 @@ jobs:
   changes:
     runs-on: self-hosted
     outputs:
-      outputs:
       commerce: ${{ steps.filter.outputs.commerce == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
       identity: ${{ steps.filter.outputs.identity == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
       gateway: ${{ steps.filter.outputs.gateway == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
