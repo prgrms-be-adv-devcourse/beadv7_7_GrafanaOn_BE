@@ -1,0 +1,63 @@
+name: LoadTest - 런타임 데이터 정리
+
+# 부하 테스트가 만든 데이터를 지우고 기준선을 복원한다.
+#
+# 이 방식을 쓰는 이유:
+#   정리는 여러 테이블에 걸친 DELETE라 DB 접근이 필요한데,
+#   그러려면 pem 키를 공유하거나 5432 포트를 인터넷에 열어야 한다.
+#   self-hosted 러너가 이미 EC2에서 돌고 있으므로, 러너가 대신 실행하면
+#   비밀정보 공유도 포트 개방도 없이 팀원이 버튼 하나로 정리할 수 있다.
+#
+# 사용법:
+#   Actions 탭 → 이 워크플로우 선택 → Run workflow
+#
+# 안전장치:
+#   - workflow_dispatch(수동)만 지원. push/pull_request 트리거가 없어 자동 실행 경로가 없다.
+#   - 공개 저장소지만 수동 실행은 write 권한자만 가능하다(GitHub 정책).
+#   - 아래 허용 목록에 있는 계정만 실행된다.
+
+on:
+  workflow_dispatch:
+
+# DB를 건드리므로 동시에 두 번 돌지 않게 막는다.
+concurrency:
+  group: loadtest-db
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: self-hosted
+
+    # 팀원이 바뀌면 이 목록을 갱신할 것.
+    # workflow_dispatch 자체가 이미 write 권한을 요구하므로 이중 잠금에 해당한다.
+    if: >-
+      contains(
+        fromJSON('["phdcoco","aio19581","Hwangseoeun","bum0w0","sanchaehwa","KAITOKIDDA"]'),
+        github.actor
+      )
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 실행자 기록
+        run: echo "실행자 ${{ github.actor }} / 브랜치 ${{ github.ref_name }}"
+
+      - name: 정리 전 상태
+        run: |
+          docker exec -i postgres psql -U ${{ secrets.DB_USERNAME }} -d dear -c "
+            SELECT (SELECT COUNT(*) FROM member)   AS members,
+                   (SELECT COUNT(*) FROM offer)    AS offers,
+                   (SELECT COUNT(*) FROM purchase) AS purchases,
+                   (SELECT COUNT(*) FROM payment)  AS payments;"
+
+      - name: 런타임 데이터 정리
+        run: docker exec -i postgres psql -U ${{ secrets.DB_USERNAME }} -d dear < k6/sql/cleanup-runtime.sql
+
+      - name: 기준선 복원 확인
+        run: |
+          echo "아래 값이 30000 | 30000 | 9117 | 4999 이면 정상입니다."
+          docker exec -i postgres psql -U ${{ secrets.DB_USERNAME }} -d dear -c "
+            SELECT (SELECT COUNT(*) FROM product        WHERE model_number LIKE 'BULK-%')  AS products,
+                   (SELECT COUNT(*) FROM search_product WHERE model_number LIKE 'BULK-%')  AS search_rows,
+                   (SELECT COUNT(*) FROM offer          WHERE number LIKE 'OF-BULK-%')     AS offers,
+                   (SELECT COUNT(*) FROM purchase       WHERE number LIKE 'PC-BULK-%')     AS purchases;"
