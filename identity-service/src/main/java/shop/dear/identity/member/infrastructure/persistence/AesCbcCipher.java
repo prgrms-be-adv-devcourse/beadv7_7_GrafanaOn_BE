@@ -12,14 +12,14 @@ import java.util.Base64;
 import java.util.HexFormat;
 
 @Component
-public class AesCbcEncryptor implements CipherStrategy {
+public class AesCbcCipher implements CipherStrategy {
 
     private static final String ALGORITHM = "AES/CBC/PKCS5Padding";
 
     private final SecretKeySpec keySpec;
     private final IvParameterSpec ivParamSpec;
 
-    public AesCbcEncryptor(
+    public AesCbcCipher(
         @Value("${identity.security.account-key}") final String key,
         @Value("${identity.security.account-iv}") final String iv
     ) {

@@ -15,7 +15,7 @@ import java.util.Base64;
 import java.util.HexFormat;
 
 @Component
-public class AesGcmEncryptor implements CipherStrategy {
+public class AesGcmCipher implements CipherStrategy {
 
 	private static final CipherVersion VERSION = CipherVersion.GCM;
 
@@ -26,7 +26,7 @@ public class AesGcmEncryptor implements CipherStrategy {
 	private final SecretKeySpec keySpec;
 	private final SecureRandom secureRandom = new SecureRandom();
 
-	public AesGcmEncryptor(
+	public AesGcmCipher(
 		@Value("${identity.security.account-key}") final String key
 	) {
 		this.keySpec = new SecretKeySpec(HexFormat.of().parseHex(key), "AES");
