@@ -9,7 +9,7 @@ public class PaginationRequest {
 
     private static final int DEFAULT_PAGE_NO = 1;
     private static final int DEFAULT_PAGE_SIZE = 10;
-    private static final int MAX_PAGE_SIZE = 20;
+    private static final int DEFAULT_MAX_PAGE_SIZE = 20;
     private static final int MIN_PAGE_NO = 1;
     private static final int MIN_PAGE_SIZE = 1;
 
@@ -17,8 +17,12 @@ public class PaginationRequest {
     private final int pageSize;
 
     public PaginationRequest(Integer pageNo, Integer pageSize) {
+        this(pageNo, pageSize, DEFAULT_PAGE_SIZE, DEFAULT_MAX_PAGE_SIZE);
+    }
+
+    public PaginationRequest(Integer pageNo, Integer pageSize, int defaultPageSize, int maxPageSize) {
        this.pageNo = normalizePageNo(pageNo);
-       this.pageSize = normalizePageSize(pageSize);
+       this.pageSize = normalizePageSize(pageSize, defaultPageSize, maxPageSize);
     }
 
     public Pageable toPageable() {
@@ -32,11 +36,11 @@ public class PaginationRequest {
       return pageNo;
     }
 
-    private int normalizePageSize(Integer pageSize) {
+    private int normalizePageSize(Integer pageSize, int defaultPageSize, int maxPageSize) {
         if (pageSize == null || pageSize < MIN_PAGE_SIZE) {
-            return DEFAULT_PAGE_SIZE;
+            return defaultPageSize;
         }
-        return Math.min(pageSize, MAX_PAGE_SIZE);
+        return Math.min(pageSize, maxPageSize);
     }
 
 }

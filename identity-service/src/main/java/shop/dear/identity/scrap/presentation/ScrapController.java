@@ -6,11 +6,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import shop.dear.common.auth.AuthUser;
+import shop.dear.common.pagination.PaginationRequest;
+import shop.dear.common.pagination.PaginationResponse;
 import shop.dear.common.response.ApiResponse;
 import shop.dear.identity.scrap.application.ScrapService;
 import shop.dear.identity.scrap.application.dto.ScrapDetail;
-import shop.dear.identity.scrap.presentation.dto.ScrapPageResponse;
+import shop.dear.identity.scrap.presentation.dto.ScrapListItemResponse;
 import shop.dear.identity.scrap.presentation.dto.ScrapResponse;
+
+import java.util.List;
 
 import static shop.dear.common.response.ApiResponse.success;
 import static shop.dear.common.response.ApiResponse.successWithData;
@@ -35,19 +39,24 @@ public class ScrapController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<ScrapPageResponse>> getScrapList(
+    public ResponseEntity<ApiResponse<PaginationResponse<ScrapListItemResponse>>> getScrapList(
         @AuthUser final Long memberId,
-        @RequestParam(defaultValue = "0") final int page,
-        @RequestParam(defaultValue = "10") final int size
+        @RequestParam(required = false) final Integer page,
+        @RequestParam(required = false) final Integer size
     ) {
+        PaginationRequest paginationRequest = new PaginationRequest(page, size);
 
         Page<ScrapDetail> scraps = scrapService.getScrapList(
             memberId,
-            page,
-            size
+            paginationRequest.getPageNo() - 1,
+            paginationRequest.getPageSize()
         );
 
-        return ResponseEntity.ok(successWithData(ScrapPageResponse.from(scraps)));
+        List<ScrapListItemResponse> content = scraps.getContent().stream()
+            .map(ScrapListItemResponse::from)
+            .toList();
+
+        return ResponseEntity.ok(successWithData(PaginationResponse.of(scraps, content)));
     }
 
     @DeleteMapping("/{productId}")
