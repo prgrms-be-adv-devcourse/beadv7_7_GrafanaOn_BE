@@ -32,7 +32,6 @@ public class ScrapController {
         @PathVariable final Long productId,
         @AuthUser final Long memberId
     ) {
-
         ScrapResponse scrap = ScrapResponse.from(scrapService.addScrap(memberId, productId));
 
         return ResponseEntity.ok(successWithData(scrap));
@@ -64,9 +63,7 @@ public class ScrapController {
         @PathVariable final Long productId,
         @AuthUser final Long memberId
     ) {
-
         scrapService.deleteScrap(memberId, productId);
-
         return ResponseEntity.ok(success());
     }
 }
