@@ -23,10 +23,10 @@ class CipherContextTest {
     private static final String LEGACY_IV = "9a273be1934c638c2472dedc7176cdcd";
     private static final String ACCOUNT = "123-456-789";
 
-    private final AesGcmEncryptor gcmEncryptor = new AesGcmEncryptor(KEY);
-    private final AesCbcEncryptor legacyEncryptor = new AesCbcEncryptor(KEY, LEGACY_IV);
+    private final AesGcmCipher gcmCipher = new AesGcmCipher(KEY);
+    private final AesCbcCipher legacyCipher = new AesCbcCipher(KEY, LEGACY_IV);
     private final CipherContext cipherContext =
-        new CipherContext(List.of(gcmEncryptor, legacyEncryptor), gcmEncryptor);
+        new CipherContext(List.of(gcmCipher, legacyCipher), gcmCipher);
 
     @Test
     @DisplayName("암호화한 계좌번호를 복호화하면 원본이 나온다")
@@ -66,11 +66,11 @@ class CipherContextTest {
         // 마커를 Base64 페이로드 안쪽 첫 바이트로 두면 1/256 확률로 오분류되던 케이스
         String collides = Base64.getEncoder().encodeToString(new byte[]{0x01, 0x02, 0x03});
 
-        assertTrue(legacyEncryptor.supports(collides));
-        assertFalse(gcmEncryptor.supports(collides));
+        assertTrue(legacyCipher.supports(collides));
+        assertFalse(gcmCipher.supports(collides));
 
         for (int i = 0; i < 1000; i++) {
-            assertFalse(gcmEncryptor.supports(legacyCbcEncode("account-" + i)));
+            assertFalse(gcmCipher.supports(legacyCbcEncode("account-" + i)));
         }
     }
 
@@ -104,7 +104,7 @@ class CipherContextTest {
     @DisplayName("지원하는 전략이 없으면 복호화에 실패한다")
     void decodeFailsWhenNoStrategySupportsFormat() {
 
-        CipherContext gcmOnly = new CipherContext(List.of(gcmEncryptor), gcmEncryptor);
+        CipherContext gcmOnly = new CipherContext(List.of(gcmCipher), gcmCipher);
 
         assertThrows(IllegalStateException.class, () -> gcmOnly.decode(legacyCbcEncode(ACCOUNT)));
     }

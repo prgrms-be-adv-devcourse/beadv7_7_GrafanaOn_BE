@@ -9,11 +9,11 @@ import java.util.List;
 public class CipherContext implements CipherManager {
 
 	private final List<CipherStrategy> strategies;
-	private final AesGcmEncryptor currentStrategy;
+	private final AesGcmCipher currentStrategy;
 
 	public CipherContext(
 		final List<CipherStrategy> strategies,
-		final AesGcmEncryptor currentStrategy
+		final AesGcmCipher currentStrategy
 	) {
 		this.strategies = strategies;
 		this.currentStrategy = currentStrategy;
