@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import shop.dear.gateway.auth.filter.AuthenticatedUserHeaderFilter;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
