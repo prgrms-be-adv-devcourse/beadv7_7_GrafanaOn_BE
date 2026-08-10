@@ -1,6 +1,8 @@
 package shop.dear.commerce.order.purchase.application;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.order.purchase.application.port.MemberPort;
@@ -8,10 +10,13 @@ import shop.dear.commerce.order.purchase.application.dto.CreatePurchaseCommand;
 import shop.dear.commerce.order.purchase.application.port.ProductPort;
 import shop.dear.commerce.order.purchase.application.port.PurchaseEventPublisher;
 import shop.dear.commerce.order.purchase.application.port.dto.ProductInfo;
+import shop.dear.commerce.order.purchase.domain.constant.PurchaseStatus;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.commerce.order.purchase.domain.repository.PurchaseRepository;
 import shop.dear.common.event.financial.PaymentRequestedEvent;
 import shop.dear.common.event.order.OrderType;
+import shop.dear.common.event.order.PurchaseReleasedEvent;
+import shop.dear.common.event.order.ReleaseReason;
 import shop.dear.common.exception.BusinessException;
 
 import java.time.LocalDateTime;
@@ -20,6 +25,7 @@ import java.util.Objects;
 
 import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.*;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -112,5 +118,35 @@ public class PurchaseService {
         }
 
         purchase.cancel();
+
+        purchaseEventPublisher.publish(new PurchaseReleasedEvent(
+                purchase.getId(),
+                purchase.getBuyerId(),
+                purchase.getSellerId(),
+                purchase.getProductId(),
+                ReleaseReason.CANCELLED
+        ));
+    }
+
+    @Transactional
+    public void expireOverduePurchases() {
+        final LocalDateTime now = LocalDateTime.now();
+        final List<Purchase> overduePurchases = purchaseRepository.findAllByStatusAndPaymentDueAtBefore(
+                PurchaseStatus.PENDING_PAYMENT, now);
+
+        for (final Purchase purchase : overduePurchases) {
+            try {
+                purchase.expire();
+                purchaseEventPublisher.publish(new PurchaseReleasedEvent(
+                        purchase.getId(),
+                        purchase.getBuyerId(),
+                        purchase.getSellerId(),
+                        purchase.getProductId(),
+                        ReleaseReason.EXPIRED
+                ));
+            } catch (final ObjectOptimisticLockingFailureException e) {
+                log.warn("이미 상태가 변경된 구매는 만료 처리를 건너뜁니다. purchaseId={}", purchase.getId());
+            }
+        }
     }
 }
