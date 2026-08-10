@@ -7,7 +7,7 @@ spring:
   profiles:
     active: local
   elasticsearch:
-    uris: ${ES_URIS:http://localhost:9200}
+    uris: ${ES_URL:http://localhost:9200}
     connection-timeout: 3s
     socket-timeout: 10s
 
