@@ -50,6 +50,7 @@ public class SearchController {
                 keyword,
                 type,
                 sort,
+                //todo: 수정 포인트
                 paginationRequest.getPageNo() - 1, // 실제로는 0번부터 시작한다.
                 paginationRequest.getPageSize()
         );
