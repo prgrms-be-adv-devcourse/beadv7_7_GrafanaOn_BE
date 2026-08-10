@@ -132,7 +132,12 @@ export default function (data) {
     check(myRes, { '내 상품 목록 200': (r) => r.status === 200 });
 
     const myProducts = myRes.json('data') || [];
-    if (myProducts.length === 0) return;
+    if (myProducts.length === 0) {
+        // 선행 요청이 실패해도 즉시 다음 반복으로 가지 않는다.
+    // sleep 없이 반환하면 실패한 VU가 초당 수백 건으로 폭주한다.
+        sleep(THINK_TIME);
+        return;
+    }
 
     const targetId = myProducts[myProducts.length - 1].id;
     sleep(THINK_TIME);

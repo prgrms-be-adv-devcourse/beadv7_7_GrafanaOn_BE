@@ -48,6 +48,70 @@ WHERE email LIKE 'loadtest-%@example.com'
   AND email NOT LIKE 'loadtest-buyer-%'
   AND member_id IS NOT NULL;
 
+-- ── 구매용 고정 계정이 만든 데이터 ─────────────────────────────────
+--
+-- loadtest-buyer-N 계정은 지갑 잔액이 시딩되어 있어 계정 자체는 유지한다.
+-- 다만 그 계정으로 만든 구매·결제는 테스트 산물이므로 지워야 한다.
+-- (single/purchase/*, scenarios/purchase.js MODE=write 가 만든다)
+CREATE TEMP TABLE loadtest_actor_ids AS
+SELECT member_id FROM auth_account
+WHERE email LIKE 'loadtest-%@example.com'
+  AND member_id IS NOT NULL;
+
+-- 구매로 판매완료된 상품을 되돌리기 위해 대상을 먼저 확보한다.
+CREATE TEMP TABLE consumed_product_ids AS
+SELECT DISTINCT product_id
+FROM purchase
+WHERE number NOT LIKE 'PC-BULK-%'
+  AND buyer_id IN (SELECT member_id FROM loadtest_actor_ids);
+
+-- 정산 → 구매
+DELETE FROM settlement
+WHERE purchase_id IN (
+    SELECT id FROM purchase
+    WHERE number NOT LIKE 'PC-BULK-%'
+      AND buyer_id IN (SELECT member_id FROM loadtest_actor_ids)
+);
+
+DELETE FROM purchase
+WHERE number NOT LIKE 'PC-BULK-%'
+  AND buyer_id IN (SELECT member_id FROM loadtest_actor_ids);
+
+-- 판매완료된 배경 상품을 다시 판매중으로 되돌린다.
+-- 이걸 하지 않으면 다음 사람이 구매 테스트를 할 상품이 줄어든다.
+UPDATE product
+SET status = 'ON_SALE', updated_at = NOW()
+WHERE id IN (SELECT product_id FROM consumed_product_ids)
+  AND status = 'SOLD_OUT'
+  AND model_number LIKE 'BULK-%';
+
+-- 결제 (pg_payment 가 payment 를 참조하므로 자식부터 지운다)
+DELETE FROM pg_payment
+WHERE payment_id IN (
+    SELECT id FROM payment
+    WHERE member_id IN (SELECT member_id FROM loadtest_actor_ids)
+);
+
+DELETE FROM payment
+WHERE member_id IN (SELECT member_id FROM loadtest_actor_ids);
+
+-- 구매용 계정의 지갑 로그를 정리하고 잔액을 시딩 상태로 되돌린다.
+DELETE FROM wallet_log
+WHERE wallet_id IN (
+    SELECT w.id FROM wallet w
+    JOIN auth_account a ON a.member_id = w.member_id
+    WHERE a.email LIKE 'loadtest-buyer-%'
+);
+
+UPDATE wallet
+SET balance = 100000000.00, held_balance = 0.00, updated_at = NOW()
+WHERE member_id IN (
+    SELECT member_id FROM auth_account WHERE email LIKE 'loadtest-buyer-%'
+);
+
+DROP TABLE consumed_product_ids;
+DROP TABLE loadtest_actor_ids;
+
 -- 1. 이 계정들이 만든 오퍼 → 스냅샷
 DELETE FROM offer
 WHERE buyer_id IN (SELECT member_id FROM runtime_member_ids)
@@ -117,4 +181,6 @@ ANALYZE offer;
 SELECT 'member 총계' AS metric, COUNT(*) FROM member
 UNION ALL SELECT 'product(ON_SALE)', COUNT(*) FROM product WHERE status = 'ON_SALE'
 UNION ALL SELECT 'offer 총계', COUNT(*) FROM offer
-UNION ALL SELECT 'search_product', COUNT(*) FROM search_product;
+UNION ALL SELECT 'search_product', COUNT(*) FROM search_product
+UNION ALL SELECT 'purchase 총계', COUNT(*) FROM purchase
+UNION ALL SELECT 'payment 총계', COUNT(*) FROM payment;

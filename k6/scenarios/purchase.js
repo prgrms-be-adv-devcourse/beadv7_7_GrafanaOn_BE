@@ -125,7 +125,12 @@ export default function (data) {
 
     // PurchaseResponse: { id, number, status, productId, amount, purchasedAt, paymentDueAt, delivery }
     const purchaseId = createRes.json('data.id');
-    if (!purchaseId) return;
+    if (!purchaseId) {
+        // 선행 요청이 실패해도 즉시 다음 반복으로 가지 않는다.
+    // sleep 없이 반환하면 실패한 VU가 초당 수백 건으로 폭주한다.
+        sleep(THINK_TIME);
+        return;
+    }
     sleep(THINK_TIME);
 
     // 2. 구매 상세 조회

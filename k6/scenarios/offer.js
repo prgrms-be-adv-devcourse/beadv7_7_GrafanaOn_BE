@@ -87,7 +87,12 @@ export default function (data) {
 
     // CreateOfferSnapshotResponse: { snapshotId, productId, modelNumberSnapshot, priceSnapshot }
     const snapshotId = snapshotRes.json('data.snapshotId');
-    if (!snapshotId) return;
+    if (!snapshotId) {
+        // 선행 요청이 실패해도 즉시 다음 반복으로 가지 않는다.
+    // sleep 없이 반환하면 실패한 VU가 초당 수백 건으로 폭주한다.
+        sleep(THINK_TIME);
+        return;
+    }
     sleep(THINK_TIME);
 
     // 2. 오퍼 등록
@@ -108,7 +113,10 @@ export default function (data) {
 
     // OfferResponse의 식별자 필드명은 offerId가 아니라 id다.
     const offerId = offerRes.json('data.id');
-    if (!offerId) return;
+    if (!offerId) {
+        sleep(THINK_TIME);
+        return;
+    }
     sleep(THINK_TIME);
 
     // 3. 오퍼 상세 조회 (자기 오퍼)

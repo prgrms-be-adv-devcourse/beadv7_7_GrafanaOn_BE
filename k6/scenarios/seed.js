@@ -33,9 +33,14 @@ export const options = {
 const SELLER_COUNT = Number(__ENV.SELLER_COUNT || 5);
 const PRODUCTS_PER_SELLER = Number(__ENV.PRODUCTS_PER_SELLER || 40);
 
-// 구매 시나리오는 VU 번호와 구매 계정 번호를 1:1 매핑한다.
-// 반드시 구매 테스트의 최대 VU 수 이상이어야 한다 (burst 기본값 = 10).
-const BUYER_COUNT = Number(__ENV.BUYER_COUNT || 10);
+// 고정 계정 수. VU 번호와 1:1로 매핑되므로 최대 VU 수 이상이어야 한다.
+//
+// 부하 테스트 중에는 회원가입을 하지 않고 이 계정들로 로그인만 한다.
+// 회원가입이 commerce-service의 지갑 생성 API를 호출하는 구조라,
+// 측정 중 가입을 시도하면 서비스 간 호출이 섞여 결과가 오염되기 때문이다.
+//
+// 200 = stress 단계의 최대 VU. 이 값이면 focus/load/stress 전부 커버된다.
+const BUYER_COUNT = Number(__ENV.BUYER_COUNT || 200);
 
 const CATEGORIES = [
     'SNEAKERS',
