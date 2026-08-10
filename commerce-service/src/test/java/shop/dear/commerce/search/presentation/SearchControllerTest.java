@@ -60,9 +60,9 @@ class SearchControllerTest {
                         .param("size", "20"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("success"))
-                .andExpect(jsonPath("$.data.page").value(1))
-                .andExpect(jsonPath("$.data.size").value(20))
-                .andExpect(jsonPath("$.data.totalElements").value(1))
+                .andExpect(jsonPath("$.data.pagination.currentPage").value(1))
+                .andExpect(jsonPath("$.data.pagination.pageSize").value(20))
+                .andExpect(jsonPath("$.data.pagination.totalItems").value(1))
                 .andExpect(jsonPath("$.data.content[0].productName")
                         .value("나이키 에어포스"))
                 .andExpect(jsonPath("$.data.content[0].category")
@@ -77,16 +77,25 @@ class SearchControllerTest {
         ));
     }
 
-    // page=0을 요청하면 @Min(1) 검증에 실패하여 예외
+    // page=0을 요청하면 PaginationRequest가 기본 페이지(1)로 정규화한다
     @Test
-    void rejectsPageNumberLessThanOne() throws Exception {
+    void normalizesPageNumberLessThanOneToDefault() throws Exception {
+        given(searchService.search(any(SearchQuery.class)))
+                .willReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 0));
+
         mockMvc.perform(get("/api/search/products")
                         .param("keyword", "나이키")
                         .param("page", "0")
                         .param("size", "20"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("CM-001"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("success"));
 
-        org.mockito.Mockito.verifyNoInteractions(searchService);
+        verify(searchService).search(new SearchQuery(
+                "나이키",
+                SearchType.PRODUCT_NAME,
+                SearchSort.LATEST,
+                0,
+                20
+        ));
     }
 }

@@ -75,19 +75,19 @@ class ScrapControllerTest {
         final ResultActions result = mockMvc
             .perform(get("/api/scraps")
                 .header(MEMBER_ID_HEADER, "1")
-                .param("page", "0")
+                .param("page", "1")
                 .param("size", "10"));
 
         result
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data.scrapList.length()").value(2))
-            .andExpect(jsonPath("$.data.scrapList[0].id").value(200))
-            .andExpect(jsonPath("$.data.scrapList[0].name").value("상품200"))
-            .andExpect(jsonPath("$.data.page").value(0))
-            .andExpect(jsonPath("$.data.size").value(10))
-            .andExpect(jsonPath("$.data.totalElements").value(2))
-            .andExpect(jsonPath("$.data.totalPages").value(1))
-            .andExpect(jsonPath("$.data.hasNext").value(false));
+            .andExpect(jsonPath("$.data.content.length()").value(2))
+            .andExpect(jsonPath("$.data.content[0].id").value(200))
+            .andExpect(jsonPath("$.data.content[0].name").value("상품200"))
+            .andExpect(jsonPath("$.data.pagination.currentPage").value(1))
+            .andExpect(jsonPath("$.data.pagination.pageSize").value(10))
+            .andExpect(jsonPath("$.data.pagination.totalItems").value(2))
+            .andExpect(jsonPath("$.data.pagination.totalPages").value(1))
+            .andExpect(jsonPath("$.data.pagination.hasNext").value(false));
     }
 
     @Test
