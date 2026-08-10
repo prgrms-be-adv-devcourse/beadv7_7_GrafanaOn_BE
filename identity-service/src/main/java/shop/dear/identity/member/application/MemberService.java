@@ -15,6 +15,7 @@ import shop.dear.identity.member.domain.exception.MemberErrorCode;
 import shop.dear.identity.member.domain.model.Member;
 import shop.dear.identity.member.domain.model.Seller;
 import shop.dear.identity.member.domain.repository.MemberRepository;
+import shop.dear.identity.member.application.port.CipherManager;
 import shop.dear.identity.member.application.port.ProductPort;
 import shop.dear.identity.member.application.port.WalletPort;
 import shop.dear.identity.member.domain.repository.SellerRepository;
@@ -29,7 +30,7 @@ public class MemberService  {
     private final MemberRepository memberRepository;
     private final SellerRepository sellerRepository;
     private final ProductPort productPort;
-    private final Encryptor encryptor;
+    private final CipherManager encryptor;
     private final WalletPort walletPort;
 
     @Transactional

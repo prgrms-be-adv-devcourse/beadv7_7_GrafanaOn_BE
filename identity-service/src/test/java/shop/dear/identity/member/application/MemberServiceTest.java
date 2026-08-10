@@ -15,6 +15,7 @@ import shop.dear.identity.member.application.dto.SellerInfo;
 import shop.dear.identity.member.application.dto.UpdateProfileCommand;
 import shop.dear.identity.member.application.dto.UpdateSellerAccountCommand;
 import shop.dear.identity.member.application.dto.external.ExistsProduct;
+import shop.dear.identity.member.application.port.CipherManager;
 import shop.dear.identity.member.application.port.ProductPort;
 import shop.dear.identity.member.application.port.WalletPort;
 import shop.dear.identity.member.domain.constract.SellerStatus;
@@ -41,7 +42,7 @@ public class MemberServiceTest {
     private SellerRepository sellerRepository;
 
     @Mock
-    private Encryptor encryptor;
+    private CipherManager encryptor;
 
     @Mock
     private ProductPort productPort;
