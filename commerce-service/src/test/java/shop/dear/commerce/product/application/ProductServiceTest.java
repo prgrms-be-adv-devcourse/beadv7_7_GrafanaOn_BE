@@ -501,4 +501,20 @@ class ProductServiceTest {
         //Then
         assertThat(result.isChanged()).isTrue();
     }
+
+    @DisplayName("구매 취소 시 상품의 상태를 판매중으로 변경한다.")
+    @Test
+    void givenProductId_whenCanceledPurchase_thenChangeProductStatusIsOnSale() {
+        //Given
+        final Long memberId = 1L;
+        final Product product = createProduct(memberId);
+        product.changeStatusToTrading();
+        final Product savedProduct = productRepository.save(product);
+
+        //When
+        productService.canceledPurchase(savedProduct.getId());
+
+        //Then
+        assertThat(savedProduct.getStatus()).isEqualTo(ProductStatus.ON_SALE);
+    }
 }
