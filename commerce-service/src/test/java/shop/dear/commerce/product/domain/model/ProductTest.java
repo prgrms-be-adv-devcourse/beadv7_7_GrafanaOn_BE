@@ -542,6 +542,19 @@ class ProductTest {
         assertThat(product.getStatus()).isEqualTo(ProductStatus.ON_SALE);
     }
 
+    @DisplayName("상품 상태가 trading으로 변경된다.")
+    @Test
+    void whenChangeStatusToTrading_thenSuccess() {
+        //Given
+        final Product product = createProduct();
+
+        //When
+        product.changeStatusToTrading();
+
+        //Then
+        assertThat(product.getStatus()).isEqualTo(ProductStatus.TRADING);
+    }
+
     @DisplayName("판매자가 아닌 사용자가 아직 판매전인 상품의 상세 정보를 조회할 때 false를 반환한다.")
     @Test
     void givenOnSaleOrSoldOutStatus_whenCheckIsVisible_thenReturnTrue() {
@@ -554,12 +567,12 @@ class ProductTest {
         onSaleProduct.changeStatusToOnSale();
 
         // When
-        final boolean onSaleVisible = preparingProduct.validateVisible(memberId);
-        final boolean soldOutVisible = onSaleProduct.validateVisible(memberId);
+        final boolean preparingVisible = preparingProduct.validateVisible(memberId);
+        final boolean onSaleVisible = onSaleProduct.validateVisible(memberId);
 
         // Then
-        assertThat(onSaleVisible).isFalse();
-        assertThat(soldOutVisible).isTrue();
+        assertThat(preparingVisible).isFalse();
+        assertThat(onSaleVisible).isTrue();
     }
 
     @DisplayName("판매자인 사용자가 아직 판매전인 상품의 상세 정보를 조회할 때 true를 반환한다.")
@@ -574,12 +587,39 @@ class ProductTest {
         onSaleProduct.changeStatusToOnSale();
 
         // When
-        final boolean onSaleVisible = preparingProduct.validateVisible(memberId);
-        final boolean soldOutVisible = onSaleProduct.validateVisible(memberId);
+        final boolean preparingVisible = preparingProduct.validateVisible(memberId);
+        final boolean onSaleVisible = onSaleProduct.validateVisible(memberId);
 
         // Then
+        assertThat(preparingVisible).isTrue();
         assertThat(onSaleVisible).isTrue();
-        assertThat(soldOutVisible).isTrue();
+    }
+
+    @DisplayName("현재 판매중인 상품의 거래 여부를 조회할 때 true를 반환한다.")
+    @Test
+    void givenProductStatusIsOnSale_whenValidateTradable_thenReturnTrue() {
+        // Given
+        final Product product = createProduct();  // sellerId = 1
+        product.changeStatusToOnSale();
+
+        // When
+        final boolean result = product.validateTradable();
+
+        // Then
+        assertThat(result).isTrue();
+    }
+
+    @DisplayName("현재 판매중이지 않은 상품의 거래 여부를 조회할 때 false를 반환한다.")
+    @Test
+    void givenProductStatusIsNotOnSale_whenValidateTradable_thenReturnFalse() {
+        // Given
+        final Product product = createProduct();  // sellerId = 1
+
+        // When
+        final boolean result = product.validateTradable();
+
+        // Then
+        assertThat(result).isFalse();
     }
 
     @DisplayName("상품 삭제 시 삭제되는 시점의 시간을 저장한다.")

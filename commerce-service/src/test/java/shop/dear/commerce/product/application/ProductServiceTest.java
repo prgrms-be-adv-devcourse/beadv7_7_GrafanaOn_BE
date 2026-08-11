@@ -12,6 +12,7 @@ import shop.dear.commerce.product.application.dto.GetSellerProductDto;
 import shop.dear.commerce.product.application.dto.MemberProductExistsDto;
 import shop.dear.commerce.product.application.dto.PresignedUrlInfoDto;
 import shop.dear.commerce.product.application.dto.ScrapProductInfoDto;
+import shop.dear.commerce.product.application.dto.TradeProductDto;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
 import shop.dear.commerce.product.application.dto.command.GeneratePresignedUrlsCommand;
 import shop.dear.commerce.product.application.dto.command.GetScrapProductCommand;
@@ -34,7 +35,6 @@ import shop.dear.commerce.product.domain.repository.ProductRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static java.time.temporal.ChronoUnit.MICROS;
@@ -483,5 +483,22 @@ class ProductServiceTest {
         //Then
         assertThat(savedProduct1.getStatus()).isEqualTo(ProductStatus.SOLD_OUT);
         assertThat(savedProduct2.getStatus()).isEqualTo(ProductStatus.SOLD_OUT);
+    }
+
+    @DisplayName("판매중인 상품의 상태를 거래중으로 변경한다.")
+    @Test
+    void givenProductId_whenTradeProduct_thenChangeStatusTrade() {
+        //Given
+        final Long memberId = 1L;
+        final Product product = createProduct(memberId);
+        product.changeStatusToOnSale();
+
+        final Product savedProduct = productRepository.save(product);
+
+        //When
+        final TradeProductDto result = productService.tradeProduct(memberId, savedProduct.getId());
+
+        //Then
+        assertThat(result.isChanged()).isTrue();
     }
 }
