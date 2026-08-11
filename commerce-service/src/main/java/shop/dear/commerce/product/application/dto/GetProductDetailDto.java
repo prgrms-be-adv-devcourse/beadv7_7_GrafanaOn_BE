@@ -16,6 +16,8 @@ public record GetProductDetailDto(
     String modelNumber,
     String category,
     LocalDate releaseDate,
+    String saleType,
+    String status,
     Long viewCount,
     String description,
     LocalDateTime insertedAt
@@ -45,6 +47,8 @@ public record GetProductDetailDto(
             product.getModelNumber(),
             product.getCategory().toString(),
             product.getReleaseDate(),
+            product.getSaleType().toString(),
+            product.getStatus().toString(),
             product.getViewCount(),
             product.getDescription(),
             product.getInsertedAt()

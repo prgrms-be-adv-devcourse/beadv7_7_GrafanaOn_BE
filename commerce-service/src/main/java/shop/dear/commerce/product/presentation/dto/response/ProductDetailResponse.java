@@ -16,6 +16,8 @@ public record ProductDetailResponse(
     String modelNumber,
     String category,
     LocalDate releaseDate,
+    String saleType,
+    String status,
     Long viewCount,
     String description,
     LocalDateTime insertedAt
@@ -43,6 +45,8 @@ public record ProductDetailResponse(
             dto.modelNumber(),
             dto.category(),
             dto.releaseDate(),
+            dto.saleType(),
+            dto.status(),
             dto.viewCount(),
             dto.description(),
             dto.insertedAt()
