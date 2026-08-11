@@ -1,8 +1,12 @@
 package shop.dear.commerce.product.infrastructure.persistence.jpa;
 
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import shop.dear.commerce.product.domain.constant.ProductCategory;
 import shop.dear.commerce.product.domain.constant.ProductSaleType;
@@ -11,6 +15,7 @@ import shop.dear.commerce.product.domain.model.Product;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductJpaRepository extends JpaRepository<Product, Long> {
     boolean existsBySellerIdAndStatusIn(final Long sellerId, final List<ProductStatus> statuses);
@@ -49,4 +54,8 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
     int updateStatusToOnSale(@Param("startTime") final LocalDateTime startTime, @Param("endTime") final LocalDateTime endTime);
 
     List<Product> findAllByIdIn(final List<Long> productIds);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints({@QueryHint(name = "jakarta.persistence.lock.timeout", value = "3000")})
+    Optional<Product> findByIdWithPessimisticWrite(final Long productId);
 }
