@@ -123,16 +123,19 @@ DELETE FROM offer_snapshot
 WHERE writer_id IN (SELECT member_id FROM loadtest_actor_ids)
    OR seller_id IN (SELECT member_id FROM loadtest_actor_ids);
 
-DROP TABLE loadtest_actor_ids;
-
 -- 2. 스크랩 / 장바구니
-DELETE FROM scrap WHERE member_id IN (SELECT member_id FROM runtime_member_ids);
+--    오퍼와 마찬가지로 고정 계정(loadtest-buyer-N)이 만드는 데이터다.
+--    scrap은 (member_id, product_id) 중복을 막고 있어(ScrapErrorCode.DUPLICATE_SCRAP)
+--    남겨두면 재실행 시 스크랩 추가가 전부 실패한다.
+DELETE FROM scrap WHERE member_id IN (SELECT member_id FROM loadtest_actor_ids);
 
 DELETE FROM cart_item
 WHERE cart_id IN (
-    SELECT id FROM cart WHERE member_id IN (SELECT member_id FROM runtime_member_ids)
+    SELECT id FROM cart WHERE member_id IN (SELECT member_id FROM loadtest_actor_ids)
 );
-DELETE FROM cart WHERE member_id IN (SELECT member_id FROM runtime_member_ids);
+DELETE FROM cart WHERE member_id IN (SELECT member_id FROM loadtest_actor_ids);
+
+DROP TABLE loadtest_actor_ids;
 
 -- 3. 런타임에 만들어진 상품 (product.js MODE=write, offer 시나리오 타깃)
 --    이들에 딸린 검색행/스토리/이미지도 함께 지운다.
