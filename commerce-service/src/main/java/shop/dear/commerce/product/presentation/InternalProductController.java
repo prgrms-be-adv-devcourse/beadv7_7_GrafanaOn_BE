@@ -12,11 +12,13 @@ import shop.dear.commerce.product.application.ProductService;
 import shop.dear.commerce.product.application.dto.GetProductDetailDto;
 import shop.dear.commerce.product.application.dto.MemberProductExistsDto;
 import shop.dear.commerce.product.application.dto.ScrapProductInfoDto;
+import shop.dear.commerce.product.application.dto.TradeProductDto;
 import shop.dear.commerce.product.application.dto.command.GetScrapProductCommand;
 import shop.dear.commerce.product.presentation.dto.request.GetScrapProductsRequest;
 import shop.dear.commerce.product.presentation.dto.response.GetMemberProductExistsResponse;
 import shop.dear.commerce.product.presentation.dto.response.GetScrapProductResponse;
 import shop.dear.commerce.product.presentation.dto.response.ProductDetailResponse;
+import shop.dear.commerce.product.presentation.dto.response.TradeProductResponse;
 import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
 
@@ -54,6 +56,14 @@ public class InternalProductController {
     public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductDetail(@AuthUser final Long memberId, @PathVariable final Long productId) {
         final GetProductDetailDto result = productService.getProductDetailToInternal(memberId, productId);
         final ProductDetailResponse response = ProductDetailResponse.of(result);
+
+        return ResponseEntity.ok(successWithData(response));
+    }
+
+    @PostMapping("/{productId}/trade")
+    public ResponseEntity<ApiResponse<TradeProductResponse>> tradeProduct(@AuthUser final Long memberId, @PathVariable final Long productId) {
+        final TradeProductDto result = productService.tradeProduct(memberId, productId);
+        final TradeProductResponse response = TradeProductResponse.of(result);
 
         return ResponseEntity.ok(successWithData(response));
     }

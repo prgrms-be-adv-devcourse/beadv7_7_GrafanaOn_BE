@@ -294,8 +294,16 @@ public class Product extends BaseEntity {
         this.status = ProductStatus.ON_SALE;
     }
 
+    public void changeStatusToTrading() {
+        this.status = ProductStatus.TRADING;
+    }
+
     public boolean validateVisible(final Long memberId) {
         return this.sellerId.equals(memberId) || this.getStatus() != ProductStatus.PREPARING;
+    }
+
+    public boolean validateTradable() {
+        return this.getStatus() == ProductStatus.ON_SALE;
     }
 
     public boolean isDeleted() {
