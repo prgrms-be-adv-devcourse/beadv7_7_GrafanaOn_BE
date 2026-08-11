@@ -313,7 +313,7 @@ public class ProductService {
     public TradeProductDto tradeProduct(final Long memberId, final Long productId) {
         validateMember(memberId);
 
-        final Product product = productRepository.findById(productId);
+        final Product product = productRepository.findByIdWithPessimisticWrite(productId);
 
         if (!product.validateTradable()) {
             return new TradeProductDto(false);

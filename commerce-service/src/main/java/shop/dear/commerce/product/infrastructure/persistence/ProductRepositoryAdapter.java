@@ -77,4 +77,10 @@ public class ProductRepositoryAdapter implements ProductRepository {
     public int updateStatusToOnSale(final LocalDateTime startTime, final LocalDateTime endTime) {
         return productRepository.updateStatusToOnSale(startTime, endTime);
     }
+
+    @Override
+    public Product findByIdWithPessimisticWrite(final Long productId) {
+        return productRepository.findByIdWithPessimisticWrite(productId)
+            .orElseThrow(() -> new BusinessException(INVALID_PRODUCT));
+    }
 }
