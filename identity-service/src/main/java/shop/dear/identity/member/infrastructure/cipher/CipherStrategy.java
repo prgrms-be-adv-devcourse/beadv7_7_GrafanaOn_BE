@@ -1,4 +1,4 @@
-package shop.dear.identity.member.infrastructure.persistence;
+package shop.dear.identity.member.infrastructure.cipher;
 
 public interface CipherStrategy {
 

@@ -1,4 +1,4 @@
-package shop.dear.identity.member.infrastructure.persistence;
+package shop.dear.identity.member.infrastructure.cipher;
 
 import org.springframework.stereotype.Component;
 import shop.dear.identity.member.application.port.CipherManager;
