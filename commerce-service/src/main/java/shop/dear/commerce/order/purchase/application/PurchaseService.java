@@ -2,7 +2,6 @@ package shop.dear.commerce.order.purchase.application;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.order.purchase.application.port.MemberPort;
@@ -15,11 +14,10 @@ import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.commerce.order.purchase.domain.repository.PurchaseRepository;
 import shop.dear.common.event.financial.PaymentRequestedEvent;
 import shop.dear.common.event.order.OrderType;
-import shop.dear.common.event.order.PurchaseReleasedEvent;
-import shop.dear.common.event.order.ReleaseReason;
 import shop.dear.common.exception.BusinessException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,6 +35,7 @@ public class PurchaseService {
     private final PurchaseEventPublisher purchaseEventPublisher;
     private final ProductPort productPort;
     private final MemberPort memberPort;
+    private final PurchaseExpirationProcessor purchaseExpirationProcessor;
 
     public Purchase getPurchase(final Long purchaseId, final Long buyerId) {
         validateMemberExists(buyerId);
@@ -118,35 +117,33 @@ public class PurchaseService {
         }
 
         purchase.cancel();
-
-        purchaseEventPublisher.publish(new PurchaseReleasedEvent(
-                purchase.getId(),
-                purchase.getBuyerId(),
-                purchase.getSellerId(),
-                purchase.getProductId(),
-                ReleaseReason.CANCELLED
-        ));
     }
 
-    @Transactional
     public void expireOverduePurchases() {
         final LocalDateTime now = LocalDateTime.now();
         final List<Purchase> overduePurchases = purchaseRepository.findAllByStatusAndPaymentDueAtBefore(
                 PurchaseStatus.PENDING_PAYMENT, now);
 
+        int successCount = 0;
+        int skippedCount = 0;
+        final List<Long> failedPurchaseIds = new ArrayList<>();
+
         for (final Purchase purchase : overduePurchases) {
             try {
-                purchase.expire();
-                purchaseEventPublisher.publish(new PurchaseReleasedEvent(
-                        purchase.getId(),
-                        purchase.getBuyerId(),
-                        purchase.getSellerId(),
-                        purchase.getProductId(),
-                        ReleaseReason.EXPIRED
-                ));
-            } catch (final ObjectOptimisticLockingFailureException e) {
-                log.warn("이미 상태가 변경된 구매는 만료 처리를 건너뜁니다. purchaseId={}", purchase.getId());
+                final boolean expired = purchaseExpirationProcessor.expire(purchase.getId());
+                if (expired) {
+                    successCount++;
+                } else {
+                    log.warn("이미 상태가 변경된 구매는 만료 처리를 건너뜁니다. purchaseId={}", purchase.getId());
+                    skippedCount++;
+                }
+            } catch (final Exception e) {
+                log.error("구매 만료 처리 중 예외가 발생하여 건너뜁니다. purchaseId={}", purchase.getId(), e);
+                failedPurchaseIds.add(purchase.getId());
             }
         }
+
+        log.info("구매 만료 스케줄러 실행 완료: 대상={}건, 성공={}건, 스킵(상태 변경됨)={}건, 실패={}건, 실패 ID={}",
+                overduePurchases.size(), successCount, skippedCount, failedPurchaseIds.size(), failedPurchaseIds);
     }
 }
