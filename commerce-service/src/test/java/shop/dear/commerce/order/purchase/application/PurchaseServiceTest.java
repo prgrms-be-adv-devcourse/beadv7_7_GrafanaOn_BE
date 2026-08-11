@@ -21,8 +21,6 @@ import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.commerce.order.purchase.domain.repository.PurchaseRepository;
 import shop.dear.common.event.financial.PaymentRequestedEvent;
 import shop.dear.common.event.order.OrderType;
-import shop.dear.common.event.order.PurchaseReleasedEvent;
-import shop.dear.common.event.order.ReleaseReason;
 import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
@@ -57,6 +55,9 @@ class PurchaseServiceTest {
 
     @Mock
     private MemberPort memberPort;
+
+    @Mock
+    private PurchaseExpirationProcessor purchaseExpirationProcessor;
 
     @InjectMocks
     private PurchaseService purchaseService;
@@ -245,15 +246,6 @@ class PurchaseServiceTest {
             assertThat(purchase.getStatus())
                     .isEqualTo(PurchaseStatus.CANCELLED);
 
-            final ArgumentCaptor<PurchaseReleasedEvent> captor =
-                    ArgumentCaptor.forClass(PurchaseReleasedEvent.class);
-            verify(purchaseEventPublisher).publish(captor.capture());
-
-            final PurchaseReleasedEvent event = captor.getValue();
-            assertThat(event.purchaseId()).isEqualTo(purchase.getId());
-            assertThat(event.productId()).isEqualTo(purchase.getProductId());
-            assertThat(event.reason()).isEqualTo(ReleaseReason.CANCELLED);
-
             verifyMemberExists(1L);
         }
 
@@ -440,7 +432,7 @@ class PurchaseServiceTest {
     class ExpireOverduePurchases {
 
         @Test
-        @DisplayName("결제 기한이 지난 PENDING_PAYMENT 구매를 EXPIRED로 변경하고 이벤트를 발행한다")
+        @DisplayName("결제 기한이 지난 PENDING_PAYMENT 구매를 만료 처리기에 위임한다")
         void expiresOverduePurchases() {
             // given
             final Purchase overduePurchase = Purchase.create(
@@ -451,14 +443,6 @@ class PurchaseServiceTest {
                     "delivery",
                     LocalDateTime.now().minusMinutes(1)
             );
-            final Purchase pendingPurchase = Purchase.create(
-                    4L,
-                    5L,
-                    6L,
-                    BigDecimal.valueOf(10000),
-                    "delivery",
-                    LocalDateTime.now().plusMinutes(10)
-            );
 
             given(purchaseRepository.findAllByStatusAndPaymentDueAtBefore(
                     eq(PurchaseStatus.PENDING_PAYMENT), any(LocalDateTime.class)))
@@ -468,17 +452,7 @@ class PurchaseServiceTest {
             purchaseService.expireOverduePurchases();
 
             // then
-            assertThat(overduePurchase.getStatus()).isEqualTo(PurchaseStatus.EXPIRED);
-            assertThat(pendingPurchase.getStatus()).isEqualTo(PurchaseStatus.PENDING_PAYMENT);
-
-            final ArgumentCaptor<PurchaseReleasedEvent> captor =
-                    ArgumentCaptor.forClass(PurchaseReleasedEvent.class);
-            verify(purchaseEventPublisher).publish(captor.capture());
-
-            final PurchaseReleasedEvent event = captor.getValue();
-            assertThat(event.purchaseId()).isEqualTo(overduePurchase.getId());
-            assertThat(event.productId()).isEqualTo(overduePurchase.getProductId());
-            assertThat(event.reason()).isEqualTo(ReleaseReason.EXPIRED);
+            verify(purchaseExpirationProcessor).expire(overduePurchase.getId());
         }
 
         @Test
@@ -493,7 +467,7 @@ class PurchaseServiceTest {
             purchaseService.expireOverduePurchases();
 
             // then
-            verify(purchaseEventPublisher, never()).publish(any(PurchaseReleasedEvent.class));
+            verify(purchaseExpirationProcessor, never()).expire(anyLong());
         }
     }
 

@@ -20,4 +20,6 @@ public interface PurchaseRepository {
     List<Purchase> findByBuyerId(Long buyerId);
 
     List<Purchase> findAllByStatusAndPaymentDueAtBefore(PurchaseStatus status, LocalDateTime paymentDueAt);
+
+    int updateStatusIfCurrent(Long id, PurchaseStatus from, PurchaseStatus to);
 }

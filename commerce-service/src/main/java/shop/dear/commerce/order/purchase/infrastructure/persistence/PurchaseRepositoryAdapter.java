@@ -46,4 +46,9 @@ public class PurchaseRepositoryAdapter implements PurchaseRepository {
   public List<Purchase> findAllByStatusAndPaymentDueAtBefore(final PurchaseStatus status, final LocalDateTime paymentDueAt) {
     return purchaseJpaRepository.findAllByStatusAndPaymentDueAtBefore(status, paymentDueAt);
   }
+
+  @Override
+  public int updateStatusIfCurrent(final Long id, final PurchaseStatus from, final PurchaseStatus to) {
+    return purchaseJpaRepository.updateStatusIfCurrent(id, from, to);
+  }
 }
