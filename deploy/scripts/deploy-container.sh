@@ -24,5 +24,5 @@ docker run -d \
   --restart unless-stopped \
   -p "$HOST_PORT":"$CONTAINER_PORT" \
   --env-file "$ENV_FILE" \
-  -v /var/log/apps/"$SERVICE_NAME":/logs \
+  -v /var/log/apps/"$SERVICE_NAME":/app/logs \
   "$SERVICE_NAME":latest
