@@ -9,6 +9,7 @@ import shop.dear.commerce.product.application.dto.GetSellerProductDto;
 import shop.dear.commerce.product.application.dto.MemberProductExistsDto;
 import shop.dear.commerce.product.application.dto.PresignedUrlInfoDto;
 import shop.dear.commerce.product.application.dto.ScrapProductInfoDto;
+import shop.dear.commerce.product.application.dto.TradeProductDto;
 import shop.dear.commerce.product.application.dto.command.CreateProductCommand;
 import shop.dear.commerce.product.application.dto.command.GeneratePresignedUrlsCommand;
 import shop.dear.commerce.product.application.dto.command.GetScrapProductCommand;
@@ -306,5 +307,20 @@ public class ProductService {
         }
 
         product.changeStatusToSoldOut();
+    }
+
+    @Transactional
+    public TradeProductDto tradeProduct(final Long memberId, final Long productId) {
+        validateMember(memberId);
+
+        final Product product = productRepository.findById(productId);
+
+        if (!product.validateTradable()) {
+            return new TradeProductDto(false);
+        }
+
+        product.changeStatusToTrading();
+
+        return new TradeProductDto(true);
     }
 }
