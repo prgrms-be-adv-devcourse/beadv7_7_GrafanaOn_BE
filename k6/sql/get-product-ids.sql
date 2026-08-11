@@ -38,15 +38,17 @@ FROM (
 ) t;
 
 \echo ''
-\echo '=== [purchase.js MODE=write] ON_SALE + IMMEDIATE 상품 200개 ==='
-\echo '(구매 1건당 상품 1개가 소모된다. burst 기준 약 90건 필요)'
+\echo '=== [purchase] ON_SALE + IMMEDIATE 상품 5000개 ==='
+\echo '(구매 1건당 상품 1개가 소모된다)'
+\echo '  scenarios/purchase.js MODE=write : burst 기준 약 90건'
+\echo '  single/purchase/create.js        : TEST_TYPE=focus 기준 약 4,000건'
 SELECT string_agg(id::text, ',')
 FROM (
-    SELECT id FROM product
-    WHERE status = 'ON_SALE' AND sale_type = 'IMMEDIATE'
-    ORDER BY id
-    LIMIT 200
-) t;
+         SELECT id FROM product
+         WHERE status = 'ON_SALE' AND sale_type = 'IMMEDIATE'
+         ORDER BY id
+             LIMIT 5000
+     ) t;
 
 \pset tuples_only off
 \pset format aligned
