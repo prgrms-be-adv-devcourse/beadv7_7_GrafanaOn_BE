@@ -15,8 +15,6 @@ import shop.dear.common.event.financial.PaymentCompletedEvent;
 import shop.dear.common.event.financial.PaymentFailedEvent;
 import shop.dear.common.event.order.FinishedOrderEvent;
 import shop.dear.common.event.order.OrderType;
-import shop.dear.common.event.order.PurchaseReleasedEvent;
-import shop.dear.common.event.order.ReleaseReason;
 import shop.dear.common.exception.BusinessException;
 
 import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.PURCHASE_NOT_FOUND;
@@ -67,14 +65,6 @@ public class PurchasePaymentEventListener {
 
         final Purchase purchase = findPurchase(event.orderId());
         purchase.failPayment();
-
-        purchaseEventPublisher.publish(new PurchaseReleasedEvent(
-                purchase.getId(),
-                purchase.getBuyerId(),
-                purchase.getSellerId(),
-                purchase.getProductId(),
-                ReleaseReason.PAYMENT_FAILED
-        ));
     }
 
     private Purchase findPurchase(final Long purchaseId) {
