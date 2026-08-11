@@ -323,4 +323,11 @@ public class ProductService {
 
         return new TradeProductDto(true);
     }
+
+    @Transactional
+    public void canceledPurchase(final Long productId) {
+        final Product product = productRepository.findById(productId);
+
+        product.changeStatusToOnSale();
+    }
 }
