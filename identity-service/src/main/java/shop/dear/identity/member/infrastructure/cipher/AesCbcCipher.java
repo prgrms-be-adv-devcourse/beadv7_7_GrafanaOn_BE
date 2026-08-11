@@ -1,4 +1,4 @@
-package shop.dear.identity.member.infrastructure.persistence;
+package shop.dear.identity.member.infrastructure.cipher;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
