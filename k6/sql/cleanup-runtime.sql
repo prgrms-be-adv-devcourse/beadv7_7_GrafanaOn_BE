@@ -110,16 +110,20 @@ WHERE member_id IN (
 );
 
 DROP TABLE consumed_product_ids;
-DROP TABLE loadtest_actor_ids;
 
--- 1. 이 계정들이 만든 오퍼 → 스냅샷
+-- 1. 부하테스트 계정이 만든 오퍼 → 스냅샷
+--    고정 계정(loadtest-buyer-N)도 오퍼를 만들므로 actor 기준으로 지운다.
+--    runtime_member_ids는 고정 계정을 제외하기 때문에 여기 쓰면 안 된다.
+--    (남겨두면 스냅샷이 offer_id를 물고 있어 재실행 시 OFS-001로 전부 실패한다)
 DELETE FROM offer
-WHERE buyer_id IN (SELECT member_id FROM runtime_member_ids)
-   OR seller_id IN (SELECT member_id FROM runtime_member_ids);
+WHERE buyer_id IN (SELECT member_id FROM loadtest_actor_ids)
+   OR seller_id IN (SELECT member_id FROM loadtest_actor_ids);
 
 DELETE FROM offer_snapshot
-WHERE writer_id IN (SELECT member_id FROM runtime_member_ids)
-   OR seller_id IN (SELECT member_id FROM runtime_member_ids);
+WHERE writer_id IN (SELECT member_id FROM loadtest_actor_ids)
+   OR seller_id IN (SELECT member_id FROM loadtest_actor_ids);
+
+DROP TABLE loadtest_actor_ids;
 
 -- 2. 스크랩 / 장바구니
 DELETE FROM scrap WHERE member_id IN (SELECT member_id FROM runtime_member_ids);
