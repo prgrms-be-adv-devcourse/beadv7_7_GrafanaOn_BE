@@ -19,10 +19,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.CANNOT_PURCHASE_OWN_PRODUCT;
-import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.PRODUCT_NOT_FOR_IMMEDIATE_PURCHASE;
-import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.PRODUCT_NOT_ON_SALE;
-import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.PURCHASE_NOT_FOUND;
+import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.*;
 
 @Service
 @Transactional(readOnly = true)
@@ -66,7 +63,7 @@ public class PurchaseService {
         validateMemberExists(command.buyerId());
 
         final ProductInfo product = productPort.getProduct(command.productId());
-        validateProductPurchasable(command.buyerId(), product);
+        validateProductForPurchase(command.buyerId(), product);
 
         final LocalDateTime paymentDueAt =
                 LocalDateTime.now().plusMinutes(PAYMENT_DUE_MINUTES);
@@ -92,16 +89,16 @@ public class PurchaseService {
         return savedPurchase;
     }
 
-    private void validateProductPurchasable(final Long buyerId, final ProductInfo product) {
-        if (Objects.equals(buyerId, product.sellerId())) {
+    private void validateProductForPurchase(Long buyerId, ProductInfo product) {
+        if (product.isOwnedBy(buyerId)) {
             throw new BusinessException(CANNOT_PURCHASE_OWN_PRODUCT);
         }
 
-        if (!PRODUCT_STATUS_ON_SALE.equals(product.status())) {
+        if (!product.isOnSale()) {
             throw new BusinessException(PRODUCT_NOT_ON_SALE);
         }
 
-        if (!PRODUCT_SALE_TYPE_IMMEDIATE.equals(product.saleType())) {
+        if (!product.isImmediateSale()) {
             throw new BusinessException(PRODUCT_NOT_FOR_IMMEDIATE_PURCHASE);
         }
     }
