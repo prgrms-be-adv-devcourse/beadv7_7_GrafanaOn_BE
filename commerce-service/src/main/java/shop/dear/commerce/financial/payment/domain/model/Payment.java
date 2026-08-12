@@ -173,6 +173,7 @@ public class Payment extends BaseEntity {
     }
 
     public void approvePgPayment(
+            final String paymentKey,
             final String transactionKey,
             final BigDecimal approvedAmount
     ) {
@@ -180,6 +181,6 @@ public class Payment extends BaseEntity {
             throw new BusinessException(PaymentErrorCode.INVALID_PAYMENT_PURPOSE);
         }
 
-        this.pgPayment.approve(transactionKey, approvedAmount);
+        this.pgPayment.approve(paymentKey, transactionKey, approvedAmount);
     }
 }

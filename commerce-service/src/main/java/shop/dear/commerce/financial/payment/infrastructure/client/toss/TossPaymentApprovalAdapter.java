@@ -59,8 +59,9 @@ public class TossPaymentApprovalAdapter implements PgPaymentApprovalPort {
             }
 
             return new PgApprovalResult(
+                    response.paymentKey(),
                     response.orderId(),
-                    response.transactionKey(),
+                    response.lastTransactionKey(),
                     response.totalAmount()
             );
         } catch (final RestClientException e) {
@@ -87,8 +88,9 @@ public class TossPaymentApprovalAdapter implements PgPaymentApprovalPort {
     }
 
     private record TossConfirmResponse(
+            String lastTransactionKey,
+            String paymentKey,
             String orderId,
-            String transactionKey,
             BigDecimal totalAmount
     ) {
     }

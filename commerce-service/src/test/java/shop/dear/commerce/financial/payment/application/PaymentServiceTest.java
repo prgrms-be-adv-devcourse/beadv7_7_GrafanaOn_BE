@@ -404,6 +404,7 @@ public class PaymentServiceTest {
         );
 
         final PgApprovalResult approvalResult = new PgApprovalResult(
+                PAYMENT_KEY,
                 MERCHANT_ORDER_ID,
                 TRANSACTION_KEY,
                 AMOUNT

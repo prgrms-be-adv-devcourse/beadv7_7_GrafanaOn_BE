@@ -36,11 +36,14 @@ public class PGPayment extends BaseEntity {
     @Column(name = "transaction_key", length = 255)
     private String transactionKey;
 
-    @Column(name = "approved_amount", precision = 15, scale = 2)
-    private BigDecimal approvedAmount;
+    @Column(name = "payment_key", unique = true, length = 255)
+    private String paymentKey;
 
     @Column(name = "merchant_order_id", nullable = false, unique = true, length = 64)
     private String merchantOrderId;
+
+    @Column(name = "approved_amount", precision = 15, scale = 2)
+    private BigDecimal approvedAmount;
 
     private PGPayment(final Payment payment, final String merchantOrderId) {
             this.payment = payment;
@@ -53,6 +56,7 @@ public class PGPayment extends BaseEntity {
     }
 
     public void approve(
+            final String paymentKey,
             final String transactionKey,
             final BigDecimal approvedAmount
     ) {
@@ -67,6 +71,7 @@ public class PGPayment extends BaseEntity {
             throw new BusinessException(PaymentErrorCode.INVALID_AMOUNT);
         }
 
+        this.paymentKey = paymentKey;
         this.transactionKey = transactionKey;
         this.approvedAmount = approvedAmount;
         this.state = PGPaymentStatus.DONE;
