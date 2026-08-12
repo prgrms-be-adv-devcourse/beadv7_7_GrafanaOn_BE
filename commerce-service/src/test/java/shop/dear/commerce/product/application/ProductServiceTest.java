@@ -231,7 +231,7 @@ class ProductServiceTest {
         assertThat(products).isEmpty();
     }
 
-    @DisplayName("유효한 값(sellerId)이 들어오면 해당 사용자가 등록한 판매 예정 및 판매중인 상품이 존재하는지 여부를 반환한다.")
+    @DisplayName("유효한 값(sellerId)이 들어오면 해당 사용자가 등록한 판매 예정 및 판매중, 거래중인 상품이 존재하는지 여부를 반환한다.")
     @Test
     void givenSellerId_whenGetMemberProductExists_thenReturnExists() {
         //Given
@@ -246,18 +246,25 @@ class ProductServiceTest {
 
         final Long sellerId3 = 3L;
         final Product product3 = createProduct(sellerId3);
-        product3.changeStatusToSoldOut();
+        product3.changeStatusToTrading();
         productRepository.save(product3);
+
+        final Long sellerId4 = 4L;
+        final Product product4 = createProduct(sellerId4);
+        product4.changeStatusToSoldOut();
+        productRepository.save(product4);
 
         //When
         final MemberProductExistsDto result1 = productService.getMemberProductExists(sellerId1);
         final MemberProductExistsDto result2 = productService.getMemberProductExists(sellerId2);
         final MemberProductExistsDto result3 = productService.getMemberProductExists(sellerId3);
+        final MemberProductExistsDto result4 = productService.getMemberProductExists(sellerId4);
 
         //Then
         assertThat(result1.exists()).isEqualTo(true);
         assertThat(result2.exists()).isEqualTo(true);
-        assertThat(result3.exists()).isEqualTo(false);
+        assertThat(result3.exists()).isEqualTo(true);
+        assertThat(result4.exists()).isEqualTo(false);
     }
 
     @DisplayName("유효한 값(memberId, product ids)이 들어오면 해당 id에 맞는 상품을 반환한다.")
