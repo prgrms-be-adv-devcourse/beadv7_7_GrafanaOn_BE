@@ -19,6 +19,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
+import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.CANNOT_PURCHASE_OWN_PRODUCT;
+import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.PRODUCT_NOT_FOR_IMMEDIATE_PURCHASE;
+import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.PRODUCT_NOT_ON_SALE;
 import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.PURCHASE_NOT_FOUND;
 
 @Service
@@ -27,6 +30,8 @@ import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCo
 public class PurchaseService {
 
     private static final long PAYMENT_DUE_MINUTES = 5;
+    private static final String PRODUCT_STATUS_ON_SALE = "ON_SALE";
+    private static final String PRODUCT_SALE_TYPE_IMMEDIATE = "IMMEDIATE";
 
     private final PurchaseRepository purchaseRepository;
     private final PurchaseEventPublisher purchaseEventPublisher;
@@ -61,6 +66,8 @@ public class PurchaseService {
         validateMemberExists(command.buyerId());
 
         final ProductInfo product = productPort.getProduct(command.productId());
+        validateProductPurchasable(command.buyerId(), product);
+
         final LocalDateTime paymentDueAt =
                 LocalDateTime.now().plusMinutes(PAYMENT_DUE_MINUTES);
 
@@ -83,6 +90,20 @@ public class PurchaseService {
         ));
 
         return savedPurchase;
+    }
+
+    private void validateProductPurchasable(final Long buyerId, final ProductInfo product) {
+        if (Objects.equals(buyerId, product.sellerId())) {
+            throw new BusinessException(CANNOT_PURCHASE_OWN_PRODUCT);
+        }
+
+        if (!PRODUCT_STATUS_ON_SALE.equals(product.status())) {
+            throw new BusinessException(PRODUCT_NOT_ON_SALE);
+        }
+
+        if (!PRODUCT_SALE_TYPE_IMMEDIATE.equals(product.saleType())) {
+            throw new BusinessException(PRODUCT_NOT_FOR_IMMEDIATE_PURCHASE);
+        }
     }
 
     @Transactional
