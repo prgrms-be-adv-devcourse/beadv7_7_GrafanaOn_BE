@@ -13,6 +13,8 @@ import shop.dear.commerce.order.purchase.application.port.MemberPort;
 import shop.dear.commerce.order.purchase.application.port.ProductPort;
 import shop.dear.commerce.order.purchase.application.port.PurchaseEventPublisher;
 import shop.dear.commerce.order.purchase.application.port.dto.ProductInfo;
+import shop.dear.commerce.order.purchase.application.port.dto.ProductSaleType;
+import shop.dear.commerce.order.purchase.application.port.dto.ProductStatus;
 import shop.dear.commerce.order.purchase.domain.constant.PurchaseStatus;
 import shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
@@ -200,8 +202,8 @@ class PurchaseServiceTest {
                     "MODEL-001",
                     "카테고리",
                     LocalDate.of(2026, 1, 1),
-                    saleType,
-                    status,
+                    ProductSaleType.valueOf(saleType),
+                    ProductStatus.valueOf(status),
                     0L,
                     "상품 설명",
                     LocalDateTime.now()
