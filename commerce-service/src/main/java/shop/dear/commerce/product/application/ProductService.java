@@ -213,7 +213,7 @@ public class ProductService {
         validateMember(sellerId);
         validateSeller(sellerId);
 
-        final List<ProductStatus> statuses = List.of(ProductStatus.PREPARING, ProductStatus.ON_SALE);
+        final List<ProductStatus> statuses = List.of(ProductStatus.PREPARING, ProductStatus.ON_SALE, ProductStatus.TRADING);
         final boolean exists = productRepository.existsBySellerIdAndStatusIn(sellerId, statuses);
 
         return new MemberProductExistsDto(exists);
