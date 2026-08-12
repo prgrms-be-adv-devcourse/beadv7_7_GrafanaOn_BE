@@ -1,7 +1,8 @@
 package shop.dear.commerce.search.infrastructure.elasticsearch;
 
-import jakarta.persistence.Id;
+
 import lombok.*;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
 import shop.dear.commerce.search.domain.SearchProduct;
 
@@ -24,7 +25,7 @@ import java.time.LocalDateTime;
 @Setting(shards = 1, replicas = 0) // 단일 노드 구성
 public class SearchProductDocument {
 
-    @Id
+    @Id // Elasticsearch는 springframework의 ID를 인식함. jakarta.persistence 사용 X
     private Long productId;
 
     // nori 사용
