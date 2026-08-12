@@ -44,6 +44,7 @@ public class EsSearchIndexRebuilder implements SearchIndexRebuilder {
         }
 
         long indexedCount = 0; // 지금까지 ES에 보낸 문서 수
+        long sourceCount = -1; // 첫 페이지 조회 시점의 전체 건수로 고정
         int pageNumber = 0; // 현재 읽을 JPA 페이지
         Page<SearchProductJpaEntity> page; // 이번에 조회한 데이터와 전체 개수, 다음 페이지 정보를 보관
 
@@ -52,6 +53,10 @@ public class EsSearchIndexRebuilder implements SearchIndexRebuilder {
             page = jpaRepository.findAll(
                     PageRequest.of(pageNumber, CHUNK_SIZE, Sort.by(Sort.Direction.ASC, "productId"))
             );
+
+            if (sourceCount < 0) {
+                sourceCount = page.getTotalElements();
+            }
 
             // JPA Entity를 ES Document로 변환한다.
             // SearchProductJpaEntity -> SearchProduct -> SearchProductDocument
@@ -63,7 +68,7 @@ public class EsSearchIndexRebuilder implements SearchIndexRebuilder {
             if (!documents.isEmpty()) {
                 operations.save(documents);
                 indexedCount += documents.size();
-                log.info("색인 진행 {} / {}", indexedCount, page.getTotalElements());
+                log.info("색인 진행 {} / {}", indexedCount, sourceCount);
             }
 
             pageNumber++;
@@ -74,10 +79,10 @@ public class EsSearchIndexRebuilder implements SearchIndexRebuilder {
 
         long documentCount = operations.count(Query.findAll(), SearchProductDocument.class);
 
-        // 정상이라면 모두 같은 숫자가 나와야 한다.
-        // TODO: 다만 현재는 기존 ES를 지우지 않고 upsert만 하므로 상품 삭제 이벤트가 발생하면 달라질 수 있다.
-        log.info("재색인 완료. 원본 = {} 색인 = {} 문서 = {}", page.getTotalElements(), indexedCount, documentCount);
+        // 원본에 없는 문서는 인덱스에 남는다. Event가 발생하지 않는 일부 DB 직접 삭제의 경우 고아 문서 발생 위험 존재.
+        // TODO: 별칭 전환 방식으로 재구축 예정.
+        log.info("재색인 완료. 원본 = {} 색인 = {} 문서 = {}", sourceCount, indexedCount, documentCount);
 
-        return new ReindexResult(page.getTotalElements(), indexedCount, documentCount);
+        return new ReindexResult(sourceCount, indexedCount, documentCount);
     }
 }

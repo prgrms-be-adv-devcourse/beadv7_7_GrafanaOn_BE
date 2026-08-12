@@ -7,14 +7,16 @@ public record ReindexResponse(
         long sourceCount,
         long indexedCount,
         long documentCount,
-        boolean matched
+        long orphanCount,
+        boolean fullyIndexed
 ) {
     public static ReindexResponse from(final ReindexResult result) {
         return new ReindexResponse(
                 result.sourceCount(),
                 result.indexedCount(),
                 result.documentCount(),
-                result.sourceCount() == result.documentCount()
+                Math.max(0, result.documentCount() - result.sourceCount()),
+                result.sourceCount() == result.indexedCount()
         );
     }
 }
