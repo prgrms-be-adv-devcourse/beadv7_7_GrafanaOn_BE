@@ -43,6 +43,10 @@ toss:
   base-url: ${TOSS_BASE_URL:https://api.tosspayments.com}
   secret-key: ${TOSS_SECRET_KEY:}
 
+# 검색 엔진 전환. jpa | Elasticsearch
+search:
+  engine: ${SEARCH_ENGINE:jpa}
+
 # ES를 켰다 껐다 할 수 있기 때문에 헬스 체크 false합니다.
 management:
   health:
