@@ -117,8 +117,79 @@ class PurchaseServiceTest {
             verifyNoInteractions(purchaseEventPublisher);
         }
 
+        @Test
+        @DisplayName("본인이 판매하는 상품이면 예외를 던진다")
+        void throwsException_whenBuyerIsSeller() {
+            // given
+            final CreatePurchaseCommand command = createCommand(1L, 10L);
+            final ProductInfo product = productInfo(1L, "ON_SALE", "IMMEDIATE");
+
+            stubMemberExists(1L);
+            given(productPort.getProduct(10L)).willReturn(product);
+
+            // when & then
+            assertThatThrownBy(() ->
+                    purchaseService.createPurchase(command)
+            )
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", PurchaseErrorCode.CANNOT_PURCHASE_OWN_PRODUCT);
+
+            verify(purchaseRepository, never()).save(any(Purchase.class));
+            verifyNoInteractions(purchaseEventPublisher);
+        }
+
+        @Test
+        @DisplayName("판매 중인 상품이 아니면 예외를 던진다")
+        void throwsException_whenProductNotOnSale() {
+            // given
+            final CreatePurchaseCommand command = createCommand(1L, 10L);
+            final ProductInfo product = productInfo(2L, "SOLD_OUT", "IMMEDIATE");
+
+            stubMemberExists(1L);
+            given(productPort.getProduct(10L)).willReturn(product);
+
+            // when & then
+            assertThatThrownBy(() ->
+                    purchaseService.createPurchase(command)
+            )
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", PurchaseErrorCode.PRODUCT_NOT_ON_SALE);
+
+            verify(purchaseRepository, never()).save(any(Purchase.class));
+            verifyNoInteractions(purchaseEventPublisher);
+        }
+
+        @Test
+        @DisplayName("즉시구매 가능한 상품이 아니면 예외를 던진다")
+        void throwsException_whenProductNotImmediatePurchase() {
+            // given
+            final CreatePurchaseCommand command = createCommand(1L, 10L);
+            final ProductInfo product = productInfo(2L, "ON_SALE", "OFFER");
+
+            stubMemberExists(1L);
+            given(productPort.getProduct(10L)).willReturn(product);
+
+            // when & then
+            assertThatThrownBy(() ->
+                    purchaseService.createPurchase(command)
+            )
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", PurchaseErrorCode.PRODUCT_NOT_FOR_IMMEDIATE_PURCHASE);
+
+            verify(purchaseRepository, never()).save(any(Purchase.class));
+            verifyNoInteractions(purchaseEventPublisher);
+        }
+
         private ProductInfo productInfo(
                 final Long sellerId
+        ) {
+            return productInfo(sellerId, "ON_SALE", "IMMEDIATE");
+        }
+
+        private ProductInfo productInfo(
+                final Long sellerId,
+                final String status,
+                final String saleType
         ) {
             return new ProductInfo(
                     sellerId,
@@ -129,6 +200,8 @@ class PurchaseServiceTest {
                     "MODEL-001",
                     "카테고리",
                     LocalDate.of(2026, 1, 1),
+                    saleType,
+                    status,
                     0L,
                     "상품 설명",
                     LocalDateTime.now()
