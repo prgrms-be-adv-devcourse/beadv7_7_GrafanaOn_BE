@@ -17,6 +17,7 @@ public interface PurchaseJpaRepository extends JpaRepository<Purchase, Long> {
     List<Purchase> findAllByStatusAndPaymentDueAtBefore(PurchaseStatus status, LocalDateTime paymentDueAt);
 
     @Modifying(clearAutomatically = true)
-    @Query("UPDATE Purchase p SET p.status = :to WHERE p.id = :id AND p.status = :from")
+    @Query("UPDATE Purchase p SET p.status = :to, p.version = p.version + 1 "
+            + "WHERE p.id = :id AND p.status = :from")
     int updateStatusIfCurrent(@Param("id") Long id, @Param("from") PurchaseStatus from, @Param("to") PurchaseStatus to);
 }

@@ -134,7 +134,6 @@ public class PurchaseService {
                 if (expired) {
                     successCount++;
                 } else {
-                    log.warn("이미 상태가 변경된 구매는 만료 처리를 건너뜁니다. purchaseId={}", purchase.getId());
                     skippedCount++;
                 }
             } catch (final Exception e) {
