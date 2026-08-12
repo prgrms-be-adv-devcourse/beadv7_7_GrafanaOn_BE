@@ -68,6 +68,8 @@ public class ProductHttpClient implements ProductPort {
             data.modelNumber(),
             data.category(),
             data.releaseDate(),
+            data.saleType(),
+            data.status(),
             data.viewCount(),
             data.description(),
             data.insertedAt()
