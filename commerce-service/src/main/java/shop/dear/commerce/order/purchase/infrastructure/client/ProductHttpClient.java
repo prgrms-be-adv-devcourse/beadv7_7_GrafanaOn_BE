@@ -8,6 +8,8 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import shop.dear.commerce.order.purchase.application.port.ProductPort;
 import shop.dear.commerce.order.purchase.application.port.dto.ProductInfo;
+import shop.dear.commerce.order.purchase.application.port.dto.ProductSaleType;
+import shop.dear.commerce.order.purchase.application.port.dto.ProductStatus;
 import shop.dear.commerce.order.purchase.infrastructure.client.dto.ProductApiData;
 import shop.dear.commerce.order.purchase.infrastructure.client.dto.ProductImageData;
 import shop.dear.common.exception.BusinessException;
@@ -68,8 +70,8 @@ public class ProductHttpClient implements ProductPort {
             data.modelNumber(),
             data.category(),
             data.releaseDate(),
-            data.saleType(),
-            data.status(),
+            ProductSaleType.valueOf(data.saleType()),
+            ProductStatus.valueOf(data.status()),
             data.viewCount(),
             data.description(),
             data.insertedAt()

@@ -4,6 +4,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
+
+import static shop.dear.commerce.order.purchase.application.port.dto.ProductSaleType.IMMEDIATE;
+import static shop.dear.commerce.order.purchase.application.port.dto.ProductStatus.ON_SALE;
 
 public record ProductInfo(
         Long sellerId,
@@ -14,10 +18,22 @@ public record ProductInfo(
         String modelNumber,
         String category,
         LocalDate releaseDate,
-        String saleType,
-        String status,
+        ProductSaleType saleType,
+        ProductStatus status,
         Long viewCount,
         String description,
         LocalDateTime insertedAt
 ) {
+
+  public boolean isOwnedBy(Long buyerId) {
+    return Objects.equals(buyerId, sellerId);
+  }
+
+  public boolean isOnSale() {
+    return status == ON_SALE;
+  }
+
+  public boolean isImmediateSale() {
+    return saleType == IMMEDIATE;
+  }
 }
