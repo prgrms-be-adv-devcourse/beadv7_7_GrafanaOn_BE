@@ -4,9 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import shop.dear.commerce.order.purchase.application.port.PurchaseEventPublisher;
 import shop.dear.commerce.order.purchase.domain.constant.PurchaseStatus;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.commerce.order.purchase.domain.repository.PurchaseRepository;
+import shop.dear.common.event.order.CanceledPurchaseEvent;
+import shop.dear.common.event.order.ReleaseReason;
 import shop.dear.common.exception.BusinessException;
 
 import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.PURCHASE_NOT_FOUND;
@@ -16,6 +19,7 @@ import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCo
 public class PurchaseExpirationProcessor {
 
     private final PurchaseRepository purchaseRepository;
+    private final PurchaseEventPublisher purchaseEventPublisher;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean expire(final Long purchaseId) {
@@ -28,6 +32,15 @@ public class PurchaseExpirationProcessor {
         if (updatedRows == 0) {
             return false;
         }
+
+        purchaseEventPublisher.publish(new CanceledPurchaseEvent(
+                purchase.getId(),
+                purchase.getBuyerId(),
+                purchase.getSellerId(),
+                purchase.getProductId(),
+                ReleaseReason.EXPIRED
+        ));
+
         return true;
     }
 }
