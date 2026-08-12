@@ -41,7 +41,8 @@ public class TopUpApprovalCompletionService {
         }
 
         payment.approvePgPayment(
-                approvalResult.transactionKey(),
+                approvalResult.paymentKey(),
+                approvalResult.lastTransactionKey(),
                 approvalResult.approvedAmount()
         );
 

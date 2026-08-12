@@ -26,6 +26,7 @@ public class TopUpApprovalCompletionServiceTest {
     private static final Long PAYMENT_ID = 100L;
     private static final Long MEMBER_ID = 1L;
     private static final String ORDER_ID = "TOPUP_test-order-001";
+    private static final String PAYMENT_KEY = "test-payment-key";
     private static final String TRANSACTION_KEY = "test-transaction-key";
     private static final BigDecimal AMOUNT = new BigDecimal("10000.00");
 
@@ -46,6 +47,7 @@ public class TopUpApprovalCompletionServiceTest {
         ReflectionTestUtils.setField(payment, "id", PAYMENT_ID);
 
         final PgApprovalResult approvalResult = new PgApprovalResult(
+                PAYMENT_KEY,
                 ORDER_ID,
                 TRANSACTION_KEY,
                 AMOUNT
@@ -61,6 +63,10 @@ public class TopUpApprovalCompletionServiceTest {
         assertEquals(
                 PGPaymentStatus.DONE,
                 payment.getPgPayment().getState()
+        );
+        assertEquals(
+                PAYMENT_KEY,
+                payment.getPgPayment().getPaymentKey()
         );
         assertEquals(
                 TRANSACTION_KEY,
