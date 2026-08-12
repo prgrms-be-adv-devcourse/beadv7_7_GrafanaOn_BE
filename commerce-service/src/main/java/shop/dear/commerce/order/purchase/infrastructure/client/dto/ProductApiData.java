@@ -14,6 +14,8 @@ public record ProductApiData(
         String modelNumber,
         String category,
         LocalDate releaseDate,
+        String saleType,
+        String status,
         Long viewCount,
         String description,
         LocalDateTime insertedAt
