@@ -11,7 +11,6 @@ import shop.dear.commerce.order.purchase.application.port.dto.ProductInfo;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.commerce.order.purchase.domain.repository.PurchaseRepository;
 import shop.dear.common.event.financial.PaymentRequestedEvent;
-import shop.dear.common.event.order.FinishedOrderEvent;
 import shop.dear.common.event.order.OrderType;
 import shop.dear.common.exception.BusinessException;
 
@@ -27,8 +26,6 @@ import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCo
 public class PurchaseService {
 
     private static final long PAYMENT_DUE_MINUTES = 5;
-    private static final String PRODUCT_STATUS_ON_SALE = "ON_SALE";
-    private static final String PRODUCT_SALE_TYPE_IMMEDIATE = "IMMEDIATE";
 
     private final PurchaseRepository purchaseRepository;
     private final PurchaseEventPublisher purchaseEventPublisher;
