@@ -205,6 +205,7 @@ public class PaymentService {
     ) {
         if (approvalResult == null
                 || !command.orderId().equals(approvalResult.orderId())
+                || !command.paymentKey().equals(approvalResult.paymentKey())
                 || approvalResult.approvedAmount() == null
                 || payment.getAmount()
                 .compareTo(approvalResult.approvedAmount()) != 0) {

@@ -435,6 +435,49 @@ public class PaymentServiceTest {
     }
 
     @Test
+    void confirmCharge_whenPaymentKeyDiffers_doesNotRecordApproval() {
+        // given
+        final Payment payment = createPreparedTopUpPayment();
+
+        final ConfirmChargeCommand command = new ConfirmChargeCommand(
+                MEMBER_ID,
+                PAYMENT_KEY,
+                MERCHANT_ORDER_ID,
+                AMOUNT
+        );
+
+        final PgApprovalResult approvalResult = new PgApprovalResult(
+                "other-payment-key",
+                MERCHANT_ORDER_ID,
+                TRANSACTION_KEY,
+                AMOUNT
+        );
+
+        when(paymentRepository.findByMerchantOrderId(MERCHANT_ORDER_ID))
+                .thenReturn(Optional.of(payment));
+        when(pgPaymentApprovalPort.approve(
+                PAYMENT_KEY,
+                MERCHANT_ORDER_ID,
+                AMOUNT,
+                "topup-confirm-" + PAYMENT_ID
+        )).thenReturn(approvalResult);
+
+        // when
+        final BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> paymentService.confirmCharge(command)
+        );
+
+        // then
+        assertEquals(
+                PaymentErrorCode.PAYMENT_CONFIRMATION_MISMATCH,
+                exception.getErrorCode()
+        );
+        verify(topUpApprovalCompletionService, never())
+                .recordApproval(any());
+    }
+
+    @Test
     void confirmCharge_whenAmountDiffers_doesNotCallPg() {
         // given
         final Payment payment = createPreparedTopUpPayment();
