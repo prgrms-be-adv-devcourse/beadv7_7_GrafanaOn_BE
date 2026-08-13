@@ -22,7 +22,7 @@ import java.util.UUID;
 public class Offer extends BaseEntity {
 
     private static final String NUMBER_PREFIX = "OF";
-    private static final DateTimeFormatter NUMBER_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    private static final DateTimeFormatter NUMBER_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

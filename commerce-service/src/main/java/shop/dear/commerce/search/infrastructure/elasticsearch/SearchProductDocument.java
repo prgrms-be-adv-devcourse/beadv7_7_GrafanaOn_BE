@@ -21,9 +21,16 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Document(indexName = "search_product")
+@Document(indexName = SearchProductDocument.INDEX_ALIAS)
 @Setting(shards = 1, replicas = 0) // 단일 노드 구성
 public class SearchProductDocument {
+
+    /**
+     * 조회 및 색인은 이 별칭을 통해 이루어집니다.
+     * 실제 인덱스는 search_product_yyyyMMddHHmmssSSS 형태이고, 재구축 시 별칭만 새 인덱스로 옮깁니다.
+     */
+
+    public static final String INDEX_ALIAS = "search_product";
 
     @Id // Elasticsearch는 springframework의 ID를 인식함. jakarta.persistence 사용 X
     private Long productId;
