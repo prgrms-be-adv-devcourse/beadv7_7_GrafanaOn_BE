@@ -72,37 +72,39 @@ public class EsSearchIndexRebuilder implements SearchIndexRebuilder {
         // nori 분석기, 필드 타입 등 SearchProductDocument의 매핑을 이용해 빈 인덱스 생성.
         createIndex(newIndexName);
 
+        long sourceCount;
+        long indexedCount;
         try {
-            long sourceCount = jpaRepository.count(); // search_product 테이블 소스 개수
-            long indexedCount = indexAll(newIndex);
-
+            sourceCount = jpaRepository.count(); // search_product 테이블 소스 개수
+            indexedCount = indexAll(newIndex);
             // 강제 갱신
-            operations.indexOps(IndexCoordinates.of(newIndexName)).refresh();
-
-            // 별칭을 옮기기 전의 인덱스 목록을 받아둔다.
-            Set<String> previousIndices = switchAlias(newIndexName);
-
-        /*
-          별칭을 옮긴 뒤에 보정한다. 옮기기 전까지 실시간 색인은 구 인덱스로 들어간다.
-          따라서 그 사이에 추가된 정보들은 신규 인덱스에 없다.
-          별칭 이동 후에는 실시간 색인도 신규 인덱스로 오므로 여기서 메워 누락이 남지 않게 한다.
-        */
-            long deltaCount = indexDelta(startedAt);
             operations.indexOps(newIndex).refresh();
 
-            // 기존 인덱스 삭제
-            deleteIndices(previousIndices);
-
-            long documentCount = operations.count(Query.findAll(), SearchProductDocument.class);
-
-            log.info("재색인 완료. 인덱스 = {} 원본 = {} 색인 = {} 보정 = {} 문서 = {}", newIndexName, sourceCount, indexedCount, deltaCount, documentCount);
-
-            return new ReindexResult(sourceCount, indexedCount, documentCount);
         } catch (RuntimeException e) {
             // 실패한 재색인이 만든 인덱스는 별칭이 가리키지 않아 이후 정리 대상이 되지 않는다.
             deleteIndices(Set.of(newIndexName));
             throw e;
         }
+
+        // 이 아래로는 신규 인덱스를 삭제하면 안 된다.
+        // 별칭을 옮기기 전의 인덱스 목록을 받아둔다.
+        Set<String> previousIndices = switchAlias(newIndexName);
+        /*
+            별칭을 옮긴 뒤에 보정한다. 옮기기 전까지 실시간 색인은 구 인덱스로 들어간다.
+            따라서 그 사이에 추가된 정보들은 신규 인덱스에 없다.
+            별칭 이동 후에는 실시간 색인도 신규 인덱스로 오므로 여기서 메워 누락이 남지 않게 한다.
+        */
+        long deltaCount = indexDelta(startedAt);
+        operations.indexOps(newIndex).refresh();
+
+        // 기존 인덱스 삭제
+        deleteIndices(previousIndices);
+
+        long documentCount = operations.count(Query.findAll(), SearchProductDocument.class);
+
+        log.info("재색인 완료. 인덱스 = {} 원본 = {} 색인 = {} 보정 = {} 문서 = {}", newIndexName, sourceCount, indexedCount, deltaCount, documentCount);
+
+        return new ReindexResult(sourceCount, indexedCount, documentCount);
     }
 
     /**
@@ -149,6 +151,12 @@ public class EsSearchIndexRebuilder implements SearchIndexRebuilder {
     }
 
     /**
+     * 별칭을 신규 인덱스로 옮기고, 옮기기 전에 별칭이 가리키던 인덱스 목록을 돌려줍니다.
+     *
+     * 이 메서드가 예외로 끝나면 신규 인덱스를 삭제하지 않습니다.
+     * 타임아웃 등으로 예외가 나도 ES 쪽에서는 별칭이 이미 옮겨졌을 수 있어,
+     * 지웠다가 서비스 인덱스를 날릴 위험이 있습니다. 남은 인덱스는 우선 수동으로 처리하겠습니다.
+     *
      * @param newIndexName : 신규 인덱스 이름
      * @return : 별칭 이동 전에 별칭이 가리키던 인덱스, 최초 도입 시에는 비어 있습니다.
      */
