@@ -14,7 +14,7 @@ import { SharedArray } from 'k6/data';
 //
 // ⚠️ page는 1부터 시작한다(@Min(1)). 0을 보내면 검증 실패한다.
 
-export const options = singleOptions('GET /api/search/products', 3000);
+export const options = singleOptions('GET /api/search/products', 100);
 
 const keywords = new SharedArray('keywords', () => [
     '나이키', '아디다스', '신발', '가방', '자켓',
