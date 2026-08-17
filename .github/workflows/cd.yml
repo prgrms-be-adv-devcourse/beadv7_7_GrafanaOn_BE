@@ -77,7 +77,6 @@ jobs:
           AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
           TOSS_SECRET_KEY=${{ secrets.TOSS_SECRET_KEY }}
           ES_URL=${{ secrets.ES_URL }}
-          SEARCH_ENGINE=${{ vars.SEARCH_ENGINE || 'jpa' }}
           EOF
           chmod 600 commerce-service/.env
 
