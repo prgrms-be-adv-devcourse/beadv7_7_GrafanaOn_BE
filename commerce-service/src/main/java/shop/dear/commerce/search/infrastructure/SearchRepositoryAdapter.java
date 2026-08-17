@@ -1,7 +1,6 @@
 package shop.dear.commerce.search.infrastructure;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -12,8 +11,6 @@ import shop.dear.commerce.search.domain.SearchRepository;
 // SearchJpaRepository를 DI 하는 중.
 @Repository
 @RequiredArgsConstructor
-// 설정이 없거나 JPA로 명시돼있으면 이걸 Bean으로 등록한다. 만약 설정이 Elasticsearch이면 Bean으로 등록하지 않는다.
-@ConditionalOnProperty(name = "search.engine", havingValue = "jpa", matchIfMissing = true)
 public class SearchRepositoryAdapter implements SearchRepository {
     private final SearchJpaRepository searchJpaRepository;
 
