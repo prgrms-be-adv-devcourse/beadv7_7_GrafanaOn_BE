@@ -26,6 +26,19 @@ public class WalletDebitRequestedEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(final WalletDebitRequestedEvent event) {
+        final OrderType orderType;
+        try {
+            orderType = OrderType.valueOf(event.orderType());
+        } catch (final IllegalArgumentException exception) {
+            log.error(
+                    "지원하지 않는 주문 타입. paymentId={}, orderType={}",
+                    event.paymentId(),
+                    event.orderType(),
+                    exception
+            );
+            return;
+        }
+
         final PayCommand command = new PayCommand(
                 event.memberId(),
                 event.amount(),
@@ -33,7 +46,7 @@ public class WalletDebitRequestedEventListener {
         );
 
         try {
-            debit(command, OrderType.valueOf(event.orderType()));
+            debit(command, orderType);
 
             applicationEventPublisher.publishEvent(
                     new WalletDebitSucceededEvent(event.paymentId())

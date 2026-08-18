@@ -138,6 +138,8 @@ public class SettlementService {
 
 	@Transactional
 	public void createPendingSettlement(final FinishedOrderEvent event) {
+		final OrderType orderType = OrderType.valueOf(event.orderType());
+
 		final SettlementPolicy policy =
 				settlementPolicyService.getOrCreateDefaultPolicy();
 
@@ -152,11 +154,11 @@ public class SettlementService {
 				.subtract(feeAmount)
 				.setScale(2, RoundingMode.HALF_UP);
 
-		final Long purchaseId = OrderType.PURCHASE.name().equals(event.orderType())
+		final Long purchaseId = orderType == OrderType.PURCHASE
 				? event.orderId()
 				: null;
 
-		final Long offerId = OrderType.OFFER.name().equals(event.orderType())
+		final Long offerId = orderType == OrderType.OFFER
 				? event.orderId()
 				: null;
 
