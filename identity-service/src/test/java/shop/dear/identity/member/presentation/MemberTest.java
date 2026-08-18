@@ -204,7 +204,7 @@ public class MemberTest {
 
     @Test
     @DisplayName("판매자 등록 해지에 성공하면 상태코드 200을 반환한다")
-    void unRegister_success() throws Exception {
+    void withdrawSeller_success() throws Exception {
 
         final ResultActions result = mockMvc
             .perform(delete("/api/members/me/seller")
@@ -217,10 +217,10 @@ public class MemberTest {
 
     @Test
     @DisplayName("등록된 판매상품이 있으면 판매자 등록 해지 요청에 상태코드 400과 WITHDRAWAL_FAILED 에러코드를 반환한다")
-    void unRegister_hasProduct() throws Exception {
+    void withdrawSeller_hasProduct() throws Exception {
 
         willThrow(new BusinessException(MemberErrorCode.WITHDRAWAL_FAILED))
-            .given(memberService).unRegister(1L);
+            .given(memberService).withdrawSeller(1L);
 
         final ResultActions result = mockMvc
             .perform(delete("/api/members/me/seller")
@@ -234,9 +234,9 @@ public class MemberTest {
 
     @Test
     @DisplayName("판매자 계좌 조회에 성공하면 상태코드 200과 마스킹된 계좌 정보를 반환한다")
-    void getMyAccount_success() throws Exception {
+    void getSellerAccount_success() throws Exception {
 
-        given(memberService.getMyAccount(1L))
+        given(memberService.getSellerAccount(1L))
             .willReturn(new SellerInfo("국민은행", "123*****789"));
 
         final ResultActions result = mockMvc
@@ -251,9 +251,9 @@ public class MemberTest {
 
     @Test
     @DisplayName("판매자가 아닌 회원이 계좌 조회를 요청하면 상태코드 400과 NOT_SELLER 에러코드를 반환한다")
-    void getMyAccount_notSeller() throws Exception {
+    void getSellerAccount_notSeller() throws Exception {
 
-        given(memberService.getMyAccount(1L))
+        given(memberService.getSellerAccount(1L))
             .willThrow(new BusinessException(MemberErrorCode.NOT_SELLER));
 
         final ResultActions result = mockMvc

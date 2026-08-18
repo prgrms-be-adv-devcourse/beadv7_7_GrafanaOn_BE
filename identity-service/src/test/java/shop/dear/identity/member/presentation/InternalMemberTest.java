@@ -89,9 +89,9 @@ class InternalMemberTest {
 
     @Test
     @DisplayName("유효한 회원을 조회하면 exists true를 반환한다")
-    void existsMember_true() throws Exception {
+    void isActiveMember_true() throws Exception {
 
-        given(memberService.existsMember(1L)).willReturn(true);
+        given(memberService.isActiveMember(1L)).willReturn(true);
 
         final ResultActions result = mockMvc
             .perform(get("/internal/members")
@@ -105,9 +105,9 @@ class InternalMemberTest {
 
     @Test
     @DisplayName("탈퇴한 회원을 조회하면 exists false를 반환한다")
-    void existsMember_false() throws Exception {
+    void isActiveMember_false() throws Exception {
 
-        given(memberService.existsMember(1L)).willReturn(false);
+        given(memberService.isActiveMember(1L)).willReturn(false);
 
         final ResultActions result = mockMvc
             .perform(get("/internal/members")
