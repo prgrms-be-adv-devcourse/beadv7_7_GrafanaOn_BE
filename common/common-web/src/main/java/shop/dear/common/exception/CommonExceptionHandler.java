@@ -36,6 +36,14 @@ public class CommonExceptionHandler {
     }
 
     @ExceptionHandler
+    public ResponseEntity<ApiResponse<Void>> handleServiceUnavailableException(final ServiceUnavailableException e) {
+        log.warn("{} 발생! errorCode = {}", e.getClass().getSimpleName(), e.getErrorCode().getValue(), e);
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(fail(e.getErrorCode()));
+    }
+
+    @ExceptionHandler
     public ResponseEntity<ApiResponse<Void>> handleBusinessException(final BusinessException e) {
         HttpStatus status =
                 e.getErrorCode()
