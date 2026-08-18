@@ -69,12 +69,11 @@ public class Seller extends BaseEntity {
         this.status = SellerStatus.ACTIVE;
     }
 
-    boolean updateAccount(final AccountInfo accountInfo) {
-        if (this.accountInfo.equals(accountInfo)) {
-            return false;
+    void updateAccount(final AccountInfo accountInfo) {
+
+        if (!this.accountInfo.equals(accountInfo)) {
+            this.accountInfo = accountInfo;
         }
-        this.accountInfo = accountInfo;
-        return true;
     }
 
     void withdraw() {
