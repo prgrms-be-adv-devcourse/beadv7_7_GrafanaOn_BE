@@ -38,9 +38,9 @@ public class InternalMemberController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<MemberCheckResponse>> existsMember(@AuthUser final Long memberId) {
+    public ResponseEntity<ApiResponse<MemberCheckResponse>> isActiveMember(@AuthUser final Long memberId) {
 
-        boolean exists = memberService.existsMember(memberId);
+        boolean exists = memberService.isActiveMember(memberId);
 
         return ResponseEntity.ok(successWithData(MemberCheckResponse.from(exists)));
     }

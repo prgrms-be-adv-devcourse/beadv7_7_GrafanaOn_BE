@@ -41,7 +41,7 @@ public class Member extends BaseEntity {
     @Column(name = "status", nullable = false)
     private MemberStatus status;
 
-    @Column(name = "withdrawnAt", nullable = true)
+    @Column(name = "withdrawn_at", nullable = true)
     private LocalDateTime withdrawnAt;
 
     private Member(
@@ -71,7 +71,7 @@ public class Member extends BaseEntity {
         );
     }
 
-    public void changeProfile(
+    public void updateProfile(
         final String defaultShippingAddress,
         final String phoneNumber,
         final String nickname
@@ -81,60 +81,10 @@ public class Member extends BaseEntity {
         this.nickname = nickname;
     }
 
-    public boolean isSeller(){
-        return this.seller != null && this.seller.getStatus() == SellerStatus.ACTIVE;
-    }
-
-    public boolean isActive(){
-        return this.status == MemberStatus.ACTIVE;
-    }
-
-    public boolean isSellerRejoin(){
-        return this.seller != null && this.seller.getStatus() == SellerStatus.WITHDRAWN;
-    }
-
-    public void registerSeller(final String bank, final String account) {
-        if (this.isSeller()) {
-            throw new BusinessException(MemberErrorCode.ALREADY_SELLER);
-        }
-
-        if (this.seller != null) {
-            if (!this.isSellerRejoin()) {
-                throw new BusinessException(MemberErrorCode.ALREADY_SELLER);
-            }
-            this.seller.reRegister(bank, account);
-            return;
-        }
-
-        this.seller = new Seller(
-            bank,
-            account,
-            this
-        );
-    }
-
-    public void updateSellerAccount(String bank, String account){
-        if (!this.isSeller()) {
-            throw new BusinessException(MemberErrorCode.NOT_SELLER);
-        }
-        this.seller.changeAccount(bank,account);
-    }
-
-    public void requestSellerWithdrawal() {
-        if (!this.isSeller()) {
-            throw new BusinessException(MemberErrorCode.NOT_SELLER);
-        }
-        this.seller.withdraw();
-    }
-
-    public void completeSellerWithdrawal(){
-        this.seller.withdraw();
-    }
-
     public void anonymizeProfile() {
         if (seller != null && seller.getStatus() != SellerStatus.WITHDRAWN) {
             throw new BusinessException(
-                    MemberErrorCode.SELLER_WITHDRAWAL_REQUIRED
+                MemberErrorCode.SELLER_WITHDRAWAL_REQUIRED
             );
         }
 
@@ -144,5 +94,52 @@ public class Member extends BaseEntity {
         this.nickname = "withdrawn_" + this.id;
         this.status = MemberStatus.WITHDRAWN;
         this.withdrawnAt = LocalDateTime.now();
+    }
+
+    public boolean isActive(){
+        return this.status == MemberStatus.ACTIVE;
+    }
+
+    public boolean isSellerActive(){
+        return this.seller != null && this.seller.getStatus() == SellerStatus.ACTIVE;
+    }
+
+    public boolean isSellerWithdrawn(){
+        return this.seller != null && this.seller.getStatus() == SellerStatus.WITHDRAWN;
+    }
+
+    public void registerSeller(final AccountInfo accountInfo) {
+        if (this.isSellerActive()) {
+            throw new BusinessException(MemberErrorCode.ALREADY_SELLER);
+        }
+
+        if (this.isSellerWithdrawn()) {
+            this.seller.activate(accountInfo);
+            return;
+        }
+
+        if (this.seller != null) {
+            throw new BusinessException(MemberErrorCode.ALREADY_SELLER);
+        }
+
+        this.seller = Seller.create(
+            accountInfo,
+            this
+        );
+    }
+
+    public void updateSellerAccount(final AccountInfo accountInfo){
+        if (!this.isSellerActive()) {
+            throw new BusinessException(MemberErrorCode.NOT_SELLER);
+        }
+
+        this.seller.updateAccount(accountInfo);
+    }
+
+    public void withdrawSeller() {
+        if (!this.isSellerActive()) {
+            throw new BusinessException(MemberErrorCode.NOT_SELLER);
+        }
+        this.seller.withdraw();
     }
 }
