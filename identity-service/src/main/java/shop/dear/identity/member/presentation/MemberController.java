@@ -73,17 +73,17 @@ public class MemberController {
     }
 
     @DeleteMapping("/me/seller")
-    public ResponseEntity<ApiResponse<Void>> unRegister(@AuthUser Long memberId){
+    public ResponseEntity<ApiResponse<Void>> withdrawSeller(@AuthUser Long memberId){
 
-        memberService.unRegister(memberId);
+        memberService.withdrawSeller(memberId);
 
         return ResponseEntity.ok(success());
     }
 
     @GetMapping("/me/seller")
-    public ResponseEntity<ApiResponse<SellerAccountResponse>> getMyAccount(@AuthUser Long memberId){
+    public ResponseEntity<ApiResponse<SellerAccountResponse>> getSellerAccount(@AuthUser Long memberId){
 
-        SellerAccountResponse account = SellerAccountResponse.from(memberService.getMyAccount(memberId));
+        SellerAccountResponse account = SellerAccountResponse.from(memberService.getSellerAccount(memberId));
 
         return ResponseEntity.ok(successWithData(account));
     }
