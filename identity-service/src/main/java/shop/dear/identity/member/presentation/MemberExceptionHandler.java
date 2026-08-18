@@ -49,7 +49,7 @@ public class MemberExceptionHandler{
 
         String message = e.getMostSpecificCause().getMessage();
 
-        if (message.contains("uk_member_nickname")) {
+        if (message != null && message.contains("uk_member_nickname")) {
             log.warn("닉네임 중복 발생", e);
             return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(fail(MemberErrorCode.DUPLICATE_NICKNAME));
