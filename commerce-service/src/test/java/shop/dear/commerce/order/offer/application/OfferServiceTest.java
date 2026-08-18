@@ -8,20 +8,21 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import shop.dear.commerce.order.offer.application.dto.CreateOfferCommand;
 import shop.dear.commerce.order.offer.application.dto.CreateOfferSnapshotCommand;
 import shop.dear.commerce.order.offer.application.port.OfferEventPublisher;
 import shop.dear.commerce.order.offer.domain.constant.OfferStatus;
-import shop.dear.commerce.order.offer.domain.exception.OfferErrorCode;
 import shop.dear.commerce.order.offer.domain.model.Offer;
 import shop.dear.commerce.order.offer.domain.repository.OfferRepository;
-import shop.dear.commerce.order.offersnapshot.domain.exception.OfferSnapshotErrorCode;
 import shop.dear.commerce.order.offersnapshot.domain.model.OfferSnapshot;
 import shop.dear.commerce.order.offersnapshot.domain.repository.OfferSnapshotRepository;
 import shop.dear.commerce.order.offer.application.port.MemberPort;
 import shop.dear.commerce.order.offer.application.port.ProductPort;
 import shop.dear.commerce.order.offer.application.port.dto.ProductInfo;
+import shop.dear.commerce.order.offer.domain.constant.OfferReleaseReason;
 import shop.dear.common.event.financial.PaymentHoldRequestedEvent;
+import shop.dear.common.event.financial.PaymentReleaseRequestedEvent;
 import shop.dear.common.event.financial.PaymentRequestedEvent;
 import shop.dear.common.event.order.FinishedOrderEvent;
 import shop.dear.common.exception.BusinessException;
@@ -128,6 +129,9 @@ class OfferServiceTest {
             // given
             final Offer offer = createPendingPaidOffer();
             given(offerRepository.findById(1L)).willReturn(Optional.of(offer));
+            given(offerRepository.findByProductIdAndStatusInOrderByInsertedAtDesc(
+                    offer.getProductId(), List.of(OfferStatus.PENDING)))
+                    .willReturn(List.of());
 
             // when
             offerService.acceptOffer(1L, 2L);
@@ -154,6 +158,47 @@ class OfferServiceTest {
             assertThat(paymentEvent.orderId()).isEqualTo(offer.getId());
             assertThat(paymentEvent.memberId()).isEqualTo(offer.getBuyerId());
             assertThat(paymentEvent.amount()).isEqualTo(offer.getAmount());
+        }
+
+        @Test
+        @DisplayName("오퍼 수락 시 같은 상품의 다른 PENDING 오퍼는 거절되고 예치금 해제 이벤트가 발행된다")
+        void acceptsOfferAndReleasesOtherPendingOffers() {
+            // given
+            final Offer acceptedOffer = createPendingPaidOffer();
+            final Offer otherOffer = Offer.create(
+                    999L,
+                    2L,
+                    3L,
+                    10L,
+                    BigDecimal.valueOf(10000),
+                    "title",
+                    "story",
+                    "delivery"
+            );
+            otherOffer.markPaid();
+            ReflectionTestUtils.setField(acceptedOffer, "id", 1L);
+            ReflectionTestUtils.setField(otherOffer, "id", 999L);
+            given(offerRepository.findById(1L)).willReturn(Optional.of(acceptedOffer));
+            given(offerRepository.findByProductIdAndStatusInOrderByInsertedAtDesc(
+                    acceptedOffer.getProductId(), List.of(OfferStatus.PENDING)))
+                    .willReturn(List.of(otherOffer));
+
+            // when
+            offerService.acceptOffer(1L, 2L);
+
+            // then
+            assertThat(otherOffer.getStatus()).isEqualTo(OfferStatus.REJECTED);
+            verify(offerRepository).save(otherOffer);
+
+            final ArgumentCaptor<PaymentReleaseRequestedEvent> releaseCaptor =
+                    ArgumentCaptor.forClass(PaymentReleaseRequestedEvent.class);
+            verify(offerEventPublisher).publish(releaseCaptor.capture());
+
+            final PaymentReleaseRequestedEvent releaseEvent = releaseCaptor.getValue();
+            assertThat(releaseEvent.orderId()).isEqualTo(otherOffer.getId());
+            assertThat(releaseEvent.memberId()).isEqualTo(otherOffer.getBuyerId());
+            assertThat(releaseEvent.amount()).isEqualTo(otherOffer.getAmount());
+            assertThat(releaseEvent.reason()).isEqualTo(OfferReleaseReason.OFFER_OUTBID.name());
         }
 
         @Test
@@ -205,7 +250,7 @@ class OfferServiceTest {
     class RejectOffer {
 
         @Test
-        @DisplayName("오퍼를 거절하면 상태가 REJECTED로 변경된다")
+        @DisplayName("오퍼를 거절하면 상태가 REJECTED로 변경되고 예치금 해제 이벤트를 발행한다")
         void rejectsOffer() {
             // given
             final Offer offer = createPendingPaidOffer();
@@ -218,7 +263,16 @@ class OfferServiceTest {
             // then
             assertThat(offer.getStatus()).isEqualTo(OfferStatus.REJECTED);
             verify(offerRepository).save(offer);
-            verifyNoInteractions(offerEventPublisher);
+
+            final ArgumentCaptor<PaymentReleaseRequestedEvent> captor =
+                    ArgumentCaptor.forClass(PaymentReleaseRequestedEvent.class);
+            verify(offerEventPublisher).publish(captor.capture());
+
+            final PaymentReleaseRequestedEvent event = captor.getValue();
+            assertThat(event.orderId()).isEqualTo(offer.getId());
+            assertThat(event.memberId()).isEqualTo(offer.getBuyerId());
+            assertThat(event.amount()).isEqualTo(offer.getAmount());
+            assertThat(event.reason()).isEqualTo(OfferReleaseReason.OFFER_REJECTED.name());
         }
 
         @Test
