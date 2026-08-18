@@ -47,7 +47,7 @@ public class ArchivedAccount extends BaseEntity {
 
         LocalDateTime expiresAt = LocalDateTime.now().plusYears(ACCOUNT_RETENTION_YEARS);
 
-        return new ArchivedAccount(memberId, accountInfo.copy(), expiresAt);
+        return new ArchivedAccount(memberId, accountInfo, expiresAt);
     }
 
     public static ArchivedAccount from(final Seller seller) {

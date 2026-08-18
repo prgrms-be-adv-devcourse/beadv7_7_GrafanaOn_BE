@@ -26,4 +26,9 @@ public class SellerSchedulerRepositoryAdapter implements SellerSchedulerReposito
 			withdrawnAtBefore
 		);
 	}
+
+	@Override
+	public void deleteAll(List<Seller> sellers) {
+		jpaRepository.deleteAll(sellers);
+	}
 }

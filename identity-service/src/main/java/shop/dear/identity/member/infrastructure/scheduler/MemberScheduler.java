@@ -22,7 +22,6 @@ public class MemberScheduler {
 	private final SellerSchedulerRepository sellerSchedulerRepository;
 	private final ArchivedAccountRepository archivedAccountRepository;
 
-	//매월 2일 오전 3시 실행 (정산 이후)
 	@Transactional
 	@Scheduled(cron = "0 0 3 2 * *", zone = "Asia/Seoul")
 	public void archiveWithdrawnSellerAccounts() {
@@ -52,7 +51,7 @@ public class MemberScheduler {
 		}
 	}
 
-	//매월 2일 오전 3시 실행 (정산 이후)
+	@Transactional
 	@Scheduled(cron = "0 0 2 * * *", zone = "Asia/Seoul")
 	public void deleteArchivedAccounts() {
 
