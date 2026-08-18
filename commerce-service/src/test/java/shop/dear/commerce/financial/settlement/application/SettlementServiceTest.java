@@ -19,7 +19,7 @@ import shop.dear.commerce.financial.settlement.domain.repository.SettlementRepos
 import shop.dear.commerce.financial.settlementpolicy.application.SettlementPolicyService;
 import shop.dear.commerce.financial.settlementpolicy.domain.model.SettlementPolicy;
 import shop.dear.common.event.order.FinishedOrderEvent;
-import shop.dear.common.event.order.OrderType;
+import shop.dear.common.type.OrderType;
 import shop.dear.common.event.settlement.SettlementPayoutEvent;
 import shop.dear.common.event.settlement.SettlementPayoutItem;
 
@@ -330,7 +330,7 @@ class SettlementServiceTest {
 				SELLER_ID,
 				300L,
 				new BigDecimal("10000.00"),
-				OrderType.PURCHASE
+				OrderType.PURCHASE.name()
 		);
 
 		given(settlementPolicyService.getOrCreateDefaultPolicy())

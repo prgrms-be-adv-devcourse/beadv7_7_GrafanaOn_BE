@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import shop.dear.commerce.financial.payment.domain.model.Payment;
-import shop.dear.common.event.order.OrderType;
+import shop.dear.common.type.OrderType;
 
 import java.util.Optional;
 

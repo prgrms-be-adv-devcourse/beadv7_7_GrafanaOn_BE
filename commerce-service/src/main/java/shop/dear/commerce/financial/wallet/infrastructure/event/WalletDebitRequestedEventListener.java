@@ -12,7 +12,7 @@ import shop.dear.commerce.financial.wallet.application.WalletService;
 import shop.dear.commerce.financial.wallet.application.dto.PayCommand;
 import shop.dear.commerce.financial.wallet.application.event.WalletDebitFailedEvent;
 import shop.dear.commerce.financial.wallet.application.event.WalletDebitSucceededEvent;
-import shop.dear.common.event.order.OrderType;
+import shop.dear.common.type.OrderType;
 
 @Slf4j
 @Component
@@ -33,7 +33,7 @@ public class WalletDebitRequestedEventListener {
         );
 
         try {
-            debit(command, event.orderType());
+            debit(command, OrderType.valueOf(event.orderType()));
 
             applicationEventPublisher.publishEvent(
                     new WalletDebitSucceededEvent(event.paymentId())

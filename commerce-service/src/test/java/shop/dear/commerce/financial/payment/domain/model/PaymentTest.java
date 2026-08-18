@@ -5,7 +5,7 @@ import shop.dear.commerce.financial.payment.domain.constant.PGPaymentStatus;
 import shop.dear.commerce.financial.payment.domain.constant.PaymentPurpose;
 import shop.dear.commerce.financial.payment.domain.constant.PaymentStatus;
 import shop.dear.commerce.financial.payment.domain.exception.PaymentErrorCode;
-import shop.dear.common.event.order.OrderType;
+import shop.dear.common.type.OrderType;
 import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;

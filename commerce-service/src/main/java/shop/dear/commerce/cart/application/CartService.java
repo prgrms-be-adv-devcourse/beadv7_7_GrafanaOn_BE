@@ -15,7 +15,7 @@ import shop.dear.commerce.cart.domain.model.CartItem;
 import shop.dear.commerce.cart.domain.repository.CartItemRepository;
 import shop.dear.commerce.cart.domain.repository.CartRepository;
 import shop.dear.common.event.order.FinishedOrderEvent;
-import shop.dear.common.event.order.OrderType;
+import shop.dear.common.type.OrderType;
 import shop.dear.common.exception.BusinessException;
 
 import java.util.List;
@@ -113,7 +113,7 @@ public class CartService {
 
     @Transactional
     public void removeProductOnOrderFinished(final FinishedOrderEvent event) {
-        if (event.orderType() != OrderType.PURCHASE) {
+        if (!OrderType.PURCHASE.name().equals(event.orderType())) {
             return;
         }
         cartRepository.findByMemberId(event.buyerId())

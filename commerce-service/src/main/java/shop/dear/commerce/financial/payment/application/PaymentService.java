@@ -19,6 +19,7 @@ import shop.dear.commerce.financial.payment.domain.model.Payment;
 import shop.dear.commerce.financial.payment.domain.repository.PaymentRepository;
 import shop.dear.common.event.financial.PaymentCompletedEvent;
 import shop.dear.common.event.financial.PaymentFailedEvent;
+import shop.dear.common.type.OrderType;
 import shop.dear.common.exception.BusinessException;
 
 import java.util.Optional;
@@ -38,11 +39,12 @@ public class PaymentService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public PaymentInfo payOrder(final PayOrderCommand command) {
+        final OrderType orderType = OrderType.valueOf(command.orderType());
 
         final Optional<Payment> existingPayment =
                 paymentRepository.findByOrderIdAndOrderType(
                         command.orderId(),
-                        command.orderType()
+                        orderType
                 );
 
         if (existingPayment.isPresent()) {
@@ -52,7 +54,7 @@ public class PaymentService {
         final Payment payment = Payment.createOrderPayment(
                 command.memberId(),
                 command.orderId(),
-                command.orderType(),
+                orderType,
                 command.amount()
         );
 
@@ -63,7 +65,7 @@ public class PaymentService {
                         savedPayment.getId(),
                         savedPayment.getMemberId(),
                         savedPayment.getAmount(),
-                        savedPayment.getOrderType()
+                        savedPayment.getOrderType().name()
                 )
         );
 
@@ -84,7 +86,7 @@ public class PaymentService {
                 new PaymentCompletedEvent(
                         payment.getId(),
                         payment.getOrderId(),
-                        payment.getOrderType(),
+                        payment.getOrderType().name(),
                         payment.getMemberId(),
                         payment.getAmount(),
                         payment.getPaidAt()
@@ -106,7 +108,7 @@ public class PaymentService {
                 new PaymentFailedEvent(
                         payment.getId(),
                         payment.getOrderId(),
-                        payment.getOrderType(),
+                        payment.getOrderType().name(),
                         payment.getMemberId(),
                         payment.getAmount()
                 )

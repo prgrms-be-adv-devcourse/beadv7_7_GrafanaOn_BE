@@ -6,7 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import shop.dear.common.event.financial.PaymentRequestedEvent;
-import shop.dear.common.event.order.OrderType;
+import shop.dear.common.type.OrderType;
 import shop.dear.commerce.financial.payment.application.PaymentService;
 import shop.dear.commerce.financial.payment.application.dto.PayOrderCommand;
 
@@ -28,7 +28,7 @@ public class PaymentRequestedEventListenerTest {
         // given
         final PaymentRequestedEvent event = new PaymentRequestedEvent(
                 1L,
-                OrderType.PURCHASE,
+                OrderType.PURCHASE.name(),
                 2L,
                 new BigDecimal("10000.00")
         );
@@ -40,7 +40,7 @@ public class PaymentRequestedEventListenerTest {
         verify(paymentService).payOrder(new PayOrderCommand(
                 2L,
                 1L,
-                OrderType.PURCHASE,
+                OrderType.PURCHASE.name(),
                 new BigDecimal("10000.00")
         ));
     }

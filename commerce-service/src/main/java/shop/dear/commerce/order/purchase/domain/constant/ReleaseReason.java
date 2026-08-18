@@ -1,4 +1,4 @@
-package shop.dear.common.event.order;
+package shop.dear.commerce.order.purchase.domain.constant;
 
 public enum ReleaseReason {
     EXPIRED,

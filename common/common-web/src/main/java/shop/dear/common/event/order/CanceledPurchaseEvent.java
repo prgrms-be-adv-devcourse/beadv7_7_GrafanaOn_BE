@@ -5,6 +5,6 @@ public record CanceledPurchaseEvent(
     Long buyerId,
     Long sellerId,
     Long productId,
-    ReleaseReason reason
+    String reason
 ) {
 }

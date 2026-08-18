@@ -15,8 +15,8 @@ import shop.dear.common.event.financial.PaymentCompletedEvent;
 import shop.dear.common.event.financial.PaymentFailedEvent;
 import shop.dear.common.event.order.CanceledPurchaseEvent;
 import shop.dear.common.event.order.FinishedOrderEvent;
-import shop.dear.common.event.order.OrderType;
-import shop.dear.common.event.order.ReleaseReason;
+import shop.dear.common.type.OrderType;
+import shop.dear.commerce.order.purchase.domain.constant.ReleaseReason;
 import shop.dear.common.exception.BusinessException;
 
 import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.PURCHASE_NOT_FOUND;
@@ -32,7 +32,7 @@ public class PurchasePaymentEventListener {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handlePaymentCompleted(final PaymentCompletedEvent event) {
-        if (event.orderType() != OrderType.PURCHASE) {
+        if (!OrderType.PURCHASE.name().equals(event.orderType())) {
             return;
         }
         final Purchase purchase = findPurchase(event.orderId());
@@ -53,7 +53,7 @@ public class PurchasePaymentEventListener {
                         purchase.getSellerId(),
                         purchase.getProductId(),
                         purchase.getAmount(),
-                        OrderType.PURCHASE
+                        OrderType.PURCHASE.name()
                 )
         );
     }
@@ -61,7 +61,7 @@ public class PurchasePaymentEventListener {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handlePaymentFailed(final PaymentFailedEvent event) {
-        if (event.orderType() != OrderType.PURCHASE) {
+        if (!OrderType.PURCHASE.name().equals(event.orderType())) {
             return;
         }
 
@@ -73,7 +73,7 @@ public class PurchasePaymentEventListener {
                 purchase.getBuyerId(),
                 purchase.getSellerId(),
                 purchase.getProductId(),
-                ReleaseReason.PAYMENT_FAILED
+                ReleaseReason.PAYMENT_FAILED.name()
         ));
     }
 

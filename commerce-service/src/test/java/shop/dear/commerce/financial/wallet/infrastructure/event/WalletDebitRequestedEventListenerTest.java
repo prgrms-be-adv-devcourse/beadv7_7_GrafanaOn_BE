@@ -7,7 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
-import shop.dear.common.event.order.OrderType;
+import shop.dear.common.type.OrderType;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.commerce.financial.payment.application.event.WalletDebitRequestedEvent;
 import shop.dear.commerce.financial.wallet.application.WalletService;
@@ -42,7 +42,7 @@ public class WalletDebitRequestedEventListenerTest {
                 PAYMENT_ID,
                 MEMBER_ID,
                 AMOUNT,
-                OrderType.PURCHASE
+                OrderType.PURCHASE.name()
         );
         final PayCommand command = new PayCommand(
                 MEMBER_ID,
@@ -71,7 +71,7 @@ public class WalletDebitRequestedEventListenerTest {
                 PAYMENT_ID,
                 MEMBER_ID,
                 AMOUNT,
-                OrderType.OFFER
+                OrderType.OFFER.name()
         );
         final PayCommand command = new PayCommand(
                 MEMBER_ID,
@@ -100,7 +100,7 @@ public class WalletDebitRequestedEventListenerTest {
                 PAYMENT_ID,
                 MEMBER_ID,
                 AMOUNT,
-                OrderType.PURCHASE
+                OrderType.PURCHASE.name()
         );
         final PayCommand command = new PayCommand(
                 MEMBER_ID,
@@ -132,7 +132,7 @@ public class WalletDebitRequestedEventListenerTest {
                 PAYMENT_ID,
                 MEMBER_ID,
                 AMOUNT,
-                OrderType.OFFER
+                OrderType.OFFER.name()
         );
         final PayCommand command = new PayCommand(
                 MEMBER_ID,
@@ -164,7 +164,7 @@ public class WalletDebitRequestedEventListenerTest {
                 PAYMENT_ID,
                 MEMBER_ID,
                 AMOUNT,
-                OrderType.PURCHASE
+                OrderType.PURCHASE.name()
         );
         final PayCommand command = new PayCommand(
                 MEMBER_ID,
@@ -199,7 +199,7 @@ public class WalletDebitRequestedEventListenerTest {
                 PAYMENT_ID,
                 MEMBER_ID,
                 AMOUNT,
-                OrderType.PURCHASE
+                OrderType.PURCHASE.name()
         );
         final PayCommand command = new PayCommand(
                 MEMBER_ID,

@@ -14,8 +14,8 @@ import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.commerce.order.purchase.domain.repository.PurchaseRepository;
 import shop.dear.common.event.financial.PaymentRequestedEvent;
 import shop.dear.common.event.order.CanceledPurchaseEvent;
-import shop.dear.common.event.order.OrderType;
-import shop.dear.common.event.order.ReleaseReason;
+import shop.dear.common.type.OrderType;
+import shop.dear.commerce.order.purchase.domain.constant.ReleaseReason;
 import shop.dear.common.exception.BusinessException;
 
 import java.time.LocalDateTime;
@@ -85,7 +85,7 @@ public class PurchaseService {
 
         purchaseEventPublisher.publish(new PaymentRequestedEvent(
                 savedPurchase.getId(),
-                OrderType.PURCHASE,
+                OrderType.PURCHASE.name(),
                 savedPurchase.getBuyerId(),
                 savedPurchase.getAmount()
         ));
@@ -125,7 +125,7 @@ public class PurchaseService {
                 purchase.getBuyerId(),
                 purchase.getSellerId(),
                 purchase.getProductId(),
-                ReleaseReason.CANCELLED
+                ReleaseReason.CANCELLED.name()
         ));
     }
 

@@ -14,7 +14,7 @@ import shop.dear.commerce.financial.payment.domain.constant.PaymentPurpose;
 import shop.dear.commerce.financial.payment.application.port.PaymentCompletedEventPublisher;
 import shop.dear.commerce.financial.payment.application.port.PaymentFailedEventPublisher;
 import shop.dear.common.event.financial.PaymentCompletedEvent;
-import shop.dear.common.event.order.OrderType;
+import shop.dear.common.type.OrderType;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.commerce.financial.payment.application.event.WalletDebitRequestedEvent;
 import shop.dear.commerce.financial.payment.application.port.WalletDebitEventPublisher;
@@ -71,7 +71,7 @@ public class PaymentServiceTest {
         final PayOrderCommand command = new PayOrderCommand(
                 MEMBER_ID,
                 ORDER_ID,
-                OrderType.PURCHASE,
+                OrderType.PURCHASE.name(),
                 AMOUNT
         );
 
@@ -122,7 +122,7 @@ public class PaymentServiceTest {
         assertEquals(PAYMENT_ID.longValue(), event.paymentId().longValue());
         assertEquals(MEMBER_ID.longValue(), event.memberId().longValue());
         assertEquals(AMOUNT, event.amount());
-        assertEquals(OrderType.PURCHASE, event.orderType());
+        assertEquals(OrderType.PURCHASE.name(), event.orderType());
     }
 
     @Test
@@ -131,7 +131,7 @@ public class PaymentServiceTest {
         final PayOrderCommand command = new PayOrderCommand(
                 MEMBER_ID,
                 ORDER_ID,
-                OrderType.PURCHASE,
+                OrderType.PURCHASE.name(),
                 AMOUNT
         );
 
@@ -184,7 +184,7 @@ public class PaymentServiceTest {
         final PaymentCompletedEvent event = eventCaptor.getValue();
         assertEquals(PAYMENT_ID, event.paymentId());
         assertEquals(ORDER_ID, event.orderId());
-        assertEquals(OrderType.PURCHASE, event.orderType());
+        assertEquals(OrderType.PURCHASE.name(), event.orderType());
         assertEquals(MEMBER_ID, event.memberId());
         assertEquals(AMOUNT, event.amount());
         assertEquals(payment.getPaidAt(), event.paidAt());

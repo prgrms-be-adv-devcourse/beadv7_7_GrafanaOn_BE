@@ -6,7 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import shop.dear.common.event.order.FinishedOrderEvent;
-import shop.dear.common.event.order.OrderType;
+import shop.dear.common.type.OrderType;
 import shop.dear.commerce.financial.settlement.application.SettlementService;
 
 import java.math.BigDecimal;
@@ -31,7 +31,7 @@ public class SettlementOrderEventListenerTest {
                 3L,
                 4L,
                 new BigDecimal("10000.00"),
-                OrderType.PURCHASE
+                OrderType.PURCHASE.name()
         );
 
         // when
