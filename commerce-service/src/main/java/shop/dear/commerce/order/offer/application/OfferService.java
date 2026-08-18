@@ -16,7 +16,9 @@ import shop.dear.commerce.order.offersnapshot.domain.repository.OfferSnapshotRep
 import shop.dear.commerce.order.offer.application.port.MemberPort;
 import shop.dear.commerce.order.offer.application.port.ProductPort;
 import shop.dear.commerce.order.offer.application.port.dto.ProductInfo;
+import shop.dear.commerce.order.offer.domain.constant.OfferReleaseReason;
 import shop.dear.common.event.financial.PaymentHoldRequestedEvent;
+import shop.dear.common.event.financial.PaymentReleaseRequestedEvent;
 import shop.dear.common.event.financial.PaymentRequestedEvent;
 import shop.dear.common.event.order.FinishedOrderEvent;
 import shop.dear.common.type.OrderType;
@@ -25,6 +27,7 @@ import shop.dear.common.exception.CommonErrorCode;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 import static shop.dear.commerce.order.offer.domain.exception.OfferErrorCode.NOT_OFFER_SELLER;
 import static shop.dear.commerce.order.offer.domain.exception.OfferErrorCode.OFFER_NOT_FOUND;
@@ -150,6 +153,29 @@ public class OfferService {
                 offer.getAmount(),
                 OrderType.OFFER.name()
         ));
+
+        releaseOtherPendingOffers(offer);
+    }
+
+    private void releaseOtherPendingOffers(final Offer acceptedOffer) {
+        final List<Offer> otherOffers = offerRepository.findByProductIdAndStatusInOrderByInsertedAtDesc(
+                acceptedOffer.getProductId(), List.of(OfferStatus.PENDING));
+
+        for (final Offer otherOffer : otherOffers) {
+            if (Objects.equals(otherOffer.getId(), acceptedOffer.getId())) {
+                continue;
+            }
+
+            otherOffer.reject();
+            offerRepository.save(otherOffer);
+
+            offerEventPublisher.publish(new PaymentReleaseRequestedEvent(
+                    otherOffer.getId(),
+                    otherOffer.getBuyerId(),
+                    otherOffer.getAmount(),
+                    OfferReleaseReason.OFFER_OUTBID.name()
+            ));
+        }
     }
 
     @Transactional
@@ -163,6 +189,13 @@ public class OfferService {
 
         offer.reject();
         offerRepository.save(offer);
+
+        offerEventPublisher.publish(new PaymentReleaseRequestedEvent(
+                offer.getId(),
+                offer.getBuyerId(),
+                offer.getAmount(),
+                OfferReleaseReason.OFFER_REJECTED.name()
+        ));
     }
 
     public Offer findOfferById(final Long offerId, final Long memberId) {
