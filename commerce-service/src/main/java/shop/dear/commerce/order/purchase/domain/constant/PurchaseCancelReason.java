@@ -1,6 +1,6 @@
 package shop.dear.commerce.order.purchase.domain.constant;
 
-public enum ReleaseReason {
+public enum PurchaseCancelReason {
     EXPIRED,
     CANCELLED,
     PAYMENT_FAILED,
