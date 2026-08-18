@@ -200,7 +200,7 @@ public class MemberServiceTest {
         assertTrue(member.isSellerActive());
         assertEquals(SellerStatus.ACTIVE, member.getSeller().getStatus());
         assertEquals("국민은행", member.getSeller().getAccountInfo().getBank());
-        assertEquals("1234567890", member.getSeller().getAccountInfo().getAccount());
+        assertEquals("1234567890", member.getSeller().getAccountInfo().getAccount().value());
     }
 
     @Test
@@ -221,7 +221,7 @@ public class MemberServiceTest {
         memberService.updateSellerAccount(1L, command);
 
         assertEquals("신한은행", member.getSeller().getAccountInfo().getBank());
-        assertEquals("9876543210", member.getSeller().getAccountInfo().getAccount());
+        assertEquals("9876543210", member.getSeller().getAccountInfo().getAccount().value());
     }
 
     @Test
