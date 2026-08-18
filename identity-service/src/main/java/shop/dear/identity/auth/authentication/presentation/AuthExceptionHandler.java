@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.common.exception.CommonErrorCode;
+import shop.dear.common.exception.ServiceUnavailableException;
 import shop.dear.common.response.ApiResponse;
 import shop.dear.common.response.ErrorCode;
 import shop.dear.identity.auth.authentication.domain.exception.AuthErrorCode;
@@ -39,6 +40,19 @@ public class AuthExceptionHandler {
 
         return ResponseEntity.badRequest()
                 .body(fail(CommonErrorCode.INVALID_REQUEST, errors));
+    }
+
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleServiceUnavailableException(
+            ServiceUnavailableException exception
+    ) {
+        log.warn("{} 발생! errorCode = {}",
+                exception.getClass().getSimpleName(),
+                exception.getErrorCode().getValue(),
+                exception);
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(fail(exception.getErrorCode()));
     }
 
     @ExceptionHandler(BusinessException.class)
