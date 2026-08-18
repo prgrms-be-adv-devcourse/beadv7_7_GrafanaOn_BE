@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import shop.dear.common.exception.BusinessException;
+import shop.dear.common.exception.ServiceUnavailableException;
 import shop.dear.identity.member.application.port.WalletPort;
 import shop.dear.identity.member.domain.exception.MemberErrorCode;
 import shop.dear.identity.member.infrastructure.client.dto.WalletApiRequest;
@@ -53,6 +53,6 @@ public class WalletHttpClient implements WalletPort {
     private Void createWalletFallback(final Throwable cause) {
         log.warn("지갑 생성 호출 실패 -> fallback 실행. 원인: {}", cause.toString());
 
-        throw new BusinessException(MemberErrorCode.WALLET_CREATION_FAILED);
+        throw new ServiceUnavailableException(MemberErrorCode.WALLET_CREATION_FAILED);
     }
 }
