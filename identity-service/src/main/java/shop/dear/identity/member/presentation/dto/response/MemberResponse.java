@@ -26,7 +26,7 @@ public record MemberResponse(
 
     private static String maskAddress(final String address) {
 
-        if (address == null || address.isBlank()) {
+        if (address == null || address.isBlank() || address.length() < 3) {
             return address;
         }
 

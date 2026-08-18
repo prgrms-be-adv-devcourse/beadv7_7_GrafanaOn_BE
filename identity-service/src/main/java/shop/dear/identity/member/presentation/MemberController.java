@@ -9,6 +9,8 @@ import shop.dear.common.response.ApiResponse;
 import shop.dear.identity.member.application.MemberService;
 import shop.dear.identity.member.presentation.dto.response.MemberResponse;
 import shop.dear.identity.member.presentation.dto.request.RegisterSellerRequest;
+import shop.dear.identity.member.presentation.dto.response.MyProfileResponse;
+import shop.dear.identity.member.presentation.dto.response.PublicProfileResponse;
 import shop.dear.identity.member.presentation.dto.response.SellerAccountResponse;
 import shop.dear.identity.member.presentation.dto.request.UpdateProfileRequest;
 import shop.dear.identity.member.presentation.dto.request.UpdateSellerAccountRequest;
@@ -36,6 +38,7 @@ public class MemberController {
         return ResponseEntity.ok(successWithData(member));
     }
 
+    //TODO: 프론트엔드에서 endpint 수정 후 삭제 처리
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<MemberResponse>> getProfile(
         @AuthUser Long requesterId,
@@ -46,6 +49,22 @@ public class MemberController {
         boolean isOwner = searchId.equals(requesterId);
 
         MemberResponse member = MemberResponse.from(memberService.getProfile(searchId), isOwner);
+
+        return ResponseEntity.ok(successWithData(member));
+    }
+
+    @GetMapping("/profile/me")
+    public ResponseEntity<ApiResponse<MyProfileResponse>> getMyProfile(@AuthUser Long memberId){
+
+        MyProfileResponse member = MyProfileResponse.from(memberService.getProfile(memberId));
+
+        return ResponseEntity.ok(successWithData(member));
+    }
+
+    @GetMapping("/profile/{memberId}")
+    public ResponseEntity<ApiResponse<PublicProfileResponse>> getProfile(@PathVariable final Long memberId){
+
+        PublicProfileResponse member = PublicProfileResponse.from(memberService.getProfile(memberId));
 
         return ResponseEntity.ok(successWithData(member));
     }

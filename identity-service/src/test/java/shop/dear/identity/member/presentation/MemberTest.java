@@ -108,6 +108,114 @@ public class MemberTest {
     }
 
     @Test
+    @DisplayName("/profile/me 를 호출하면 경로변수 매핑보다 우선하여 본인 프로필 전체 정보를 반환한다")
+    void getMyProfile_success() throws Exception {
+
+        given(memberService.getProfile(1L))
+            .willReturn(new MemberInfo(
+                    1L,
+                    "테스트",
+                    "서울시 강남구",
+                    "010-1234-5678",
+                    "user_000001"
+                )
+            );
+
+        final ResultActions result = mockMvc
+            .perform(get("/api/members/profile/me")
+                .header("X-Authenticated-Member-Id", "1"));
+
+        result
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value("success"))
+            .andExpect(jsonPath("$.data.id").value(1L))
+            .andExpect(jsonPath("$.data.name").value("테스트"))
+            .andExpect(jsonPath("$.data.defaultShippingAddress").value("서울시 강남구"))
+            .andExpect(jsonPath("$.data.phoneNumber").value("010-1234-5678"))
+            .andExpect(jsonPath("$.data.nickname").value("user_000001"));
+    }
+
+    @Test
+    @DisplayName("인증 정보 없이 /profile/me 를 호출하면 상태코드 401을 반환한다")
+    void getMyProfile_unauthenticated() throws Exception {
+
+        final ResultActions result = mockMvc
+            .perform(get("/api/members/profile/me"));
+
+        result.andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("타인 프로필을 조회하면 개인정보 없이 id와 nickname만 반환한다")
+    void getPublicProfile_success() throws Exception {
+
+        given(memberService.getProfile(2L))
+            .willReturn(new MemberInfo(
+                    2L,
+                    "테스트2",
+                    "부산시 해운대구",
+                    "010-9999-8888",
+                    "user_000002"
+                )
+            );
+
+        final ResultActions result = mockMvc
+            .perform(get("/api/members/profile/2")
+                .header("X-Authenticated-Member-Id", "1"));
+
+        result
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value("success"))
+            .andExpect(jsonPath("$.data.id").value(2L))
+            .andExpect(jsonPath("$.data.nickname").value("user_000002"))
+            .andExpect(jsonPath("$.data.name").doesNotExist())
+            .andExpect(jsonPath("$.data.defaultShippingAddress").doesNotExist())
+            .andExpect(jsonPath("$.data.phoneNumber").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("본인 id를 경로변수로 조회해도 공개 프로필 형태로 반환한다")
+    void getPublicProfile_ownId_stillPublic() throws Exception {
+
+        given(memberService.getProfile(1L))
+            .willReturn(new MemberInfo(
+                    1L,
+                    "테스트",
+                    "서울시 강남구",
+                    "010-1234-5678",
+                    "user_000001"
+                )
+            );
+
+        final ResultActions result = mockMvc
+            .perform(get("/api/members/profile/1")
+                .header("X-Authenticated-Member-Id", "1"));
+
+        result
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.nickname").value("user_000001"))
+            .andExpect(jsonPath("$.data.name").doesNotExist())
+            .andExpect(jsonPath("$.data.phoneNumber").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 회원을 조회하면 상태코드 400과 MEMBER_NOT_FOUND 에러코드를 반환한다")
+    void getPublicProfile_notFound() throws Exception {
+
+        given(memberService.getProfile(999L))
+            .willThrow(new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        final ResultActions result = mockMvc
+            .perform(get("/api/members/profile/999")
+                .header("X-Authenticated-Member-Id", "1"));
+
+        result
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(MemberErrorCode.MEMBER_NOT_FOUND.getValue()))
+            .andExpect(jsonPath("$.message").value(MemberErrorCode.MEMBER_NOT_FOUND.getMessage()));
+    }
+
+    @Test
     @DisplayName("동시 요청으로 닉네임이 충돌하면 상태코드 409와 DUPLICATE_NICKNAME 에러코드를 반환한다")
     void updateProfile_concurrentNicknameConflict() throws Exception {
 
