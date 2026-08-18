@@ -1,8 +1,10 @@
 package shop.dear.identity.member.domain.model;
 
+import lombok.EqualsAndHashCode;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.identity.member.domain.exception.MemberErrorCode;
 
+@EqualsAndHashCode
 public final class AccountNumber {
 
 	private static final String FORMAT = "\\d{10,16}";
