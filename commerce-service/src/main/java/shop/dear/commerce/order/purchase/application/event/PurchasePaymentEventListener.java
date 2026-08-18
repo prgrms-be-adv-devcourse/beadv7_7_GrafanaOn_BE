@@ -16,7 +16,7 @@ import shop.dear.common.event.financial.PaymentFailedEvent;
 import shop.dear.common.event.order.CanceledPurchaseEvent;
 import shop.dear.common.event.order.FinishedOrderEvent;
 import shop.dear.common.type.OrderType;
-import shop.dear.commerce.order.purchase.domain.constant.ReleaseReason;
+import shop.dear.commerce.order.purchase.domain.constant.PurchaseCancelReason;
 import shop.dear.common.exception.BusinessException;
 
 import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.PURCHASE_NOT_FOUND;
@@ -73,7 +73,7 @@ public class PurchasePaymentEventListener {
                 purchase.getBuyerId(),
                 purchase.getSellerId(),
                 purchase.getProductId(),
-                ReleaseReason.PAYMENT_FAILED.name()
+                PurchaseCancelReason.PAYMENT_FAILED.name()
         ));
     }
 

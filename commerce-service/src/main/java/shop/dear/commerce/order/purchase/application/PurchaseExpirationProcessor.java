@@ -9,7 +9,7 @@ import shop.dear.commerce.order.purchase.domain.constant.PurchaseStatus;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.commerce.order.purchase.domain.repository.PurchaseRepository;
 import shop.dear.common.event.order.CanceledPurchaseEvent;
-import shop.dear.commerce.order.purchase.domain.constant.ReleaseReason;
+import shop.dear.commerce.order.purchase.domain.constant.PurchaseCancelReason;
 import shop.dear.common.exception.BusinessException;
 
 import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode.PURCHASE_NOT_FOUND;
@@ -38,7 +38,7 @@ public class PurchaseExpirationProcessor {
                 purchase.getBuyerId(),
                 purchase.getSellerId(),
                 purchase.getProductId(),
-                ReleaseReason.EXPIRED.name()
+                PurchaseCancelReason.EXPIRED.name()
         ));
 
         return true;
