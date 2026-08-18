@@ -38,5 +38,9 @@ public class AccountInfo {
 		if (bank == null || bank.isBlank()) {
 			throw new BusinessException(MemberErrorCode.INVALID_BANK_CODE);
 		}
+
+		if (account == null || !account.matches("\\d{10,16}")) {
+			throw new BusinessException(MemberErrorCode.INVALID_ACCOUNT_NUMBER);
+		}
 	}
 }
