@@ -1,4 +1,4 @@
-package shop.dear.common.event.order;
+package shop.dear.common.type;
 
 public enum OrderType {
     OFFER,

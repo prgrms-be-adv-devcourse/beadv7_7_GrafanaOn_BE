@@ -2,7 +2,7 @@ package shop.dear.commerce.financial.payment.infrastructure.event;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
-import shop.dear.common.event.order.OrderType;
+import shop.dear.common.type.OrderType;
 import shop.dear.commerce.financial.payment.application.event.WalletDebitRequestedEvent;
 
 import java.math.BigDecimal;
@@ -25,7 +25,7 @@ public class SpringWalletDebitEventPublisherTest {
                 100L,
                 1L,
                 new BigDecimal("10000.00"),
-                OrderType.PURCHASE
+                OrderType.PURCHASE.name()
         );
 
         // when

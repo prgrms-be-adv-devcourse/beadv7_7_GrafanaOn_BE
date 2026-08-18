@@ -13,7 +13,7 @@ import shop.dear.commerce.financial.settlement.domain.model.Settlement;
 import shop.dear.commerce.financial.settlement.domain.repository.SettlementRepository;
 import shop.dear.commerce.financial.settlementpolicy.domain.model.SettlementPolicy;
 import shop.dear.common.event.order.FinishedOrderEvent;
-import shop.dear.common.event.order.OrderType;
+import shop.dear.common.type.OrderType;
 import shop.dear.common.event.settlement.SettlementPayoutEvent;
 import shop.dear.common.event.settlement.SettlementPayoutItem;
 
@@ -152,11 +152,11 @@ public class SettlementService {
 				.subtract(feeAmount)
 				.setScale(2, RoundingMode.HALF_UP);
 
-		final Long purchaseId = event.orderType() == OrderType.PURCHASE
+		final Long purchaseId = OrderType.PURCHASE.name().equals(event.orderType())
 				? event.orderId()
 				: null;
 
-		final Long offerId = event.orderType() == OrderType.OFFER
+		final Long offerId = OrderType.OFFER.name().equals(event.orderType())
 				? event.orderId()
 				: null;
 

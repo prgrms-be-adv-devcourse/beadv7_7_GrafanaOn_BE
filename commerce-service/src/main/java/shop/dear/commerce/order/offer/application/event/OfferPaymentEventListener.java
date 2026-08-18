@@ -11,7 +11,7 @@ import shop.dear.commerce.order.offer.domain.model.Offer;
 import shop.dear.commerce.order.offer.domain.repository.OfferRepository;
 import shop.dear.common.event.financial.PaymentCompletedEvent;
 import shop.dear.common.event.financial.PaymentFailedEvent;
-import shop.dear.common.event.order.OrderType;
+import shop.dear.common.type.OrderType;
 import shop.dear.common.exception.BusinessException;
 
 @Component
@@ -23,7 +23,7 @@ public class OfferPaymentEventListener {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handlePaymentCompleted(final PaymentCompletedEvent event) {
-        if (event.orderType() != OrderType.OFFER) {
+        if (!OrderType.OFFER.name().equals(event.orderType())) {
             return;
         }
 
@@ -33,7 +33,7 @@ public class OfferPaymentEventListener {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handlePaymentFailed(final PaymentFailedEvent event) {
-        if (event.orderType() != OrderType.OFFER) {
+        if (!OrderType.OFFER.name().equals(event.orderType())) {
             return;
         }
 

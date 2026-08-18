@@ -20,7 +20,7 @@ import shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCode;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.commerce.order.purchase.domain.repository.PurchaseRepository;
 import shop.dear.common.event.financial.PaymentRequestedEvent;
-import shop.dear.common.event.order.OrderType;
+import shop.dear.common.type.OrderType;
 import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
@@ -98,7 +98,7 @@ class PurchaseServiceTest {
             assertThat(paymentEvent.orderId()).isEqualTo(purchase.getId());
             assertThat(paymentEvent.memberId()).isEqualTo(purchase.getBuyerId());
             assertThat(paymentEvent.amount()).isEqualTo(purchase.getAmount());
-            assertThat(paymentEvent.orderType()).isEqualTo(OrderType.PURCHASE);
+            assertThat(paymentEvent.orderType()).isEqualTo(OrderType.PURCHASE.name());
         }
 
         @Test

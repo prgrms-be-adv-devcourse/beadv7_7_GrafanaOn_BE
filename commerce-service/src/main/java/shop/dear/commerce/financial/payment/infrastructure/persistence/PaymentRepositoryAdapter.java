@@ -5,7 +5,7 @@ import org.springframework.stereotype.Repository;
 import shop.dear.commerce.financial.payment.domain.model.Payment;
 import shop.dear.commerce.financial.payment.domain.repository.PaymentRepository;
 import shop.dear.commerce.financial.payment.infrastructure.persistence.jpa.PaymentJpaRepository;
-import shop.dear.common.event.order.OrderType;
+import shop.dear.common.type.OrderType;
 
 import java.util.Optional;
 

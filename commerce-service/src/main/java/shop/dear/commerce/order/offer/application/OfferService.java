@@ -19,7 +19,7 @@ import shop.dear.commerce.order.offer.application.port.dto.ProductInfo;
 import shop.dear.common.event.financial.PaymentHoldRequestedEvent;
 import shop.dear.common.event.financial.PaymentRequestedEvent;
 import shop.dear.common.event.order.FinishedOrderEvent;
-import shop.dear.common.event.order.OrderType;
+import shop.dear.common.type.OrderType;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.common.exception.CommonErrorCode;
 
@@ -110,7 +110,6 @@ public class OfferService {
 
         offerEventPublisher.publish(new PaymentHoldRequestedEvent(
                 savedOffer.getId(),
-                OrderType.OFFER,
                 savedOffer.getBuyerId(),
                 savedOffer.getAmount()
         ));
@@ -138,7 +137,7 @@ public class OfferService {
 
         offerEventPublisher.publish(new PaymentRequestedEvent(
                 offer.getId(),
-                OrderType.OFFER,
+                OrderType.OFFER.name(),
                 offer.getBuyerId(),
                 offer.getAmount()
         ));
@@ -149,7 +148,7 @@ public class OfferService {
                 offer.getSellerId(),
                 offer.getProductId(),
                 offer.getAmount(),
-                OrderType.OFFER
+                OrderType.OFFER.name()
         ));
     }
 
