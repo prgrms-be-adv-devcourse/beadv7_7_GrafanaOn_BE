@@ -1,5 +1,6 @@
 package shop.dear.identity.member.presentation;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,8 @@ import shop.dear.identity.member.presentation.dto.request.RegisterSellerRequest;
 import shop.dear.identity.member.presentation.dto.request.UpdateProfileRequest;
 import shop.dear.identity.member.presentation.dto.request.UpdateSellerAccountRequest;
 import tools.jackson.databind.ObjectMapper;
+
+import java.sql.SQLException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -222,7 +225,13 @@ public class MemberTest {
 
         given(memberService.updateProfile(any(), any()))
             .willThrow(new DataIntegrityViolationException(
-                "duplicate key value violates unique constraint \"uk_member_nickname\""));
+                "could not execute statement",
+                new ConstraintViolationException(
+                    "duplicate key value violates unique constraint",
+                    new SQLException("duplicate key", "23505"),
+                    "uk_member_nickname"
+                )
+            ));
 
         final ResultActions result = mockMvc
             .perform(patch("/api/members/profile/me")
@@ -242,7 +251,32 @@ public class MemberTest {
 
         given(memberService.updateProfile(any(), any()))
             .willThrow(new DataIntegrityViolationException(
-                "null value in column \"phone_number\" violates not-null constraint"));
+                "could not execute statement",
+                new ConstraintViolationException(
+                    "null value in column violates not-null constraint",
+                    new SQLException("not null", "23502"),
+                    "uk_member_phone_number"
+                )
+            ));
+
+        final ResultActions result = mockMvc
+            .perform(patch("/api/members/profile/me")
+                .header("X-Authenticated-Member-Id", "1")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(validUpdateRequest())));
+
+        result
+            .andExpect(status().isInternalServerError())
+            .andExpect(jsonPath("$.code")
+                .value(CommonErrorCode.INTERNAL_SERVER_APPLICATION_ERROR.getValue()));
+    }
+
+    @Test
+    @DisplayName("제약 위반 원인을 알 수 없어도 예외 없이 상태코드 500을 반환한다")
+    void updateProfile_constraintViolationWithoutCause() throws Exception {
+
+        given(memberService.updateProfile(any(), any()))
+            .willThrow(new DataIntegrityViolationException("could not execute statement"));
 
         final ResultActions result = mockMvc
             .perform(patch("/api/members/profile/me")

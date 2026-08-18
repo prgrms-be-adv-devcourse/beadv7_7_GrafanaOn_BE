@@ -1,6 +1,7 @@
 package shop.dear.identity.member.presentation;
 
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -22,6 +23,8 @@ import static shop.dear.common.response.ApiResponse.fail;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice(assignableTypes = {MemberController.class, InternalMemberController.class})
 public class MemberExceptionHandler{
+
+    private static final String NICKNAME_CONSTRAINT = "uk_member_nickname";
 
     @ExceptionHandler
     public ResponseEntity<ApiResponse<List<String>>> handleValidException(final MethodArgumentNotValidException e) {
@@ -47,9 +50,7 @@ public class MemberExceptionHandler{
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(
         final DataIntegrityViolationException e) {
 
-        String message = e.getMostSpecificCause().getMessage();
-
-        if (message != null && message.contains("uk_member_nickname")) {
+        if (isNicknameDuplicated(e)) {
             log.warn("닉네임 중복 발생", e);
             return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(fail(MemberErrorCode.DUPLICATE_NICKNAME));
@@ -57,5 +58,11 @@ public class MemberExceptionHandler{
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(fail(INTERNAL_SERVER_APPLICATION_ERROR));
+    }
+
+    private boolean isNicknameDuplicated(final DataIntegrityViolationException e) {
+
+        return e.getCause() instanceof ConstraintViolationException hibernateException
+            && NICKNAME_CONSTRAINT.equals(hibernateException.getConstraintName());
     }
 }
