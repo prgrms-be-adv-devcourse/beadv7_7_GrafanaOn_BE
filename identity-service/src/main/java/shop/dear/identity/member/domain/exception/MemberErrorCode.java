@@ -17,6 +17,7 @@ public enum MemberErrorCode implements ErrorCode {
     SELLER_WITHDRAWAL_REQUIRED("MB-007", "판매자 정산이 완료된 후 회원 탈퇴가 가능합니다."),
     INVALID_ACCOUNT_NUMBER("MB-008", "계좌번호 형식이 올바르지 않습니다."),
     INVALID_BANK_CODE("MB-009", "은행 코드가 유효하지 않습니다."),
+    WALLET_CREATION_FAILED("MB-010", "회원가입 처리 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요."), // 서킷 브레이커
     SELLER_NOT_WITHDRAWN("MB-011", "탈퇴한 판매자만 계좌정보를 보관 이관할 수 있습니다."),
     ;
 
