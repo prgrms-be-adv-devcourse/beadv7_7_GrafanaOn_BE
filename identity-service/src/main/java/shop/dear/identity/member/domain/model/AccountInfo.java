@@ -18,7 +18,6 @@ public class AccountInfo {
 	@Column(name = "bank", nullable = false)
 	private String bank;
 
-	// 암호화는 AccountNumberConverter 가 autoApply 로 처리한다.
 	@Column(name = "account", nullable = false)
 	private AccountNumber account;
 
