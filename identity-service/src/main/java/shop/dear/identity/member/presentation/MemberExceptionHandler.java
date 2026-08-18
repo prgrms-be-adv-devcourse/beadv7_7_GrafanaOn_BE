@@ -15,6 +15,7 @@ import shop.dear.identity.member.domain.exception.MemberErrorCode;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static shop.dear.common.exception.CommonErrorCode.INTERNAL_SERVER_APPLICATION_ERROR;
 import static shop.dear.common.response.ApiResponse.fail;
 
 @Slf4j
@@ -43,12 +44,18 @@ public class MemberExceptionHandler{
     }
 
     @ExceptionHandler
-    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(final DataIntegrityViolationException e) {
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(
+        final DataIntegrityViolationException e) {
 
-        log.warn("{} 발생! 닉네임 중복", e.getClass().getSimpleName(), e);
+        String message = e.getMostSpecificCause().getMessage();
 
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-            .body(fail(MemberErrorCode.DUPLICATE_NICKNAME));
+        if (message.contains("uk_member_nickname")) {
+            log.warn("닉네임 중복 발생", e);
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(fail(MemberErrorCode.DUPLICATE_NICKNAME));
+        }
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(fail(INTERNAL_SERVER_APPLICATION_ERROR));
     }
-
 }

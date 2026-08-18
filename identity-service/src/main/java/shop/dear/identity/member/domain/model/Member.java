@@ -13,7 +13,12 @@ import shop.dear.identity.member.domain.exception.MemberErrorCode;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "member")
+@Table(
+    name = "member",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_member_nickname", columnNames = "nickname")
+    }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseEntity {
@@ -31,7 +36,7 @@ public class Member extends BaseEntity {
     @Column(name = "phone_number", length = 20, nullable = false)
     private String phoneNumber;
 
-    @Column(name = "nickname", nullable = false, unique = true)
+    @Column(name = "nickname", nullable = false)
     private String nickname;
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
