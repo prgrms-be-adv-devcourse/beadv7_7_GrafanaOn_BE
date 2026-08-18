@@ -1,89 +1,105 @@
 package shop.dear.commerce.search.infrastructure;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
 import shop.dear.commerce.search.domain.SearchProduct;
-import shop.dear.commerce.search.domain.SearchRepository;
-import shop.dear.commerce.search.infrastructure.elasticsearch.SearchProductDocument;
+import shop.dear.commerce.search.infrastructure.elasticsearch.EsSearchAdapter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
 /**
- * 이중 쓰기 어댑터가 양쪽 저장소에 기록하는지 확인한다.
+ * 이중 쓰기 어댑터의 계약을 검증한다.
+ *
+ * 실제 저장소는 필요하지 않다. 이 클래스의 책임은 두 어댑터에 위임하는 것과,
+ * Elasticsearch 실패를 삼켜 원본 기록을 지키는 것뿐이다.
  */
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class DualWriteSearchAdapterTest {
 
-    private static final Long TEST_PRODUCT_ID = 999999L;
+    private static final Long PRODUCT_ID = 999999L;
 
-    @Autowired
-    private SearchRepository searchRepository;
+    @Mock
+    private SearchRepositoryAdapter jpaAdapter;
 
-    @Autowired
-    private SearchJpaRepository searchJpaRepository;
+    @Mock
+    private EsSearchAdapter esAdapter;
 
-    @Autowired
-    private ElasticsearchOperations operations;
-
-    // ES 는 ddl-auto 의 영향을 받지 않아 문서가 남으므로 직접 지운다.
-    // ES 장애 상황을 재현하는 테스트도 있어, 여기서 실패해도 테스트를 깨뜨리지 않는다.
-    @AfterEach
-    void cleanUpIndex() {
-        try {
-            operations.delete(String.valueOf(TEST_PRODUCT_ID), SearchProductDocument.class);
-        } catch (Exception e) {
-            // ES 가 내려가 있는 경우
-        }
-    }
+    @InjectMocks
+    private DualWriteSearchAdapter dualWriteSearchAdapter;
 
     @Test
-    void injectsDualWriteAdapter() {
-        assertThat(searchRepository).isInstanceOf(DualWriteSearchAdapter.class);
-    }
+    void savesToBothAdapters() {
+        final SearchProduct product = createProduct();
 
-    @Test
-    void savesToBothStores() {
-        searchRepository.save(createProduct());
+        dualWriteSearchAdapter.save(product);
 
-        // 색인 직후에는 검색에 잡히지 않는다. 기본 refresh 주기가 1초이므로 강제로 갱신한다.
-        operations.indexOps(SearchProductDocument.class).refresh();
-
-        assertThat(searchJpaRepository.findById(TEST_PRODUCT_ID)).isPresent();
-        assertThat(operations.get(String.valueOf(TEST_PRODUCT_ID), SearchProductDocument.class))
-                .isNotNull();
+        verify(jpaAdapter).save(product);
+        verify(esAdapter).save(product);
     }
 
     /**
-     * ES 장애 시에도 원본 테이블 기록은 남아야 한다.
-     * 남지 않으면 재색인으로 복구할 수 없다.
-     *
-     * ES 를 내려야 재현되므로 평소에는 실행하지 않는다.
-     *   docker stop elasticsearch-local
-     *   ./gradlew :commerce-service:test --tests '*DualWriteSearchAdapterTest*'
-     *   docker start elasticsearch-local
+     * search_product 테이블은 재색인의 원본이다.
+     * Elasticsearch 쓰기가 실패했다고 예외를 밖으로 던지면 리스너의 트랜잭션이 롤백되어
+     * 테이블 기록까지 사라지고, 그러면 재색인으로도 복구할 수 없게 된다.
      */
-    @Disabled("ES 를 내린 상태에서 수동으로 실행한다")
     @Test
     void keepsJpaRecordWhenElasticsearchFails() {
-        searchRepository.save(createProduct());
+        final SearchProduct product = createProduct();
+        doThrow(new RuntimeException("ES 연결 실패")).when(esAdapter).save(product);
 
-        assertThat(searchJpaRepository.findById(TEST_PRODUCT_ID)).isPresent();
+        assertThatCode(() -> dualWriteSearchAdapter.save(product)).doesNotThrowAnyException();
+
+        verify(jpaAdapter).save(product);
+    }
+
+    @Test
+    void deletesFromBothAdapters() {
+        dualWriteSearchAdapter.deleteByProductId(PRODUCT_ID);
+
+        verify(jpaAdapter).deleteByProductId(PRODUCT_ID);
+        verify(esAdapter).deleteByProductId(PRODUCT_ID);
+    }
+
+    @Test
+    void keepsJpaDeletionWhenElasticsearchFails() {
+        doThrow(new RuntimeException("ES 연결 실패")).when(esAdapter).deleteByProductId(PRODUCT_ID);
+
+        assertThatCode(() -> dualWriteSearchAdapter.deleteByProductId(PRODUCT_ID))
+                .doesNotThrowAnyException();
+
+        verify(jpaAdapter).deleteByProductId(PRODUCT_ID);
+    }
+
+    /**
+     * 조회는 Elasticsearch 로만 간다. 테이블은 재색인 원본일 뿐 조회에 쓰이지 않는다.
+     */
+    @Test
+    void delegatesSearchToElasticsearch() {
+        given(esAdapter.searchByProductName(any(), any())).willReturn(null);
+
+        dualWriteSearchAdapter.searchByProductName("에어포스", PageRequest.of(0, 20));
+
+        verify(esAdapter).searchByProductName("에어포스", PageRequest.of(0, 20));
     }
 
     private SearchProduct createProduct() {
         return new SearchProduct(
-                TEST_PRODUCT_ID,
+                PRODUCT_ID,
                 "이중쓰기 테스트 상품",
                 "DUAL-001",
-                "SNEAKERS",
+                "SEARCH_TEST_CATEGORY",
                 LocalDate.of(2025, 1, 1),
                 new BigDecimal("139000"),
                 "IMMEDIATE",
