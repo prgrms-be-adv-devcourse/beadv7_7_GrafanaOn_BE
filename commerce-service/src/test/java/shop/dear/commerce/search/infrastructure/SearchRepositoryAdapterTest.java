@@ -50,18 +50,18 @@ class SearchRepositoryAdapterTest {
         searchRepository.save(createProduct(
                 1L,
                 "나이키 에어포스",
-                "SNEAKERS",
+                "SEARCH_TEST_CATEGORY",
                 "빈티지샵에서 구매한 상품"
         ));
 
         Page<SearchProduct> result = searchRepository.searchByCategory(
-                "sneakers",
+                "search_test_category",
                 PageRequest.of(0, 20)
         );
 
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getCategory())
-                .isEqualTo("SNEAKERS");
+                .isEqualTo("SEARCH_TEST_CATEGORY");
     }
 
     @Test
