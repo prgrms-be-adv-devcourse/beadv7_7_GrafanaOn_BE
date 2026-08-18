@@ -20,7 +20,7 @@ class AccountInfoTest {
         AccountInfo accountInfo = AccountInfo.of("국민은행", "1234567890");
 
         assertEquals("국민은행", accountInfo.getBank());
-        assertEquals("1234567890", accountInfo.getAccount());
+        assertEquals("1234567890", accountInfo.getAccount().value());
     }
 
     @ParameterizedTest
@@ -35,7 +35,7 @@ class AccountInfoTest {
 
         AccountInfo accountInfo = AccountInfo.of("국민은행", account);
 
-        assertEquals(account, accountInfo.getAccount());
+        assertEquals(account, accountInfo.getAccount().value());
     }
 
     @ParameterizedTest

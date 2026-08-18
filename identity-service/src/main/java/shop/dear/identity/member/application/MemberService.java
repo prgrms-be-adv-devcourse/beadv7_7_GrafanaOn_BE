@@ -94,7 +94,7 @@ public class MemberService  {
 
         AccountInfo accountInfo = member.getSeller().getAccountInfo();
 
-        return new SellerInfo(accountInfo.getBank(), maskAccount(accountInfo.getAccount()));
+        return new SellerInfo(accountInfo.getBank(), maskAccount(accountInfo.getAccount().value()));
     }
 
     public boolean isSeller(final Long memberId) {
