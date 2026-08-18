@@ -191,7 +191,7 @@ public class MemberServiceTest {
         );
 
         RegisterSellerCommand command =
-                new RegisterSellerCommand("국민은행", "123-456-789");
+                new RegisterSellerCommand("국민은행", "1234567890");
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
 
@@ -200,7 +200,7 @@ public class MemberServiceTest {
         assertTrue(member.isSellerActive());
         assertEquals(SellerStatus.ACTIVE, member.getSeller().getStatus());
         assertEquals("국민은행", member.getSeller().getAccountInfo().getBank());
-        assertEquals("123-456-789", member.getSeller().getAccountInfo().getAccount());
+        assertEquals("1234567890", member.getSeller().getAccountInfo().getAccount());
     }
 
     @Test
@@ -212,16 +212,16 @@ public class MemberServiceTest {
             "서울시 강남구",
             "010-1234-5678",
             "user_000001");
-        member.registerSeller(AccountInfo.of("국민은행", "123-456-789"));
+        member.registerSeller(AccountInfo.of("국민은행", "1234567890"));
 
-        UpdateSellerAccountCommand command = new UpdateSellerAccountCommand("신한은행", "987-654-321");
+        UpdateSellerAccountCommand command = new UpdateSellerAccountCommand("신한은행", "9876543210");
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
 
         memberService.updateSellerAccount(1L, command);
 
         assertEquals("신한은행", member.getSeller().getAccountInfo().getBank());
-        assertEquals("987-654-321", member.getSeller().getAccountInfo().getAccount());
+        assertEquals("9876543210", member.getSeller().getAccountInfo().getAccount());
     }
 
     @Test
@@ -234,7 +234,7 @@ public class MemberServiceTest {
             "010-1234-5678",
             "user_000001");
 
-        UpdateSellerAccountCommand command = new UpdateSellerAccountCommand("신한은행", "987-654-321");
+        UpdateSellerAccountCommand command = new UpdateSellerAccountCommand("신한은행", "9876543210");
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
 
@@ -253,14 +253,14 @@ public class MemberServiceTest {
             "서울시 강남구",
             "010-1234-5678",
             "user_000001");
-        member.registerSeller(AccountInfo.of("국민은행", "123-456-789"));
+        member.registerSeller(AccountInfo.of("국민은행", "1234567890"));
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
 
         SellerInfo sellerInfo = memberService.getSellerAccount(1L);
 
         assertEquals("국민은행", sellerInfo.bank());
-        assertEquals("123*****789", sellerInfo.account());
+        assertEquals("123****890", sellerInfo.account());
     }
 
     @Test
@@ -290,7 +290,7 @@ public class MemberServiceTest {
             "서울시 강남구",
             "010-1234-5678",
             "user_000001");
-        member.registerSeller(AccountInfo.of("국민은행", "123-456-789"));
+        member.registerSeller(AccountInfo.of("국민은행", "1234567890"));
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
 
@@ -325,7 +325,7 @@ public class MemberServiceTest {
             "서울시 강남구",
             "010-1234-5678",
             "user_000001");
-        member.registerSeller(AccountInfo.of("국민은행", "123-456-789"));
+        member.registerSeller(AccountInfo.of("국민은행", "1234567890"));
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
         given(productPort.existsProduct()).willReturn(new ExistsProduct(false));
@@ -346,7 +346,7 @@ public class MemberServiceTest {
             "서울시 강남구",
             "010-1234-5678",
             "user_000001");
-        member.registerSeller(AccountInfo.of("국민은행", "123-456-789"));
+        member.registerSeller(AccountInfo.of("국민은행", "1234567890"));
 
         given(memberRepository.findById(1L)).willReturn(Optional.of(member));
         given(productPort.existsProduct()).willReturn(new ExistsProduct(true));
@@ -401,7 +401,7 @@ public class MemberServiceTest {
         ReflectionTestUtils.setField(member, "id", 1L);
 
         member.registerSeller(
-                AccountInfo.of("국민은행", "123-456-789")
+                AccountInfo.of("국민은행", "1234567890")
         );
         member.withdrawSeller();
 

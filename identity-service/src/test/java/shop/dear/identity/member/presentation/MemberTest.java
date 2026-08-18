@@ -9,6 +9,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import shop.dear.common.exception.BusinessException;
+import shop.dear.common.exception.CommonErrorCode;
 import shop.dear.identity.member.application.MemberService;
 import shop.dear.identity.member.application.dto.MemberInfo;
 import shop.dear.identity.member.application.dto.SellerInfo;
@@ -220,7 +221,8 @@ public class MemberTest {
     void updateProfile_concurrentNicknameConflict() throws Exception {
 
         given(memberService.updateProfile(any(), any()))
-            .willThrow(new DataIntegrityViolationException("duplicate key value violates unique constraint"));
+            .willThrow(new DataIntegrityViolationException(
+                "duplicate key value violates unique constraint \"uk_member_nickname\""));
 
         final ResultActions result = mockMvc
             .perform(patch("/api/members/profile/me")
@@ -235,10 +237,30 @@ public class MemberTest {
     }
 
     @Test
+    @DisplayName("닉네임 외의 제약 위반이면 상태코드 500을 반환한다")
+    void updateProfile_otherConstraintViolation() throws Exception {
+
+        given(memberService.updateProfile(any(), any()))
+            .willThrow(new DataIntegrityViolationException(
+                "null value in column \"phone_number\" violates not-null constraint"));
+
+        final ResultActions result = mockMvc
+            .perform(patch("/api/members/profile/me")
+                .header("X-Authenticated-Member-Id", "1")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(validUpdateRequest())));
+
+        result
+            .andExpect(status().isInternalServerError())
+            .andExpect(jsonPath("$.code")
+                .value(CommonErrorCode.INTERNAL_SERVER_APPLICATION_ERROR.getValue()));
+    }
+
+    @Test
     @DisplayName("판매자 등록에 성공하면 상태코드 200을 반환한다")
     void registerSeller_success() throws Exception {
 
-        RegisterSellerRequest request = new RegisterSellerRequest("국민은행", "123-456-789");
+        RegisterSellerRequest request = new RegisterSellerRequest("국민은행", "1234567890");
 
         final ResultActions result = mockMvc
             .perform(post("/api/members/me/seller")
@@ -255,7 +277,7 @@ public class MemberTest {
     @DisplayName("이미 판매자로 등록된 회원이 판매자 등록을 요청하면 상태코드 400과 ALREADY_SELLER 에러코드를 반환한다")
     void registerSeller_alreadySeller() throws Exception {
 
-        RegisterSellerRequest request = new RegisterSellerRequest("국민은행", "123-456-789");
+        RegisterSellerRequest request = new RegisterSellerRequest("국민은행", "1234567890");
 
         willThrow(new BusinessException(MemberErrorCode.ALREADY_SELLER))
             .given(memberService).registerSeller(eq(1L), any());
@@ -273,10 +295,27 @@ public class MemberTest {
     }
 
     @Test
+    @DisplayName("숫자가 아닌 계좌번호로 판매자 등록을 요청하면 상태코드 400과 INVALID_INPUT 에러코드를 반환한다")
+    void registerSeller_nonNumericAccount() throws Exception {
+
+        RegisterSellerRequest request = new RegisterSellerRequest("국민은행", "123-456-7890");
+
+        final ResultActions result = mockMvc
+            .perform(post("/api/members/me/seller")
+                .header("X-Authenticated-Member-Id", "1")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(request)));
+
+        result
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(MemberErrorCode.INVALID_INPUT.getValue()));
+    }
+
+    @Test
     @DisplayName("판매자 계좌 수정에 성공하면 상태코드 200을 반환한다")
     void updateSellerAccount_success() throws Exception {
 
-        UpdateSellerAccountRequest request = new UpdateSellerAccountRequest("신한은행", "987-654-321");
+        UpdateSellerAccountRequest request = new UpdateSellerAccountRequest("신한은행", "9876543210");
 
         final ResultActions result = mockMvc
             .perform(patch("/api/members/me/seller")
@@ -290,10 +329,27 @@ public class MemberTest {
     }
 
     @Test
+    @DisplayName("숫자가 아닌 계좌번호로 계좌 수정을 요청하면 상태코드 400과 INVALID_INPUT 에러코드를 반환한다")
+    void updateSellerAccount_nonNumericAccount() throws Exception {
+
+        UpdateSellerAccountRequest request = new UpdateSellerAccountRequest("신한은행", "987-654-3210");
+
+        final ResultActions result = mockMvc
+            .perform(patch("/api/members/me/seller")
+                .header("X-Authenticated-Member-Id", "1")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(request)));
+
+        result
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(MemberErrorCode.INVALID_INPUT.getValue()));
+    }
+
+    @Test
     @DisplayName("판매자가 아닌 회원이 계좌 수정을 요청하면 상태코드 400과 NOT_SELLER 에러코드를 반환한다")
     void updateSellerAccount_notSeller() throws Exception {
 
-        UpdateSellerAccountRequest request = new UpdateSellerAccountRequest("신한은행", "987-654-321");
+        UpdateSellerAccountRequest request = new UpdateSellerAccountRequest("신한은행", "9876543210");
 
         willThrow(new BusinessException(MemberErrorCode.NOT_SELLER))
             .given(memberService).updateSellerAccount(eq(1L), any());
@@ -345,7 +401,7 @@ public class MemberTest {
     void getSellerAccount_success() throws Exception {
 
         given(memberService.getSellerAccount(1L))
-            .willReturn(new SellerInfo("국민은행", "123*****789"));
+            .willReturn(new SellerInfo("국민은행", "123****890"));
 
         final ResultActions result = mockMvc
             .perform(get("/api/members/me/seller")
@@ -354,7 +410,7 @@ public class MemberTest {
         result
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.bank").value("국민은행"))
-            .andExpect(jsonPath("$.data.account").value("123*****789"));
+            .andExpect(jsonPath("$.data.account").value("123****890"));
     }
 
     @Test
