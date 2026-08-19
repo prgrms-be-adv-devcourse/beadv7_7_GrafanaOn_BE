@@ -21,7 +21,7 @@ public class ArchivedAccountRepositoryAdapter implements ArchivedAccountReposito
     }
 
     @Override
-    public long deleteExpired(LocalDateTime expiresAt) {
+    public int deleteExpired(LocalDateTime expiresAt) {
         return jpaRepository.deleteExpired(expiresAt);
     }
 

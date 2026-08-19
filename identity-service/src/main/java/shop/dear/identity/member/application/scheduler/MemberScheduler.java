@@ -21,7 +21,6 @@ public class MemberScheduler {
 	private final MemberRepository memberRepository;
 	private final ArchivedAccountRepository archivedAccountRepository;
 
-	//계좌정보 이관
 	@Transactional
 	public int archiveAccounts(final LocalDateTime baseDate) {
 
@@ -48,10 +47,9 @@ public class MemberScheduler {
 		return accounts.size();
 	}
 
-	//계좌정보 폐기
 	@Transactional
 	public int deleteExpiredAccounts(final LocalDateTime baseDate) {
 
-		return (int) archivedAccountRepository.deleteExpired(baseDate);
+		return archivedAccountRepository.deleteExpired(baseDate);
 	}
 }
