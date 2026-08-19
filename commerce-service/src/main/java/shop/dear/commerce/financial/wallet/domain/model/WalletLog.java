@@ -10,7 +10,17 @@ import shop.dear.audit.BaseEntity;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "wallet_log")
+@Table(
+        name = "wallet_log",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_wallet_log_wallet_type_reference",
+                columnNames = {
+                        "wallet_id",
+                        "type",
+                        "reference_id"
+                }
+        )
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WalletLog extends BaseEntity {
