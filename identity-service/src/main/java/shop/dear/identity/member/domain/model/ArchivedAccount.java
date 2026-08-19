@@ -9,7 +9,12 @@ import shop.dear.audit.BaseEntity;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "archived_account")
+@Table(
+    name = "archived_account",
+    indexes = {
+        @Index(name="idx_archived_acocount",columnList = "expires_at")
+    }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ArchivedAccount extends BaseEntity {
@@ -40,18 +45,15 @@ public class ArchivedAccount extends BaseEntity {
         this.expiresAt = expiresAt;
     }
 
+    //보유기간은 이관 시점이 아닌 탈퇴 시점을 기준으로 산정한다
     public static ArchivedAccount create(
         final Long memberId,
-        final AccountInfo accountInfo
+        final AccountInfo accountInfo,
+        final LocalDateTime withdrawnAt
     ) {
 
-        LocalDateTime expiresAt = LocalDateTime.now().plusYears(ACCOUNT_RETENTION_YEARS);
+        LocalDateTime expiresAt = withdrawnAt.plusYears(ACCOUNT_RETENTION_YEARS);
 
         return new ArchivedAccount(memberId, accountInfo, expiresAt);
-    }
-
-    public static ArchivedAccount from(final Seller seller) {
-
-        return create(seller.getMember().getId(), seller.getAccountInfo());
     }
 }

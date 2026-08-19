@@ -1,5 +1,7 @@
 package shop.dear.identity.member.domain.model;
 
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Id;
@@ -30,6 +32,7 @@ public class Seller extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    //보관 이관(archive) 시 계좌정보를 비우므로 NOT NULL 제약을 두지 않는다
     @Embedded
     private AccountInfo accountInfo;
 
@@ -79,5 +82,14 @@ public class Seller extends BaseEntity {
     void withdraw() {
         this.withdrawnAt = LocalDateTime.now();
         this.status = SellerStatus.WITHDRAWN;
+    }
+
+    public Long getMemberId() {
+        return this.member.getId();
+    }
+
+    public void archive() {
+        this.status = SellerStatus.ARCHIVED;
+        this.accountInfo = null;
     }
 }
