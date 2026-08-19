@@ -26,16 +26,59 @@ spring:
                 allowCredentials: true
                 maxAge: 3600
 
+          # 응답 타임아웃이 없으면 차단기가 열리지 않는다.
+          httpclient:
+            connect-timeout: 2000
+            response-timeout: 15s
+
           routes:
+            - id: identity-auth-route
+              uri: ${IDENTITY_SERVICE_URI:http://identity-service:8081}
+              predicates:
+                - Path=/api/auth/**
+              metadata:
+                response-timeout: 5000
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: identityAuth
+                    fallbackUri: forward:/fallback/identity-auth
+
             - id: identity-api-route
               uri: ${IDENTITY_SERVICE_URI:http://identity-service:8081}
               predicates:
-                - Path=/api/auth/**,/api/members/**,/api/scraps/**
+                - Path=/api/members/**,/api/scraps/**
+              metadata:
+                response-timeout: 5000
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: identityApi
+                    fallbackUri: forward:/fallback/identity-api
+
+            - id: commerce-search-route
+              uri: ${COMMERCE_SERVICE_URI:http://commerce-service:8082}
+              predicates:
+                - Path=/api/search/**
+              metadata:
+                response-timeout: 3000
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: commerceSearch
+                    fallbackUri: forward:/fallback/commerce-search
 
             - id: commerce-api-route
               uri: ${COMMERCE_SERVICE_URI:http://commerce-service:8082}
               predicates:
-                - Path=/api/products/**,/api/purchases/**,/api/offers/**,/api/search/**,/api/carts/**,/api/payments/**,/api/deposits/**,/api/settlements/**
+                - Path=/api/products/**,/api/purchases/**,/api/offers/**,/api/carts/**,/api/payments/**,/api/deposits/**,/api/settlements/**
+              metadata:
+                response-timeout: 15000
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: commerceApi
+                    fallbackUri: forward:/fallback/commerce-api
 
 logging:
   level:
