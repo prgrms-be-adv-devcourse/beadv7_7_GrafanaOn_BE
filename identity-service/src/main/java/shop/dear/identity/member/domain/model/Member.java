@@ -155,4 +155,25 @@ public class Member extends BaseEntity {
         }
         this.seller.withdraw();
     }
+
+    /**
+     * 탈퇴한 판매자의 계좌정보를 보관 대상으로 넘기고 셀러에서 제거한다.
+     * 계좌정보를 지우기 전에 스냅샷을 먼저 만들어 반환하므로 호출 순서에 의존하지 않는다.
+     */
+    public SellerAccountSnapshot archiveSeller() {
+
+        if (this.seller == null || this.seller.getStatus() != SellerStatus.WITHDRAWN) {
+            throw new BusinessException(MemberErrorCode.SELLER_NOT_WITHDRAWN);
+        }
+
+        SellerAccountSnapshot snapshot = new SellerAccountSnapshot(
+            this.id,
+            this.seller.getAccountInfo(),
+            this.seller.getWithdrawnAt()
+        );
+
+        this.seller.archive();
+
+        return snapshot;
+    }
 }

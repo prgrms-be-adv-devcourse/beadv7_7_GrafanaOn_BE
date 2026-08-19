@@ -84,11 +84,7 @@ public class Seller extends BaseEntity {
         this.status = SellerStatus.WITHDRAWN;
     }
 
-    public Long getMemberId() {
-        return this.member.getId();
-    }
-
-    public void archive() {
+    void archive() {
         this.status = SellerStatus.ARCHIVED;
         this.accountInfo = null;
     }
