@@ -91,6 +91,9 @@ public class GatewaySecurityConfig {
                                 "/api/actuator/prometheus"
                         ).permitAll()
 
+                        // 내부적으로 forward
+                        .pathMatchers("/fallback/**").permitAll()
+
                         .anyExchange().authenticated()
                 )
 
