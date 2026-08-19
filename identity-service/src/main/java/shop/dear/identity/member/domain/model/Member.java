@@ -133,6 +133,14 @@ public class Member extends BaseEntity {
         );
     }
 
+    public AccountInfo getSellerAccountInfo() {
+        if (!this.isSellerActive()) {
+            throw new BusinessException(MemberErrorCode.NOT_SELLER);
+        }
+
+        return this.seller.getAccountInfo();
+    }
+
     public void updateSellerAccount(final AccountInfo accountInfo){
         if (!this.isSellerActive()) {
             throw new BusinessException(MemberErrorCode.NOT_SELLER);

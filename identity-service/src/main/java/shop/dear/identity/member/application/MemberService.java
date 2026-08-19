@@ -88,11 +88,7 @@ public class MemberService  {
 
         Member member = validateMember(memberId);
 
-        if (!member.isSellerActive()) {
-            throw new BusinessException(MemberErrorCode.NOT_SELLER);
-        }
-
-        AccountInfo accountInfo = member.getSeller().getAccountInfo();
+        AccountInfo accountInfo = member.getSellerAccountInfo();
 
         return new SellerInfo(accountInfo.getBank(), maskAccount(accountInfo.getAccount().value()));
     }
