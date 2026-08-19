@@ -8,5 +8,5 @@ import java.util.List;
 public interface ArchivedAccountRepository {
 
     void saveAll(List<ArchivedAccount> archivedAccounts);
-    long deleteExpiredChunk(LocalDateTime expiresAt, int chunkSize);
+    long deleteExpired(LocalDateTime expiresAt);
 }
