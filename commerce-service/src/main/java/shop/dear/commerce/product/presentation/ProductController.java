@@ -93,13 +93,20 @@ public class ProductController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<List<GetSellerProductResponse>>> getSellerProducts(@AuthUser final Long sellerId) {
-        final List<GetSellerProductDto> result = productService.getSellerProducts(sellerId);
+    public ResponseEntity<ApiResponse<PaginationResponse<GetSellerProductResponse>>> getSellerProducts(
+        @AuthUser final Long sellerId,
+        @RequestParam(required = false) final Integer pageNo,
+        @RequestParam(required = false) final Integer pageSize
+    ) {
+        final PaginationRequest paginationRequest = new PaginationRequest(pageNo, pageSize);
+
+        final Page<GetSellerProductDto> result = productService.getSellerProducts(sellerId, paginationRequest.toPageable());
+
         final List<GetSellerProductResponse> response = result.stream()
             .map(GetSellerProductResponse::of)
             .toList();
 
-        return ResponseEntity.ok(successWithData(response));
+        return ResponseEntity.ok(successWithData(PaginationResponse.of(result, response)));
     }
 
     @GetMapping

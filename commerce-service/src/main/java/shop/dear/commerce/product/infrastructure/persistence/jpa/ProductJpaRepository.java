@@ -26,7 +26,7 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
     @Query("UPDATE Product p SET p.viewCount = p.viewCount + 1 WHERE p.id = :productId AND p.deletedAt IS NULL")
     void increaseViewCount(@Param("productId") Long productId);
 
-    List<Product> findAllBySellerIdAndDeletedAtIsNull(final Long sellerId);
+    Page<Product> findAllBySellerIdAndDeletedAtIsNull(final Long sellerId, final Pageable pageable);
 
     @Query("""
         SELECT p FROM Product p
