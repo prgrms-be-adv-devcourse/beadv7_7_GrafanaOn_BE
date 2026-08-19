@@ -50,8 +50,7 @@ public class SpringMemberScheduler {
 		log.info("[Scheduler] 계좌정보 폐기 시작");
 
 		try {
-
-			long size = memberScheduler.deleteExpiredAccounts();
+			long size = memberScheduler.deleteExpiredAccounts(LocalDateTime.now());
 
 			log.info("[Scheduler] 계좌정보 폐기 성공 - {}건, {}ms 소요",
 				size, System.currentTimeMillis() - startedAt);

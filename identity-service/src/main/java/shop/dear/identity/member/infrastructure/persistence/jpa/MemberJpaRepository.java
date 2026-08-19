@@ -1,6 +1,5 @@
 package shop.dear.identity.member.infrastructure.persistence.jpa;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import shop.dear.identity.member.domain.constract.SellerStatus;
@@ -20,7 +19,6 @@ public interface MemberJpaRepository extends JpaRepository<Member, Long> {
     @EntityGraph(attributePaths = "seller")
     List<Member> findBySeller_StatusAndSeller_WithdrawnAtBefore(
         SellerStatus sellerStatus,
-        LocalDateTime withdrawnAtBefore,
-        Pageable pageable
+        LocalDateTime withdrawnAtBefore
     );
 }

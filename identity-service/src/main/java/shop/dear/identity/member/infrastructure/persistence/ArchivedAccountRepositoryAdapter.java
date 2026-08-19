@@ -21,8 +21,8 @@ public class ArchivedAccountRepositoryAdapter implements ArchivedAccountReposito
     }
 
     @Override
-    public long deleteExpiredChunk(LocalDateTime expiresAt, int chunkSize) {
-        return jpaRepository.deleteExpiredChunk(expiresAt, chunkSize);
+    public long deleteExpired(LocalDateTime expiresAt) {
+        return jpaRepository.deleteExpired(expiresAt);
     }
 
 }

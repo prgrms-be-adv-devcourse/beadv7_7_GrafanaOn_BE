@@ -30,18 +30,14 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * 청크마다 트랜잭션이 커밋되어야 하므로 테스트 자체는 트랜잭션 없이 돌리고,
+ * 배치가 커밋한 결과를 확인해야 하므로 테스트 자체는 트랜잭션 없이 돌리고,
  * 데이터는 TransactionTemplate으로 직접 넣고 지운다.
  */
 @SpringBootTest
-@TestPropertySource(properties = {
-	"member.scheduler.chunk-size=2",
-	"spring.jpa.properties.hibernate.generate_statistics=true"
-})
+@TestPropertySource(properties = "spring.jpa.properties.hibernate.generate_statistics=true")
 class MemberSchedulerTest {
 
 	private static final int ACCOUNT_RETENTION_YEARS = 5;
-	private static final int CHUNK_SIZE = 2;
 	private static final String NICKNAME_PREFIX = "scheduler-test-";
 
 	@Autowired
@@ -104,10 +100,10 @@ class MemberSchedulerTest {
 	}
 
 	@Test
-	@DisplayName("이관 청크 - 청크 크기를 넘는 대상도 여러 번에 나눠 모두 처리된다")
-	void archiveAccountsOverMultipleChunks() {
+	@DisplayName("이관 - 대상이 여러 건이어도 한 번에 모두 처리되고, 재실행 시 중복 이관되지 않는다")
+	void archiveAllTargetsAtOnce() {
 
-		int targetCount = CHUNK_SIZE * 2 + 1;
+		int targetCount = 5;
 		LocalDateTime withdrawnAt = LocalDateTime.now()
 			.minusMonths(2)
 			.truncatedTo(ChronoUnit.SECONDS);
@@ -150,14 +146,14 @@ class MemberSchedulerTest {
 		Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
 		statistics.clear();
 
-		//when - 청크 크기가 2이므로 조회 쿼리는 청크 수(3회, 마지막은 빈 청크)만큼만 나가야 한다
+		//when
 		long archived = memberScheduler.archiveAccounts(LocalDateTime.now().minusMonths(1));
 
 		//then
 		assertEquals(targetCount, archived);
-		//청크당 조회 1회 + 건당 insert/update 2회. 페치 조인이 빠지면 건마다 조회가 1회씩 더 붙는다
-		int chunkCount = targetCount / CHUNK_SIZE + 1;
-		long expectedStatements = chunkCount + (long) targetCount * 2;
+
+		//조회 1회 + 건당 insert/update 2회. 페치 조인이 빠지면 건마다 조회가 1회씩 더 붙는다
+		long expectedStatements = 1 + (long) targetCount * 2;
 
 		assertEquals(expectedStatements, statistics.getPrepareStatementCount());
 	}
@@ -180,10 +176,10 @@ class MemberSchedulerTest {
 	}
 
 	@Test
-	@DisplayName("폐기 청크 - 만료된 보관 계좌만 청크 단위로 모두 삭제된다")
-	void deleteExpiredAccountsOverMultipleChunks() {
+	@DisplayName("폐기 - 만료된 보관 계좌만 삭제되고 미만료 건은 남는다")
+	void deleteExpiredAccounts() {
 
-		int expiredCount = CHUNK_SIZE * 2 + 1;
+		int expiredCount = 5;
 
 		//만료 대상: 탈퇴 후 보유기간(5년)이 이미 지난 셀러
 		LocalDateTime expiredWithdrawnAt = LocalDateTime.now()
@@ -200,7 +196,7 @@ class MemberSchedulerTest {
 		memberScheduler.archiveAccounts(LocalDateTime.now().minusMonths(1));
 
 		//when
-		long deleted = memberScheduler.deleteExpiredAccounts();
+		long deleted = memberScheduler.deleteExpiredAccounts(LocalDateTime.now());
 
 		//then
 		assertEquals(expiredCount, deleted);
@@ -213,7 +209,7 @@ class MemberSchedulerTest {
 		});
 
 		//두 번째 실행에서는 삭제할 대상이 없다
-		assertEquals(0, memberScheduler.deleteExpiredAccounts());
+		assertEquals(0, memberScheduler.deleteExpiredAccounts(LocalDateTime.now()));
 	}
 
 	private Long createWithdrawnSeller(final int index, final LocalDateTime withdrawnAt) {
