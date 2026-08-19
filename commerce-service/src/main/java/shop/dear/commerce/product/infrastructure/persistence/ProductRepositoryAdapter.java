@@ -60,8 +60,8 @@ public class ProductRepositoryAdapter implements ProductRepository {
     }
 
     @Override
-    public List<Product> findAllBySellerIdAndDeletedAtIsNull(final Long sellerId) {
-        return productRepository.findAllBySellerIdAndDeletedAtIsNull(sellerId);
+    public Page<Product> findAllBySellerIdAndDeletedAtIsNull(final Long sellerId, final Pageable pageable) {
+        return productRepository.findAllBySellerIdAndDeletedAtIsNull(sellerId, pageable);
     }
 
     @Override

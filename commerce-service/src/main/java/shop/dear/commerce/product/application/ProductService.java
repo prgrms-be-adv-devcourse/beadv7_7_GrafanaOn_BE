@@ -268,15 +268,12 @@ public class ProductService {
         return GetProductDetailDto.of(product);
     }
 
-    public List<GetSellerProductDto> getSellerProducts(final Long sellerId) {
+    public Page<GetSellerProductDto> getSellerProducts(final Long sellerId, final Pageable pageable) {
         validateMember(sellerId);
         validateSeller(sellerId);
 
-        final List<Product> products = productRepository.findAllBySellerIdAndDeletedAtIsNull(sellerId);
-
-        return products.stream()
-            .map(GetSellerProductDto::of)
-            .toList();
+        return productRepository.findAllBySellerIdAndDeletedAtIsNull(sellerId, pageable)
+            .map(GetSellerProductDto::of);
     }
 
     public Page<GetProductDto> getAllProduct(
