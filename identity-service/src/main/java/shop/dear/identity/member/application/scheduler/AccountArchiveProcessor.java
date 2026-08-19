@@ -5,50 +5,46 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.identity.member.domain.constract.SellerStatus;
 import shop.dear.identity.member.domain.model.ArchivedAccount;
-import shop.dear.identity.member.domain.model.Seller;
+import shop.dear.identity.member.domain.model.Member;
+import shop.dear.identity.member.domain.model.SellerAccountSnapshot;
 import shop.dear.identity.member.domain.repository.ArchivedAccountRepository;
-import shop.dear.identity.member.domain.repository.SellerSchedulerRepository;
+import shop.dear.identity.member.domain.repository.MemberRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * 청크 1건이 곧 트랜잭션 1건이다.
- * 루프는 {@link MemberScheduler}가 돌린다 - 같은 빈에서 자기 호출을 하면
- * 프록시를 타지 않아 전체가 한 트랜잭션으로 묶이기 때문이다.
- */
 @Component
 @RequiredArgsConstructor
 public class AccountArchiveProcessor {
 
-	private final SellerSchedulerRepository sellerSchedulerRepository;
+	private final MemberRepository memberRepository;
 	private final ArchivedAccountRepository archivedAccountRepository;
 
 	//계좌정보 이관
 	@Transactional
 	public int archiveAccountsByChunk(final LocalDateTime baseDate, final int chunkSize) {
 
-		List<Seller> sellerList = sellerSchedulerRepository.findArchiveTargets(
+		List<Member> members = memberRepository.findArchiveTargets(
 			SellerStatus.WITHDRAWN,
 			baseDate,
 			chunkSize
 		);
 
-		List<ArchivedAccount> accounts = new ArrayList<>(sellerList.size());
+		List<ArchivedAccount> accounts = new ArrayList<>(members.size());
 
-		for (Seller seller : sellerList) {
-			//archive()가 계좌정보를 비우므로 반드시 보관 레코드를 먼저 만든다
+		for (Member member : members) {
+			//상태 전이와 계좌정보 스냅샷은 애그리거트 루트가 함께 처리한다
+			SellerAccountSnapshot snapshot = member.archiveSeller();
+
 			accounts.add(ArchivedAccount.create(
-				seller.getMemberId(),
-				seller.getAccountInfo(),
-				seller.getWithdrawnAt()
+				snapshot.memberId(),
+				snapshot.accountInfo(),
+				snapshot.withdrawnAt()
 			));
-
-			seller.archive();
 		}
 
-		sellerSchedulerRepository.saveAll(sellerList);
+		//members는 영속 상태이므로 셀러 상태 변경은 더티 체킹으로 반영된다
 		archivedAccountRepository.saveAll(accounts);
 
 		return accounts.size();
