@@ -5,12 +5,50 @@ spring:
       server:
         webflux:
           routes:
+            - id: identity-auth-route
+              uri: ${IDENTITY_SERVICE_URI:http://localhost:8081}
+              predicates:
+                - Path=/api/auth/**
+              metadata:
+                response-timeout: 5000
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: identityAuth
+                    fallbackUri: forward:/fallback/identity-auth
+
             - id: identity-api-route
               uri: ${IDENTITY_SERVICE_URI:http://localhost:8081}
               predicates:
-                - Path=/api/auth/**,/api/members/**,/api/scraps/**
+                - Path=/api/members/**,/api/scraps/**
+              metadata:
+                response-timeout: 5000
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: identityApi
+                    fallbackUri: forward:/fallback/identity-api
+
+            - id: commerce-search-route
+              uri: ${COMMERCE_SERVICE_URI:http://localhost:8082}
+              predicates:
+                - Path=/api/search/**
+              metadata:
+                response-timeout: 3000
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: commerceSearch
+                    fallbackUri: forward:/fallback/commerce-search
 
             - id: commerce-api-route
               uri: ${COMMERCE_SERVICE_URI:http://localhost:8082}
               predicates:
-                - Path=/api/products/**,/api/offers/**,/api/purchases/**,/api/deposits/**,/api/payments/**,/api/search/**,/api/carts/**,/api/settlements/**
+                - Path=/api/products/**,/api/purchases/**,/api/offers/**,/api/carts/**,/api/payments/**,/api/deposits/**,/api/settlements/**
+              metadata:
+                response-timeout: 15000
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: commerceApi
+                    fallbackUri: forward:/fallback/commerce-api
