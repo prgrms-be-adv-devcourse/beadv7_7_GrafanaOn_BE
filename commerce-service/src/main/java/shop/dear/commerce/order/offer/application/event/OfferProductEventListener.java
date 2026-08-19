@@ -5,11 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import shop.dear.common.event.financial.PaymentReleaseRequestedEvent;
 import shop.dear.common.event.product.ProductDeletedEvent;
 import shop.dear.commerce.order.offer.application.OfferProductDeletionProcessor;
-import shop.dear.commerce.order.offer.application.port.OfferEventPublisher;
-import shop.dear.commerce.order.offer.domain.constant.OfferReleaseReason;
 import shop.dear.commerce.order.offer.domain.constant.OfferStatus;
 import shop.dear.commerce.order.offer.domain.model.Offer;
 import shop.dear.commerce.order.offer.domain.repository.OfferRepository;
@@ -28,7 +25,6 @@ public class OfferProductEventListener {
 
     private final OfferRepository offerRepository;
     private final OfferProductDeletionProcessor offerProductDeletionProcessor;
-    private final OfferEventPublisher offerEventPublisher;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleProductDeleted(final ProductDeletedEvent event) {
@@ -38,12 +34,6 @@ public class OfferProductEventListener {
         for (final Offer offer : offers) {
             try {
                 offerProductDeletionProcessor.markProductDeleted(offer.getId());
-                offerEventPublisher.publish(new PaymentReleaseRequestedEvent(
-                        offer.getId(),
-                        offer.getBuyerId(),
-                        offer.getAmount(),
-                        OfferReleaseReason.PRODUCT_DELETED.name()
-                ));
             } catch (final Exception e) {
                 log.error("상품 삭제로 인한 오퍼 처리 중 예외가 발생하여 건너뜁니다. offerId={}", offer.getId(), e);
             }
