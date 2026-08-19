@@ -8,5 +8,5 @@ import java.util.List;
 public interface ArchivedAccountRepository {
 
     void saveAll(List<ArchivedAccount> archivedAccounts);
-    long deleteExpired(LocalDateTime expiresAt);
+    int deleteExpired(LocalDateTime expiresAt);
 }

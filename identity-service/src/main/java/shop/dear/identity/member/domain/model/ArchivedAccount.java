@@ -32,7 +32,6 @@ public class ArchivedAccount extends BaseEntity {
     @Column(name = "expires_at", nullable = false)
     private LocalDateTime expiresAt;
 
-    //계좌정보 법적 보유기간
     private static final int ACCOUNT_RETENTION_YEARS = 5;
 
     private ArchivedAccount(
@@ -45,7 +44,6 @@ public class ArchivedAccount extends BaseEntity {
         this.expiresAt = expiresAt;
     }
 
-    //보유기간은 이관 시점이 아닌 탈퇴 시점을 기준으로 산정한다
     public static ArchivedAccount create(
         final Long memberId,
         final AccountInfo accountInfo,
