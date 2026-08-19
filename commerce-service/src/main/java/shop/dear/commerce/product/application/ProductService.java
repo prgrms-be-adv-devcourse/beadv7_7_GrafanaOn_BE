@@ -1,6 +1,8 @@
 package shop.dear.commerce.product.application;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.product.application.dto.GetProductDetailDto;
@@ -277,11 +279,12 @@ public class ProductService {
             .toList();
     }
 
-    public List<GetProductDto> getAllProduct(
+    public Page<GetProductDto> getAllProduct(
         final ProductSaleType saleType,
         final ProductStatus status,
         final LocalDate createdAt,
-        final ProductCategory category
+        final ProductCategory category,
+        final Pageable pageable
         ) {
         LocalDateTime startDate = null;
         LocalDateTime endDate = null;
@@ -291,11 +294,14 @@ public class ProductService {
             endDate = createdAt.atTime(LocalTime.MAX);
         }
 
-        final List<Product> products = productRepository.findAllBySaleTypeAndStatusAndCreatedAtAndCategoryAndDeletedAtIsNull(saleType, status, startDate, endDate, category);
-
-        return products.stream()
-            .map(GetProductDto::of)
-            .toList();
+        return productRepository.findAllBySaleTypeAndStatusAndCreatedAtAndCategoryAndDeletedAtIsNull(
+            saleType,
+            status,
+            startDate,
+            endDate,
+            category,
+            pageable
+        ).map(GetProductDto::of);
     }
 
     @Transactional
