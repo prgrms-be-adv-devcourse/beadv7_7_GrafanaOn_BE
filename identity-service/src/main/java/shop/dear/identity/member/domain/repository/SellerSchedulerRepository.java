@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface SellerSchedulerRepository {
 
-	List<Seller> findArchiveTargets(SellerStatus status, LocalDateTime withdrawnAtBefore);
-	void deleteAll(List<Seller> sellers);
+	List<Seller> findArchiveTargets(SellerStatus status, LocalDateTime withdrawnAtBefore, int chunkSize);
+	void saveAll(List<Seller> sellers);
 }

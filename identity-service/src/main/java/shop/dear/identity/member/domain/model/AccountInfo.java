@@ -15,10 +15,10 @@ import shop.dear.identity.member.domain.exception.MemberErrorCode;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AccountInfo {
 
-	@Column(name = "bank", nullable = false)
+	@Column(name = "bank")
 	private String bank;
 
-	@Column(name = "account", nullable = false)
+	@Column(name = "account")
 	private AccountNumber account;
 
 	private AccountInfo(final String bank, final AccountNumber account) {

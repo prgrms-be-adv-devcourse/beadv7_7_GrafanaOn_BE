@@ -87,7 +87,7 @@ public class Member extends BaseEntity {
     }
 
     public void anonymizeProfile() {
-        if (seller != null && seller.getStatus() != SellerStatus.WITHDRAWN) {
+        if (seller != null && seller.getStatus() == SellerStatus.ACTIVE) {
             throw new BusinessException(
                 MemberErrorCode.SELLER_WITHDRAWAL_REQUIRED
             );
@@ -110,7 +110,7 @@ public class Member extends BaseEntity {
     }
 
     public boolean isSellerWithdrawn(){
-        return this.seller != null && this.seller.getStatus() == SellerStatus.WITHDRAWN;
+        return this.seller != null && this.seller.getStatus() != SellerStatus.ACTIVE;
     }
 
     public void registerSeller(final AccountInfo accountInfo) {
