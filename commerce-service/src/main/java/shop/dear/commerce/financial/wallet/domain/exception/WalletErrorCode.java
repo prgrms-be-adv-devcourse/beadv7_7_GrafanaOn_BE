@@ -14,6 +14,8 @@ public enum WalletErrorCode implements ErrorCode {
     INVALID_REFERENCE_ID("WA-004", "유효하지 않은 참조 ID입니다."),
     INSUFFICIENT_HELD_BALANCE("WA-005", "hold된 금액이 부족합니다."),
     DUPLICATE_RELEASE("WA-006", "이미 처리된 release 요청입니다."),
+    HOLD_NOT_FOUND("WA-007", "해당 오퍼에 대한 예치금 홀드 내역이 없습니다."),
+    RELEASE_AMOUNT_MISMATCH("WA-008", "예치금 해제 금액이 기존 내역과 일치하지 않습니다.")
     ;
 
     private final String value;
