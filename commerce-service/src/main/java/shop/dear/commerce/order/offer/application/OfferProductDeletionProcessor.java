@@ -4,9 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import shop.dear.commerce.order.offer.application.port.OfferEventPublisher;
+import shop.dear.commerce.order.offer.domain.constant.OfferReleaseReason;
 import shop.dear.commerce.order.offer.domain.exception.OfferErrorCode;
 import shop.dear.commerce.order.offer.domain.model.Offer;
 import shop.dear.commerce.order.offer.domain.repository.OfferRepository;
+import shop.dear.common.event.financial.PaymentReleaseRequestedEvent;
 import shop.dear.common.exception.BusinessException;
 
 @Component
@@ -14,6 +17,7 @@ import shop.dear.common.exception.BusinessException;
 public class OfferProductDeletionProcessor {
 
     private final OfferRepository offerRepository;
+    private final OfferEventPublisher offerEventPublisher;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void markProductDeleted(final Long offerId) {
@@ -21,5 +25,12 @@ public class OfferProductDeletionProcessor {
                 .orElseThrow(() -> new BusinessException(OfferErrorCode.OFFER_NOT_FOUND));
 
         offer.markProductDeleted();
+
+        offerEventPublisher.publish(new PaymentReleaseRequestedEvent(
+                offer.getId(),
+                offer.getBuyerId(),
+                offer.getAmount(),
+                OfferReleaseReason.PRODUCT_DELETED.name()
+        ));
     }
 }
