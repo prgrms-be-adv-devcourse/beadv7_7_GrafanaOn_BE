@@ -1,16 +1,20 @@
 package shop.dear.commerce.financial.wallet.application;
 
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.financial.wallet.application.dto.*;
+import shop.dear.commerce.financial.wallet.application.port.ReleaseValidationQueryPort;
+import shop.dear.commerce.financial.wallet.domain.costant.WalletLogType;
 import shop.dear.commerce.financial.wallet.domain.exception.WalletErrorCode;
 import shop.dear.commerce.financial.wallet.domain.model.Wallet;
 import shop.dear.commerce.financial.wallet.domain.repository.WalletRepository;
 import shop.dear.common.exception.BusinessException;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +22,7 @@ import java.util.List;
 public class WalletService {
 
     private final WalletRepository walletRepository;
+    private final ReleaseValidationQueryPort releaseValidationQueryPort;
 
     private Wallet findWallet(final Long memberId) {
         return walletRepository.findByMemberId(memberId)
@@ -66,13 +71,49 @@ public class WalletService {
         walletRepository.save(wallet);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void release(final ReleaseCommand command) {
         final Wallet wallet = findWallet(command.memberId());
+
+        // release 요청 건의 heldAmount가 WalletLog에 존재하고 금액이 일치하는 지 확인
+        final BigDecimal heldAmount = releaseValidationQueryPort.findLogAmount(
+                wallet.getId(),
+                WalletLogType.HOLD,
+                command.offerId()
+        )
+        .orElseThrow(() -> new BusinessException(
+                WalletErrorCode.HOLD_NOT_FOUND
+        ));
+
+        validateAmountMatches(command.amount(), heldAmount);
+
+        // Release 멱등성 검증
+        final Optional<BigDecimal> releasedAmount = releaseValidationQueryPort.findLogAmount(
+                wallet.getId(),
+                WalletLogType.RELEASE,
+                command.offerId()
+        );
+
+        // 멱등성 처리
+        if (releasedAmount.isPresent()) {
+            validateAmountMatches(command.amount(), releasedAmount.get());
+            return;
+        }
 
         wallet.release(command.amount(), command.offerId());
 
         walletRepository.save(wallet);
+    }
+
+    private void validateAmountMatches(
+            final BigDecimal requestedAmount,
+            final BigDecimal recordedAmount
+    ) {
+        if (requestedAmount.compareTo(recordedAmount) != 0) {
+            throw new BusinessException(
+                    WalletErrorCode.RELEASE_AMOUNT_MISMATCH
+            );
+        }
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
