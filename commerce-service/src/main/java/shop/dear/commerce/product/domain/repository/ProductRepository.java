@@ -1,5 +1,7 @@
 package shop.dear.commerce.product.domain.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import shop.dear.commerce.product.domain.constant.ProductCategory;
 import shop.dear.commerce.product.domain.constant.ProductSaleType;
 import shop.dear.commerce.product.domain.constant.ProductStatus;
@@ -26,13 +28,14 @@ public interface ProductRepository {
 
     List<Product> findAllBySellerIdAndDeletedAtIsNull(final Long sellerId);
 
-    List<Product> findAllBySaleTypeAndStatusAndCreatedAtAndCategoryAndDeletedAtIsNull(
+    Page<Product> findAllBySaleTypeAndStatusAndCreatedAtAndCategoryAndDeletedAtIsNull(
         final ProductSaleType saleType,
         final ProductStatus status,
         final LocalDateTime startDate,
         final LocalDateTime endDate,
-        final ProductCategory category
-        );
+        final ProductCategory category,
+        final Pageable pageable
+    );
 
     int updateStatusToOnSale(final LocalDateTime startTime, final LocalDateTime endTime);
 

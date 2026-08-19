@@ -2,6 +2,8 @@ package shop.dear.commerce.product.infrastructure.persistence.jpa;
 
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
@@ -35,12 +37,13 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
             AND (:category IS NULL OR p.category = :category)
             ORDER BY p.viewCount DESC, p.insertedAt DESC
     """)
-    List<Product> findAllBySaleTypeAndStatusAndCreatedAtAndCategoryAndDeletedAtIsNull(
+    Page<Product> findAllBySaleTypeAndStatusAndCreatedAtAndCategoryAndDeletedAtIsNull(
         @Param("saleType") final ProductSaleType saleType,
         @Param("status") final ProductStatus status,
         @Param("startDate") final LocalDateTime startDate,
         @Param("endDate") final LocalDateTime endDate,
-        @Param("category") final ProductCategory category
+        @Param("category") final ProductCategory category,
+        final Pageable pageable
     );
 
     @Modifying(clearAutomatically = true)
