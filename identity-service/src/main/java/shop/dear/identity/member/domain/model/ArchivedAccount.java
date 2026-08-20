@@ -12,12 +12,14 @@ import java.time.LocalDateTime;
 @Table(
     name = "archived_account",
     indexes = {
-        @Index(name="idx_archived_acocount",columnList = "expires_at")
+        @Index(name="idx_archived_account",columnList = "expires_at")
     }
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ArchivedAccount extends BaseEntity {
+
+    private static final int ACCOUNT_RETENTION_YEARS = 5;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,12 +29,14 @@ public class ArchivedAccount extends BaseEntity {
     private Long memberId;
 
     @Embedded
+    @AttributeOverrides({
+        @AttributeOverride(name = "bank", column = @Column(name = "bank", nullable = false)),
+        @AttributeOverride(name = "account", column = @Column(name = "account", nullable = false))
+    })
     private AccountInfo accountInfo;
 
     @Column(name = "expires_at", nullable = false)
     private LocalDateTime expiresAt;
-
-    private static final int ACCOUNT_RETENTION_YEARS = 5;
 
     private ArchivedAccount(
         final Long memberId,
