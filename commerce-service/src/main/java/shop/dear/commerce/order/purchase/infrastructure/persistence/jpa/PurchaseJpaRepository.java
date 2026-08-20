@@ -1,5 +1,7 @@
 package shop.dear.commerce.order.purchase.infrastructure.persistence.jpa;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,7 +14,7 @@ import java.util.List;
 
 public interface PurchaseJpaRepository extends JpaRepository<Purchase, Long> {
 
-    List<Purchase> findByBuyerId(Long buyerId);
+    Page<Purchase> findByBuyerId(Long buyerId, Pageable pageable);
 
     List<Purchase> findAllByStatusAndPaymentDueAtBefore(PurchaseStatus status, LocalDateTime paymentDueAt);
 
