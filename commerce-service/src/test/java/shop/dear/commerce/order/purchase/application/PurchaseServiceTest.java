@@ -8,6 +8,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import shop.dear.commerce.order.purchase.application.dto.CreatePurchaseCommand;
 import shop.dear.commerce.order.purchase.application.port.MemberPort;
 import shop.dear.commerce.order.purchase.application.port.ProductPort;
@@ -392,16 +396,18 @@ class PurchaseServiceTest {
                     null
             );
 
+            final Pageable pageable = PageRequest.of(0, 10);
+
             stubMemberExists(1L);
-            given(purchaseRepository.findByBuyerId(1L))
-                    .willReturn(List.of(purchase1, purchase2));
+            given(purchaseRepository.findByBuyerId(1L, pageable))
+                    .willReturn(new PageImpl<>(List.of(purchase1, purchase2), pageable, 2));
 
             // when
-            final List<Purchase> result =
-                    purchaseService.getPurchasesByBuyerId(1L);
+            final Page<Purchase> result =
+                    purchaseService.getPurchasesByBuyerId(1L, pageable);
 
             // then
-            assertThat(result)
+            assertThat(result.getContent())
                     .hasSize(2)
                     .containsExactly(purchase1, purchase2);
 
@@ -412,16 +418,18 @@ class PurchaseServiceTest {
         @DisplayName("구매 기록이 없으면 빈 목록을 반환한다")
         void returnsEmptyList_whenBuyerHasNoPurchases() {
             // given
+            final Pageable pageable = PageRequest.of(0, 10);
+
             stubMemberExists(1L);
-            given(purchaseRepository.findByBuyerId(1L))
-                    .willReturn(List.of());
+            given(purchaseRepository.findByBuyerId(1L, pageable))
+                    .willReturn(new PageImpl<>(List.of(), pageable, 0));
 
             // when
-            final List<Purchase> result =
-                    purchaseService.getPurchasesByBuyerId(1L);
+            final Page<Purchase> result =
+                    purchaseService.getPurchasesByBuyerId(1L, pageable);
 
             // then
-            assertThat(result).isEmpty();
+            assertThat(result.getContent()).isEmpty();
 
             verifyMemberExists(1L);
         }
