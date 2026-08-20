@@ -23,14 +23,12 @@ import shop.dear.identity.member.infrastructure.client.dto.WalletApiRequest;
 @RequiredArgsConstructor
 public class WalletHttpClient implements WalletPort {
 
-    private static final String CIRCUIT_BREAKER_NAME = "commerceWallet";
-
     private final RestClient walletRestClient;
     private final CircuitBreakerFactory<?, ?> circuitBreakerFactory;
 
     @Override
     public void createWallet(final Long memberId) {
-        circuitBreakerFactory.create(CIRCUIT_BREAKER_NAME).run(() ->
+        circuitBreakerFactory.create(WalletCircuitBreakerConfig.COMMERCE_WALLET).run(() ->
                 callCreateWallet(memberId), this::createWalletFallback);
     }
 
@@ -56,7 +54,7 @@ public class WalletHttpClient implements WalletPort {
         // 협력 서비스 장애인지 아닌지 판단.
         if (cause instanceof HttpClientErrorException) {
             log.error("지갑 생성 요청이 거부되었습니다. 요청 형식을 확인해주세요.", cause);
-            throw new BusinessException(MemberErrorCode.WALLET_CREATION_FAILED);
+            throw new IllegalStateException("지갑 생성 요청이 거부되었습니다.", cause);
         }
 
         log.warn("지갑 생성 호출 실패 -> fallback 실행. 원인: {}", cause.toString());
