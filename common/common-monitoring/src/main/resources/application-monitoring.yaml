@@ -2,7 +2,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, prometheus, circuitbreakers, circuitbreakerevents
+        include: health, info, prometheus
       base-path: /api/actuator
 
   endpoint:
