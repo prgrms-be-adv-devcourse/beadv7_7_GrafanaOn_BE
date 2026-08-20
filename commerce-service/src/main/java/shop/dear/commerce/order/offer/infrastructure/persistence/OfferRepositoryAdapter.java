@@ -1,6 +1,8 @@
 package shop.dear.commerce.order.offer.infrastructure.persistence;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import shop.dear.commerce.order.offer.domain.constant.OfferStatus;
 import shop.dear.commerce.order.offer.domain.model.Offer;
@@ -42,12 +44,17 @@ public class OfferRepositoryAdapter implements OfferRepository {
   }
 
   @Override
-  public List<Offer> findByProductIdAndStatusInOrderByInsertedAtDesc(final Long productId, final List<OfferStatus> statuses) {
-    return offerJpaRepository.findByProductIdAndStatusInOrderByInsertedAtDesc(productId, statuses);
+  public Page<Offer> findByProductIdAndStatusInOrderByInsertedAtDesc(final Long productId, final List<OfferStatus> statuses, final Pageable pageable) {
+    return offerJpaRepository.findByProductIdAndStatusInOrderByInsertedAtDesc(productId, statuses, pageable);
   }
 
   @Override
-  public List<Offer> findByProductIdOrderByInsertedAtDesc(final Long productId) {
-    return offerJpaRepository.findByProductIdOrderByInsertedAtDesc(productId);
+  public Page<Offer> findByProductIdOrderByInsertedAtDesc(final Long productId, final Pageable pageable) {
+    return offerJpaRepository.findByProductIdOrderByInsertedAtDesc(productId, pageable);
+  }
+
+  @Override
+  public List<Offer> findByProductIdAndStatusInOrderByInsertedAtDesc(final Long productId, final List<OfferStatus> statuses) {
+    return offerJpaRepository.findByProductIdAndStatusInOrderByInsertedAtDesc(productId, statuses);
   }
 }
