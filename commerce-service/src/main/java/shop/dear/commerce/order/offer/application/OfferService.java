@@ -1,6 +1,8 @@
 package shop.dear.commerce.order.offer.application;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.order.offer.application.dto.CreateOfferCommand;
@@ -209,10 +211,11 @@ public class OfferService {
         return offer;
     }
 
-    public List<Offer> findOffersByProductId(
+    public Page<Offer> findOffersByProductId(
             final Long memberId,
             final Long productId,
-            final List<OfferStatus> statuses
+            final List<OfferStatus> statuses,
+            final Pageable pageable
     ) {
         final ProductInfo product = productPort.getProduct(productId);
         if (!product.sellerId().equals(memberId)) {
@@ -220,8 +223,8 @@ public class OfferService {
         }
 
         if (statuses == null || statuses.isEmpty()) {
-            return offerRepository.findByProductIdOrderByInsertedAtDesc(productId);
+            return offerRepository.findByProductIdOrderByInsertedAtDesc(productId, pageable);
         }
-        return offerRepository.findByProductIdAndStatusInOrderByInsertedAtDesc(productId, statuses);
+        return offerRepository.findByProductIdAndStatusInOrderByInsertedAtDesc(productId, statuses, pageable);
     }
 }

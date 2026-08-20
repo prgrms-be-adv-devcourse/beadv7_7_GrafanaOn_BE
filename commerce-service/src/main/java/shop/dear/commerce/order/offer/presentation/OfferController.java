@@ -3,6 +3,7 @@ package shop.dear.commerce.order.offer.presentation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -20,6 +21,8 @@ import shop.dear.commerce.order.offer.presentation.dto.OfferResponse;
 import java.util.List;
 import shop.dear.commerce.order.offersnapshot.domain.model.OfferSnapshot;
 import shop.dear.common.auth.AuthUser;
+import shop.dear.common.pagination.PaginationRequest;
+import shop.dear.common.pagination.PaginationResponse;
 import shop.dear.common.response.ApiResponse;
 
 import static shop.dear.common.response.ApiResponse.successWithData;
@@ -33,16 +36,27 @@ public class OfferController {
     private final OfferService offerService;
 
     @GetMapping("/products/{productId}")
-    public ResponseEntity<ApiResponse<List<OfferListResponse>>> findOffersByProduct(
+    public ResponseEntity<ApiResponse<PaginationResponse<OfferListResponse>>> findOffersByProduct(
             @Positive @PathVariable final Long productId,
             @RequestParam(required = false) final List<OfferStatus> statuses,
-            @AuthUser final Long memberId
+            @AuthUser final Long memberId,
+            @RequestParam(required = false) final Integer page,
+            @RequestParam(required = false) final Integer size
     ) {
-        final List<Offer> offers = offerService.findOffersByProductId(memberId, productId, statuses);
-        final List<OfferListResponse> responses = offers.stream()
+        final PaginationRequest paginationRequest = new PaginationRequest(page, size);
+
+        final Page<Offer> offers = offerService.findOffersByProductId(
+                memberId,
+                productId,
+                statuses,
+                paginationRequest.toPageable()
+        );
+
+        final List<OfferListResponse> content = offers.getContent().stream()
                 .map(OfferListResponse::from)
                 .toList();
-        return ResponseEntity.ok(successWithData(responses));
+
+        return ResponseEntity.ok(successWithData(PaginationResponse.of(offers, content)));
     }
 
     @PostMapping("/snapshot")
