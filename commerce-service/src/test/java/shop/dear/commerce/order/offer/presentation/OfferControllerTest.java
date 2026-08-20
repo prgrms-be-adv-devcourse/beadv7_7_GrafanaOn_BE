@@ -5,6 +5,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -16,6 +18,7 @@ import shop.dear.commerce.order.offersnapshot.domain.model.OfferSnapshot;
 import shop.dear.common.auth.AuthUser;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -128,6 +131,10 @@ class OfferControllerTest {
     @Test
     @DisplayName("판매자가 접수된 오퍼 목록 조회 시 200을 반환한다")
     void returnsOk_whenFindOffersByProduct() throws Exception {
+        // given
+        given(offerService.findOffersByProductId(any(), any(), any(), any()))
+                .willReturn(new PageImpl<>(List.of(), PageRequest.of(0, 10), 0));
+
         // when & then
         mockMvc.perform(get("/api/offers/products/1")
                         .param("status", "PENDING")

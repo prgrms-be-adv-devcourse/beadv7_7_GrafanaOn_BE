@@ -5,6 +5,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -132,18 +134,19 @@ class PurchaseControllerTest {
                 "서울시 서초구",
                 LocalDateTime.now().plusMinutes(5)
         );
-        given(purchaseService.getPurchasesByBuyerId(1L)).willReturn(List.of(purchase1, purchase2));
+        given(purchaseService.getPurchasesByBuyerId(any(), any()))
+                .willReturn(new PageImpl<>(List.of(purchase1, purchase2), PageRequest.of(0, 10), 2));
 
         // when & then
         mockMvc.perform(get("/api/purchases/me")
                         .header(AuthUser.MEMBER_ID_HEADER, "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("success"))
-                .andExpect(jsonPath("$.data.length()").value(2))
-                .andExpect(jsonPath("$.data[0].productId").value(10))
-                .andExpect(jsonPath("$.data[0].amount").value(10000))
-                .andExpect(jsonPath("$.data[1].productId").value(11))
-                .andExpect(jsonPath("$.data[1].amount").value(20000));
+                .andExpect(jsonPath("$.data.content.length()").value(2))
+                .andExpect(jsonPath("$.data.content[0].productId").value(10))
+                .andExpect(jsonPath("$.data.content[0].amount").value(10000))
+                .andExpect(jsonPath("$.data.content[1].productId").value(11))
+                .andExpect(jsonPath("$.data.content[1].amount").value(20000));
     }
 
     @Test
