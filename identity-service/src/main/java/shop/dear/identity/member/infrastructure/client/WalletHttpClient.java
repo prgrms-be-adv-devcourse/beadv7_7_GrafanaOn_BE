@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
+import shop.dear.common.exception.BusinessException;
 import shop.dear.common.exception.ServiceUnavailableException;
 import shop.dear.identity.member.application.port.WalletPort;
 import shop.dear.identity.member.domain.exception.MemberErrorCode;
@@ -51,8 +53,13 @@ public class WalletHttpClient implements WalletPort {
      * 차단기의 효과는 실패하던 것을 즉시 실패로 바꾸어 다른 요청의 스레드를 지키는 데 있다.
      */
     private Void createWalletFallback(final Throwable cause) {
-        log.warn("지갑 생성 호출 실패 -> fallback 실행. 원인: {}", cause.toString());
+        // 협력 서비스 장애인지 아닌지 판단.
+        if (cause instanceof HttpClientErrorException) {
+            log.error("지갑 생성 요청이 거부되었습니다. 요청 형식을 확인해주세요.", cause);
+            throw new BusinessException(MemberErrorCode.WALLET_CREATION_FAILED);
+        }
 
+        log.warn("지갑 생성 호출 실패 -> fallback 실행. 원인: {}", cause.toString());
         throw new ServiceUnavailableException(MemberErrorCode.WALLET_CREATION_FAILED);
     }
 }
