@@ -2,6 +2,8 @@ package shop.dear.commerce.order.purchase.application;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.order.purchase.application.port.MemberPort;
@@ -56,10 +58,10 @@ public class PurchaseService {
         memberPort.validateMemberExists(memberId);
     }
 
-    public List<Purchase> getPurchasesByBuyerId(final Long buyerId) {
+    public Page<Purchase> getPurchasesByBuyerId(final Long buyerId, final Pageable pageable) {
         validateMemberExists(buyerId);
 
-        return purchaseRepository.findByBuyerId(buyerId);
+        return purchaseRepository.findByBuyerId(buyerId, pageable);
     }
 
     @Transactional

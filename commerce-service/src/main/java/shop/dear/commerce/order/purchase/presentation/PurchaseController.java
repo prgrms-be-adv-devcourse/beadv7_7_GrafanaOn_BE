@@ -3,6 +3,7 @@ package shop.dear.commerce.order.purchase.presentation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,12 +12,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import shop.dear.commerce.order.purchase.application.PurchaseService;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.commerce.order.purchase.presentation.dto.CreatePurchaseRequest;
 import shop.dear.commerce.order.purchase.presentation.dto.PurchaseResponse;
 import shop.dear.common.auth.AuthUser;
+import shop.dear.common.pagination.PaginationRequest;
+import shop.dear.common.pagination.PaginationResponse;
 import shop.dear.common.response.ApiResponse;
 
 import java.util.List;
@@ -42,14 +46,23 @@ public class PurchaseController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<List<PurchaseResponse>>> getPurchasesByMe(
-            @AuthUser final Long buyerId
+    public ResponseEntity<ApiResponse<PaginationResponse<PurchaseResponse>>> getPurchasesByMe(
+            @AuthUser final Long buyerId,
+            @RequestParam(required = false) final Integer page,
+            @RequestParam(required = false) final Integer size
     ) {
-        final List<Purchase> purchases = purchaseService.getPurchasesByBuyerId(buyerId);
-        final List<PurchaseResponse> responses = purchases.stream()
+        final PaginationRequest paginationRequest = new PaginationRequest(page, size);
+
+        final Page<Purchase> purchases = purchaseService.getPurchasesByBuyerId(
+                buyerId,
+                paginationRequest.toPageable()
+        );
+
+        final List<PurchaseResponse> content = purchases.getContent().stream()
                 .map(PurchaseResponse::from)
                 .toList();
-        return ResponseEntity.ok(successWithData(responses));
+
+        return ResponseEntity.ok(successWithData(PaginationResponse.of(purchases, content)));
     }
 
     @PostMapping

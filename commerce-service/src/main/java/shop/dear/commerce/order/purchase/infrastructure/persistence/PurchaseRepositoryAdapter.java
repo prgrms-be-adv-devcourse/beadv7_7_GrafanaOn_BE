@@ -1,6 +1,8 @@
 package shop.dear.commerce.order.purchase.infrastructure.persistence;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import shop.dear.commerce.order.purchase.domain.constant.PurchaseStatus;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
@@ -38,8 +40,8 @@ public class PurchaseRepositoryAdapter implements PurchaseRepository {
   }
 
   @Override
-  public List<Purchase> findByBuyerId(final Long buyerId) {
-    return purchaseJpaRepository.findByBuyerId(buyerId);
+  public Page<Purchase> findByBuyerId(final Long buyerId, final Pageable pageable) {
+    return purchaseJpaRepository.findByBuyerId(buyerId, pageable);
   }
 
   @Override
