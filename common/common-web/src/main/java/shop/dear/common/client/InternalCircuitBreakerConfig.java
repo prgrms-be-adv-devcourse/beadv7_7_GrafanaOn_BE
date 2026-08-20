@@ -6,6 +6,7 @@ import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigB
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.Duration;
 
@@ -29,6 +30,9 @@ public class InternalCircuitBreakerConfig {
                         .waitDurationInOpenState(Duration.ofSeconds(10))
                         .permittedNumberOfCallsInHalfOpenState(3)
                         .automaticTransitionFromOpenToHalfOpenEnabled(true)
+
+                        // 틀린 요청에 대해서는 예외를 세지 않는다.
+                        .ignoreExceptions(HttpClientErrorException.class)
                         .build())
                 .build());
     }
