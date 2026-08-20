@@ -95,10 +95,10 @@ public class ProductController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<PaginationResponse<GetSellerProductResponse>>> getSellerProducts(
         @AuthUser final Long sellerId,
-        @RequestParam(required = false) final Integer pageNo,
-        @RequestParam(required = false) final Integer pageSize
+        @RequestParam(required = false) final Integer page,
+        @RequestParam(required = false) final Integer size
     ) {
-        final PaginationRequest paginationRequest = new PaginationRequest(pageNo, pageSize);
+        final PaginationRequest paginationRequest = new PaginationRequest(page, size);
 
         final Page<GetSellerProductDto> result = productService.getSellerProducts(sellerId, paginationRequest.toPageable());
 
@@ -115,10 +115,10 @@ public class ProductController {
         @RequestParam(value = "status", required = false) final ProductStatus status,
         @RequestParam(value = "createdAt", required = false) final LocalDate createdAt,
         @RequestParam(value = "category", required = false) final ProductCategory category,
-        @RequestParam(required = false) final Integer pageNo,
-        @RequestParam(required = false) final Integer pageSize
+        @RequestParam(required = false) final Integer page,
+        @RequestParam(required = false) final Integer size
     ) {
-        final PaginationRequest paginationRequest = new PaginationRequest(pageNo, pageSize);
+        final PaginationRequest paginationRequest = new PaginationRequest(page, size);
 
         final Page<GetProductDto> result = productService.getAllProduct(
             saleType,
