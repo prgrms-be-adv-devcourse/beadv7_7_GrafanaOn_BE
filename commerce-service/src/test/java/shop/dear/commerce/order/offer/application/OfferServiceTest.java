@@ -8,6 +8,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 import shop.dear.commerce.order.offer.application.dto.CreateOfferCommand;
 import shop.dear.commerce.order.offer.application.dto.CreateOfferSnapshotCommand;
@@ -425,19 +429,20 @@ class OfferServiceTest {
             // given
             final Offer offer1 = createPendingPaidOffer();
             final Offer offer2 = createPendingPaidOffer();
+            final Pageable pageable = PageRequest.of(0, 10);
             given(productPort.getProduct(10L)).willReturn(productInfo(2L));
-            given(offerRepository.findByProductIdOrderByInsertedAtDesc(10L))
-                    .willReturn(List.of(offer1, offer2));
+            given(offerRepository.findByProductIdOrderByInsertedAtDesc(10L, pageable))
+                    .willReturn(new PageImpl<>(List.of(offer1, offer2), pageable, 2));
 
             // when
-            final List<Offer> offers = offerService.findOffersByProductId(2L, 10L, List.of());
+            final Page<Offer> offers = offerService.findOffersByProductId(2L, 10L, List.of(), pageable);
 
             // then
-            assertThat(offers).hasSize(2);
-            assertThat(offers.get(0).getSellerId()).isEqualTo(2L);
-            assertThat(offers.get(1).getSellerId()).isEqualTo(2L);
+            assertThat(offers.getContent()).hasSize(2);
+            assertThat(offers.getContent().get(0).getSellerId()).isEqualTo(2L);
+            assertThat(offers.getContent().get(1).getSellerId()).isEqualTo(2L);
             verify(productPort).getProduct(10L);
-            verify(offerRepository).findByProductIdOrderByInsertedAtDesc(10L);
+            verify(offerRepository).findByProductIdOrderByInsertedAtDesc(10L, pageable);
         }
 
         @Test
@@ -447,49 +452,52 @@ class OfferServiceTest {
             final Offer offer1 = createPendingPaidOffer();
             final Offer offer2 = createPendingPaidOffer();
             offer2.reject();
+            final Pageable pageable = PageRequest.of(0, 10);
             given(productPort.getProduct(10L)).willReturn(productInfo(2L));
-            given(offerRepository.findByProductIdAndStatusInOrderByInsertedAtDesc(10L, List.of(OfferStatus.PENDING)))
-                    .willReturn(List.of(offer1));
+            given(offerRepository.findByProductIdAndStatusInOrderByInsertedAtDesc(10L, List.of(OfferStatus.PENDING), pageable))
+                    .willReturn(new PageImpl<>(List.of(offer1), pageable, 1));
 
             // when
-            final List<Offer> offers = offerService.findOffersByProductId(2L, 10L, List.of(OfferStatus.PENDING));
+            final Page<Offer> offers = offerService.findOffersByProductId(2L, 10L, List.of(OfferStatus.PENDING), pageable);
 
             // then
-            assertThat(offers).hasSize(1);
-            assertThat(offers.get(0).getStatus()).isEqualTo(OfferStatus.PENDING);
+            assertThat(offers.getContent()).hasSize(1);
+            assertThat(offers.getContent().get(0).getStatus()).isEqualTo(OfferStatus.PENDING);
             verify(productPort).getProduct(10L);
-            verify(offerRepository).findByProductIdAndStatusInOrderByInsertedAtDesc(10L, List.of(OfferStatus.PENDING));
+            verify(offerRepository).findByProductIdAndStatusInOrderByInsertedAtDesc(10L, List.of(OfferStatus.PENDING), pageable);
         }
 
         @Test
         @DisplayName("접수된 오퍼가 없으면 빈 목록을 반환한다")
         void returnsEmptyList_whenNoOffers() {
             // given
+            final Pageable pageable = PageRequest.of(0, 10);
             given(productPort.getProduct(10L)).willReturn(productInfo(2L));
-            given(offerRepository.findByProductIdOrderByInsertedAtDesc(10L))
-                    .willReturn(List.of());
+            given(offerRepository.findByProductIdOrderByInsertedAtDesc(10L, pageable))
+                    .willReturn(new PageImpl<>(List.of(), pageable, 0));
 
             // when
-            final List<Offer> offers = offerService.findOffersByProductId(2L, 10L, List.of());
+            final Page<Offer> offers = offerService.findOffersByProductId(2L, 10L, List.of(), pageable);
 
             // then
-            assertThat(offers).isEmpty();
+            assertThat(offers.getContent()).isEmpty();
             verify(productPort).getProduct(10L);
-            verify(offerRepository).findByProductIdOrderByInsertedAtDesc(10L);
+            verify(offerRepository).findByProductIdOrderByInsertedAtDesc(10L, pageable);
         }
 
         @Test
         @DisplayName("상품 판매자가 아니면 예외를 던진다")
         void throwsException_whenNotSeller() {
             // given
+            final Pageable pageable = PageRequest.of(0, 10);
             given(productPort.getProduct(10L)).willReturn(productInfo(999L));
 
             // when & then
-            assertThatThrownBy(() -> offerService.findOffersByProductId(2L, 10L, List.of()))
+            assertThatThrownBy(() -> offerService.findOffersByProductId(2L, 10L, List.of(), pageable))
                     .isInstanceOf(BusinessException.class);
 
             verify(productPort).getProduct(10L);
-            verify(offerRepository, never()).findByProductIdOrderByInsertedAtDesc(10L);
+            verify(offerRepository, never()).findByProductIdOrderByInsertedAtDesc(10L, pageable);
         }
 
         private Offer createPendingPaidOffer() {
