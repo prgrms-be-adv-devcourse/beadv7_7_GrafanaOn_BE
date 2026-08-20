@@ -3,14 +3,15 @@ package shop.dear.commerce.financial.wallet.application;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.util.ReflectionTestUtils;
 import shop.dear.commerce.financial.wallet.application.dto.*;
+import shop.dear.commerce.financial.wallet.application.port.ReleaseValidationQueryPort;
+import shop.dear.commerce.financial.wallet.domain.costant.WalletLogType;
 import shop.dear.commerce.financial.wallet.domain.exception.WalletErrorCode;
 import shop.dear.commerce.financial.wallet.domain.model.Wallet;
 import shop.dear.commerce.financial.wallet.domain.repository.WalletRepository;
 import shop.dear.common.exception.BusinessException;
-import shop.dear.commerce.financial.wallet.application.port.ReleaseValidationQueryPort;
-import shop.dear.commerce.financial.wallet.domain.costant.WalletLogType;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -327,6 +328,40 @@ public class WalletServiceTest {
     }
 
     @Test
+    @DisplayName("Release 원장 저장 중 중복 제약 위반이 발생하면 중복 Release 예외로 변환한다.")
+    void release_whenDuplicateReleaseLogSaveFails_throwsException() {
+        // given
+        final Wallet wallet = saveWalletWithHeldAmount(
+                100L,
+                BigDecimal.valueOf(10_000),
+                BigDecimal.valueOf(6_000),
+                200L
+        );
+        releaseValidationQueryPort.put(
+                wallet.getId(),
+                WalletLogType.HOLD,
+                200L,
+                BigDecimal.valueOf(6_000)
+        );
+        walletRepository.failOnSave();
+
+        // when
+        final BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> walletService.release(
+                        new ReleaseCommand(
+                                1L,
+                                BigDecimal.valueOf(6_000),
+                                200L
+                        )
+                )
+        );
+
+        // then
+        assertEquals(WalletErrorCode.DUPLICATE_RELEASE, exception.getErrorCode());
+    }
+
+    @Test
     @DisplayName("기존 지갑에서 사용 가능 잔액으로 결제하면 사용 가능 잔액이 감소한다.")
     void payAvailable_whenWalletExists_decreasesAvailableBalance() {
         saveWalletWithBalance(BigDecimal.valueOf(10_000));
@@ -603,6 +638,7 @@ public class WalletServiceTest {
 
         private final Map<Long, Wallet> wallets = new HashMap<>();
         private int saveCount;
+        private boolean failOnSave;
 
         @Override
         public Optional<Wallet> findById(final Long walletId) {
@@ -618,6 +654,10 @@ public class WalletServiceTest {
 
         @Override
         public Wallet save(final Wallet wallet) {
+            if (failOnSave) {
+                throw new DataIntegrityViolationException("duplicate release");
+            }
+
             wallets.put(wallet.getMemberId(), wallet);
             saveCount++;
             return wallet;
@@ -629,6 +669,10 @@ public class WalletServiceTest {
 
         public void resetSaveCount() {
             saveCount = 0;
+        }
+
+        void failOnSave() {
+            failOnSave = true;
         }
     }
 }

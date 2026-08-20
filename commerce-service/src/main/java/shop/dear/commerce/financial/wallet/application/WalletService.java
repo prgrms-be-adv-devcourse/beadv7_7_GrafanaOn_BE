@@ -1,6 +1,7 @@
 package shop.dear.commerce.financial.wallet.application;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -100,9 +101,12 @@ public class WalletService {
             return;
         }
 
-        wallet.release(command.amount(), command.offerId());
-
-        walletRepository.save(wallet);
+        try {
+            wallet.release(command.amount(), command.offerId());
+            walletRepository.save(wallet);
+        } catch (final DataIntegrityViolationException exception) {
+            throw new BusinessException(WalletErrorCode.DUPLICATE_RELEASE);
+        }
     }
 
     private void validateAmountMatches(
