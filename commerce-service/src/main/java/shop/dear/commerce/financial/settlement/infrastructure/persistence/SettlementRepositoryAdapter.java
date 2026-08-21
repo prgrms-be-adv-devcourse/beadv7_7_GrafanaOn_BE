@@ -53,4 +53,9 @@ public class SettlementRepositoryAdapter implements SettlementRepository {
     public List<Settlement> saveAll(final List<Settlement> settlements) {
         return settlementJpaRepository.saveAll(settlements);
     }
+
+    @Override
+    public boolean existsByOrderReference(Long purchaseId, Long offerId) {
+        return settlementJpaRepository.existsByOrderReference(purchaseId, offerId);
+    }
 }

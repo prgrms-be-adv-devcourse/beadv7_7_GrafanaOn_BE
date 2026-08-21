@@ -10,7 +10,12 @@ import shop.dear.audit.BaseEntity;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "settlement")
+@Table(name = "settlement",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_settlement_purchase", columnNames = "purchase_id"),
+        @UniqueConstraint(name = "uk_settlement_offer",    columnNames = "offer_id")
+    }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Settlement extends BaseEntity {

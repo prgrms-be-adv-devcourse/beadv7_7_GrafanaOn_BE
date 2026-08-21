@@ -162,6 +162,10 @@ public class SettlementService {
 				? event.orderId()
 				: null;
 
+		if (settlementRepository.existsByOrderReference(purchaseId, offerId)) {
+			return;
+		}
+
 		settlementRepository.save(Settlement.create(
 				policy.getId(),
 				walletId,
