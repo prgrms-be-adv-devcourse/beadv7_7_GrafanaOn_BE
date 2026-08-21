@@ -80,7 +80,6 @@ public class Product extends BaseEntity {
     @Column(name = "description", length = 1000, nullable = true)
     private String description;
 
-    @SQLRestriction("deleted_at IS NULL")
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductImage> images = new ArrayList<>();
 
@@ -236,6 +235,8 @@ public class Product extends BaseEntity {
         for (ProductImage image : this.images) {
             image.delete();
         }
+
+        this.status = ProductStatus.DELETED;
     }
 
     public ProductImage addImage(final String url, final int sortOrder) {
