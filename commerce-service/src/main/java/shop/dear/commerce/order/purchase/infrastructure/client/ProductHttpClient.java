@@ -12,6 +12,7 @@ import shop.dear.commerce.order.purchase.application.port.dto.ProductSaleType;
 import shop.dear.commerce.order.purchase.application.port.dto.ProductStatus;
 import shop.dear.commerce.order.purchase.infrastructure.client.dto.ProductApiData;
 import shop.dear.commerce.order.purchase.infrastructure.client.dto.ProductImageData;
+import shop.dear.commerce.order.purchase.infrastructure.client.dto.TradeProductData;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.common.response.ApiResponse;
 
@@ -22,6 +23,7 @@ import static shop.dear.commerce.order.purchase.domain.exception.PurchaseErrorCo
 public class ProductHttpClient implements ProductPort {
 
   private static final String PRODUCT_URI = "/internal/products/{productId}";
+  private static final String TRADE_URI = "/internal/products/{productId}/trade";
 
   private final RestClient restClient;
 
@@ -76,5 +78,34 @@ public class ProductHttpClient implements ProductPort {
             data.description(),
             data.insertedAt()
     );
+  }
+
+  @Override
+  public boolean tradeProduct(final Long productId) {
+    final TradeProductData data = requestTradeProduct(productId);
+    return data.isChanged();
+  }
+
+  private TradeProductData requestTradeProduct(final Long productId) {
+    try {
+      final ApiResponse<TradeProductData> response = restClient.post()
+              .uri(TRADE_URI, productId)
+              .retrieve()
+              .onStatus(status -> status.value() == 404, (request, responseSpec) -> {
+                throw new BusinessException(PRODUCT_NOT_FOUND);
+              })
+              .onStatus(HttpStatusCode::isError, (request, responseSpec) -> {
+                throw new BusinessException(PRODUCT_LOOKUP_FAILED);
+              })
+              .body(new ParameterizedTypeReference<>() {});
+
+      if (response == null || response.getData() == null) {
+        throw new BusinessException(PRODUCT_LOOKUP_FAILED);
+      }
+
+      return response.getData();
+    } catch (final ResourceAccessException e) {
+      throw new BusinessException(PRODUCT_LOOKUP_FAILED, e.getMessage());
+    }
   }
 }
