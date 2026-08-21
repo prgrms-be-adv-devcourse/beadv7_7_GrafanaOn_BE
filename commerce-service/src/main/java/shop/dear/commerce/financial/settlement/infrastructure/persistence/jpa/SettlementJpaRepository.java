@@ -39,15 +39,7 @@ public interface SettlementJpaRepository extends JpaRepository<Settlement, Long>
 		@Param("state") SettlementStatus state
 	);
 
-	@Query(
-		"""
-		SELECT COUNT(s) FROM Settlement s
-		WHERE s.purchaseId = :purchaseId
-		OR s.offerId = :offerId
-		"""
-	)
-	boolean existsByOrderReference(
-		@Param("purchaseId")Long purchaseId,
-		@Param("offerId")Long offerId
+
+	boolean existsByPurchaseIdOrOfferId(@Param("purchaseId")Long purchaseId, @Param("offerId")Long offerId
 	);
 }

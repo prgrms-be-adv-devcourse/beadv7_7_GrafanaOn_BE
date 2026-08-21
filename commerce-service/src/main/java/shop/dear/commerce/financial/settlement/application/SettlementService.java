@@ -116,26 +116,6 @@ public class SettlementService {
 		);
 	}
 
-	// targetMonth 기준 전월 1일 0시
-	public LocalDateTime getStartDate(YearMonth targetMonth) {
-		return targetMonth.minusMonths(1)
-				.atDay(1)
-				.atStartOfDay();
-	}
-
-	// targetMonth 기준 전월 말일 다음날(=targetMonth 1일) 0시
-	public LocalDateTime getEndDate(YearMonth targetMonth) {
-		return targetMonth.atDay(1)
-				.atStartOfDay();
-	}
-
-	public Long getWalletId(Long memberId) {
-
-		WalletInfo info = walletPort.getWalletId(memberId);
-
-		return info.walletId();
-	}
-
 	@Transactional
 	public void createPendingSettlement(final FinishedOrderEvent event) {
 		final OrderType orderType = OrderType.valueOf(event.orderType());
@@ -162,7 +142,7 @@ public class SettlementService {
 				? event.orderId()
 				: null;
 
-		if (settlementRepository.existsByOrderReference(purchaseId, offerId)) {
+		if (settlementRepository.existsByPurchaseIdOrOfferId(purchaseId, offerId)) {
 			return;
 		}
 
@@ -175,5 +155,25 @@ public class SettlementService {
 				feeAmount,
 				netAmount
 		));
+	}
+
+	// targetMonth 기준 전월 1일 0시
+	public LocalDateTime getStartDate(YearMonth targetMonth) {
+		return targetMonth.minusMonths(1)
+			.atDay(1)
+			.atStartOfDay();
+	}
+
+	// targetMonth 기준 전월 말일 다음날(=targetMonth 1일) 0시
+	public LocalDateTime getEndDate(YearMonth targetMonth) {
+		return targetMonth.atDay(1)
+			.atStartOfDay();
+	}
+
+	public Long getWalletId(Long memberId) {
+
+		WalletInfo info = walletPort.getWalletId(memberId);
+
+		return info.walletId();
 	}
 }

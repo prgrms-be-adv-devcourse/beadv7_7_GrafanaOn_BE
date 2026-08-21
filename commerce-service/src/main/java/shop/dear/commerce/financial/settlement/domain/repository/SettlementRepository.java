@@ -27,5 +27,5 @@ public interface SettlementRepository {
 
 	List<Settlement> saveAll(List<Settlement> settlements);
 
-	boolean existsByOrderReference(Long purchaseId, Long offerId);
+	boolean existsByPurchaseIdOrOfferId(Long purchaseId, Long offerId);
 }
