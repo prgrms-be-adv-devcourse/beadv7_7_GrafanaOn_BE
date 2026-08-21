@@ -15,6 +15,6 @@ public class SettlementOrderEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(final FinishedOrderEvent event) {
-        settlementService.createPendingSettlement(event);
+        settlementService.createSettlement(event);
     }
 }

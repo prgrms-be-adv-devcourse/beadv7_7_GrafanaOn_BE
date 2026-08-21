@@ -28,7 +28,7 @@ public class SettlementBatch {	//집계용이므로 baseEntity를 상속하지 �
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "period", nullable = false, length = 6)
+	@Column(name = "period", nullable = false, length = 7)
 	private String period;
 
 	@Column(name = "wallet_id", nullable = false)
@@ -51,6 +51,9 @@ public class SettlementBatch {	//집계용이므로 baseEntity를 상속하지 �
 	@Column(name = "state", nullable = false, length = 30)
 	private SettlementBatchStatus state;
 
+	@Column(name = "retry_count", nullable = false)
+	private int retryCount;
+
 	private SettlementBatch(final YearMonth period, final Long walletId) {
 		this.period = period.toString();
 		this.walletId = walletId;
@@ -59,6 +62,7 @@ public class SettlementBatch {	//집계용이므로 baseEntity를 상속하지 �
 		this.feeAmount = BigDecimal.ZERO;
 		this.netAmount = BigDecimal.ZERO;
 		this.state = SettlementBatchStatus.PENDING;
+		this.retryCount = 0;
 	}
 
 	public static SettlementBatch create(final YearMonth period, final Long walletId) {
@@ -112,6 +116,19 @@ public class SettlementBatch {	//집계용이므로 baseEntity를 상속하지 �
 		validateState(SettlementBatchStatus.CLOSE);
 
 		this.state = SettlementBatchStatus.FAILED;
+	}
+
+	// 재집계 준비 - 집계값을 비우고 누적 상태로 되돌린다.
+	// 원본을 다시 순회하며 accumulate 를 재실행하기 위한 것이므로 금액과 건수를 0 으로 초기화한다.
+	public void reset() {
+		validateState(SettlementBatchStatus.CLOSE);
+
+		this.settlementCount = 0;
+		this.grossAmount = BigDecimal.ZERO;
+		this.feeAmount = BigDecimal.ZERO;
+		this.netAmount = BigDecimal.ZERO;
+		this.retryCount += 1;
+		this.state = SettlementBatchStatus.PENDING;
 	}
 
 	private void validateState(final SettlementBatchStatus expected) {
