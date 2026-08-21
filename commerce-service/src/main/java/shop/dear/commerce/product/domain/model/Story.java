@@ -12,12 +12,14 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 import shop.dear.audit.BaseEntity;
 
 import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("deleted_at IS NULL")
 @Table(name = "story")
 @Entity
 public class Story extends BaseEntity {
