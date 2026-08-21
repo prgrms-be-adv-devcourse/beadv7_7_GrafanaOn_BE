@@ -26,9 +26,9 @@ public interface ProductRepository {
 
     boolean existsById(final Long productId);
 
-    Page<Product> findAllBySellerIdAndDeletedAtIsNull(final Long sellerId, final Pageable pageable);
+    Page<Product> findAllBySellerId(final Long sellerId, final Pageable pageable);
 
-    Page<Product> findAllBySaleTypeAndStatusAndCreatedAtAndCategoryAndDeletedAtIsNull(
+    Page<Product> findAllBySaleTypeAndStatusAndCreatedAtAndCategory(
         final ProductSaleType saleType,
         final ProductStatus status,
         final LocalDateTime startDate,

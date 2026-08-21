@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("deleted_at IS NULL")
 @Table(name = "product_image")
 @Entity
 public class ProductImage extends BaseEntity {
@@ -44,7 +45,6 @@ public class ProductImage extends BaseEntity {
     @Column(name = "sort_order", nullable = false)
     private int sortOrder;
 
-    @SQLRestriction("deleted_at IS NULL")
     @OneToOne(mappedBy = "productImage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Story story;
 
