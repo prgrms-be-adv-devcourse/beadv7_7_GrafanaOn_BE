@@ -142,7 +142,7 @@ public class WalletService {
     public void earn(final EarnCommand command){
         final Wallet wallet  = findById(command.walletId());
 
-        wallet.earn(command.amount(), command.settlementId());
+        wallet.earn(command.amount(), command.referenceId());
 
         walletRepository.save(wallet);
     }
@@ -154,7 +154,7 @@ public class WalletService {
         final Wallet wallet = findById(walletId);
 
         for (final EarnCommand command : commands) {
-            wallet.earn(command.amount(), command.settlementId());
+            wallet.earn(command.amount(), command.referenceId());
         }
 
         walletRepository.save(wallet);
