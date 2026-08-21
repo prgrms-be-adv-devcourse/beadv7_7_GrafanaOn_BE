@@ -5,5 +5,6 @@ public enum ProductStatus {
     ON_SALE,
     TRADING,
     SOLD_OUT,
+    DELETED
     ;
 }

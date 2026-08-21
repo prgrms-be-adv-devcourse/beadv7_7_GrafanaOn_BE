@@ -272,7 +272,7 @@ public class ProductService {
         validateMember(sellerId);
         validateSeller(sellerId);
 
-        return productRepository.findAllBySellerIdAndDeletedAtIsNull(sellerId, pageable)
+        return productRepository.findAllBySellerId(sellerId, pageable)
             .map(GetSellerProductDto::of);
     }
 
@@ -291,7 +291,7 @@ public class ProductService {
             endDate = createdAt.atTime(LocalTime.MAX);
         }
 
-        return productRepository.findAllBySaleTypeAndStatusAndCreatedAtAndCategoryAndDeletedAtIsNull(
+        return productRepository.findAllBySaleTypeAndStatusAndCreatedAtAndCategory(
             saleType,
             status,
             startDate,

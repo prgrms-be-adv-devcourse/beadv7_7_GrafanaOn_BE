@@ -60,12 +60,12 @@ public class ProductRepositoryAdapter implements ProductRepository {
     }
 
     @Override
-    public Page<Product> findAllBySellerIdAndDeletedAtIsNull(final Long sellerId, final Pageable pageable) {
-        return productRepository.findAllBySellerIdAndDeletedAtIsNull(sellerId, pageable);
+    public Page<Product> findAllBySellerId(final Long sellerId, final Pageable pageable) {
+        return productRepository.findAllBySellerId(sellerId, pageable);
     }
 
     @Override
-    public Page<Product> findAllBySaleTypeAndStatusAndCreatedAtAndCategoryAndDeletedAtIsNull(
+    public Page<Product> findAllBySaleTypeAndStatusAndCreatedAtAndCategory(
         final ProductSaleType saleType,
         final ProductStatus status,
         final LocalDateTime startDate,
@@ -73,7 +73,7 @@ public class ProductRepositoryAdapter implements ProductRepository {
         final ProductCategory category,
         final Pageable pageable
         ) {
-        return productRepository.findAllBySaleTypeAndStatusAndCreatedAtAndCategoryAndDeletedAtIsNull(saleType, status, startDate, endDate, category, pageable);
+        return productRepository.findAllBySaleTypeAndStatusAndCreatedAtAndCategory(saleType, status, startDate, endDate, category, pageable);
     }
 
     @Override
