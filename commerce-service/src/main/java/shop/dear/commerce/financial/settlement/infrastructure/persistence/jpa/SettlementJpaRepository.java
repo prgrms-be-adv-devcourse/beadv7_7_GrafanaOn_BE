@@ -42,19 +42,6 @@ public interface SettlementJpaRepository extends JpaRepository<Settlement, Long>
 		@Param("state") SettlementStatus state
 	);
 
-	// 정산 대상 지갑 목록 (지갑 단위로 나눠서 처리하기 위함)
-	@Query("""
-        SELECT DISTINCT s.walletId FROM Settlement s
-        WHERE s.insertedAt >= :startDate
-          AND s.insertedAt < :endDate
-          AND s.state = :state
-	  """)
-	List<Long> findWalletIdsByInsertedAtBetween(
-		@Param("startDate")LocalDateTime startDate,
-		@Param("endDate")LocalDateTime endDate,
-		@Param("state") SettlementStatus state
-	);
-
 	@Query("""
         SELECT new shop.dear.commerce.financial.settlement.domain.model.SettlementSummary(
             CAST(COUNT(s) AS Integer),
