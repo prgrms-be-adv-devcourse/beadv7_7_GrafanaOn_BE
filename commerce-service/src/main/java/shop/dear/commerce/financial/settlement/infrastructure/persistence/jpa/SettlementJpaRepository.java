@@ -13,6 +13,8 @@ import java.util.List;
 
 public interface SettlementJpaRepository extends JpaRepository<Settlement, Long> {
 
+	boolean existsByPurchaseIdOrOfferId(Long purchaseId, Long offerId);
+
 	@Query("""
         SELECT s FROM Settlement s
         WHERE s.insertedAt >= :startDate

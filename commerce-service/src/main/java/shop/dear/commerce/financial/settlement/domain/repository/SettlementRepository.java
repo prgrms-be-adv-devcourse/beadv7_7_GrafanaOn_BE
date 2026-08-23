@@ -39,6 +39,8 @@ public interface SettlementRepository {
 		SettlementStatus status
 	);
 
+	boolean existsByPurchaseIdOrOfferId(Long purchaseId, Long offerId);
+
 	Settlement save(final Settlement settlement);
 
 	List<Settlement> saveAll(List<Settlement> settlements);

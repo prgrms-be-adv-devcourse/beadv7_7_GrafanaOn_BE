@@ -74,6 +74,11 @@ public class SettlementRepositoryAdapter implements SettlementRepository {
     }
 
     @Override
+    public boolean existsByPurchaseIdOrOfferId(final Long purchaseId, final Long offerId) {
+        return settlementJpaRepository.existsByPurchaseIdOrOfferId(purchaseId, offerId);
+    }
+
+    @Override
     public Settlement save(final Settlement settlement) {
         return settlementJpaRepository.save(settlement);
     }
