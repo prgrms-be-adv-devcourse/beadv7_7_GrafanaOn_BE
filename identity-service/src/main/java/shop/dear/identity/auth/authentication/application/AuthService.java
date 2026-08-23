@@ -139,6 +139,30 @@ public class AuthService {
         );
     }
 
+    @Transactional
+    public void promoteToSeller(final Long memberId) {
+        AuthAccount authAccount = authAccountRepository
+                .findByMemberId(memberId)
+                .orElseThrow(() -> new BusinessException(
+                        AuthErrorCode.AUTH_ACCOUNT_NOT_FOUND
+                ));
+
+        authAccount.promoteToSeller();
+        authAccountRepository.save(authAccount);
+    }
+
+    @Transactional
+    public void demoteToBuyer(final Long memberId) {
+        AuthAccount authAccount = authAccountRepository
+                .findByMemberId(memberId)
+                .orElseThrow(() -> new BusinessException(
+                        AuthErrorCode.AUTH_ACCOUNT_NOT_FOUND
+                ));
+
+        authAccount.demoteToBuyer();
+        authAccountRepository.save(authAccount);
+    }
+
     /**
      * [회원 탈퇴 흐름]
      * 1. memberId로 AuthAccount 조회

@@ -10,6 +10,7 @@ import shop.dear.identity.member.domain.exception.MemberErrorCode;
 import shop.dear.identity.member.domain.model.AccountInfo;
 import shop.dear.identity.member.domain.model.Member;
 import shop.dear.identity.member.domain.repository.MemberRepository;
+import shop.dear.identity.member.application.port.AuthRolePort;
 import shop.dear.identity.member.application.port.ProductPort;
 import shop.dear.identity.member.application.port.WalletPort;
 
@@ -23,6 +24,7 @@ public class MemberService  {
     private final MemberRepository memberRepository;
     private final ProductPort productPort;
     private final WalletPort walletPort;
+    private final AuthRolePort authRolePort;
 
     @Transactional
     public MemberInfo createProfile(final CreateProfileCommand command) {
@@ -82,6 +84,8 @@ public class MemberService  {
         AccountInfo accountInfo = AccountInfo.of(command.bank(), command.account());
 
         member.registerSeller(accountInfo);
+
+        authRolePort.promoteToSeller(memberId);
     }
 
     public SellerInfo getSellerAccount(final Long memberId) {
@@ -126,6 +130,8 @@ public class MemberService  {
         }
 
         member.withdrawSeller();
+
+        authRolePort.demoteToBuyer(memberId);
     }
 
     @Transactional
