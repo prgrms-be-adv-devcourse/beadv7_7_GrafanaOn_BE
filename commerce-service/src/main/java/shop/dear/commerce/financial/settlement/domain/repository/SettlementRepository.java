@@ -23,14 +23,6 @@ public interface SettlementRepository {
 		SettlementStatus status
 	);
 
-	// 특정 기간 동안 정산 대상인 지갑 목록
-	List<Long> findWalletIdsByInsertedAtBetween(
-		LocalDateTime startDate,
-		LocalDateTime endDate,
-		SettlementStatus status
-	);
-
-
 	// 특정 지갑, 특정 기간의 정산 건수와 금액 합계
 	SettlementSummary summarizeByInsertedAtBetween(
 		LocalDateTime startDate,

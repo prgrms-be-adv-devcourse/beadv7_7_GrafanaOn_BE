@@ -33,19 +33,6 @@ public class SettlementRepositoryAdapter implements SettlementRepository {
     }
 
     @Override
-    public List<Long> findWalletIdsByInsertedAtBetween(
-        LocalDateTime startDate,
-        LocalDateTime endDate,
-        SettlementStatus status
-    ) {
-        return settlementJpaRepository.findWalletIdsByInsertedAtBetween(
-            startDate,
-            endDate,
-            status
-        );
-    }
-
-    @Override
     public List<Settlement> findAllByInsertedAtBetween(
         LocalDateTime startDate,
         LocalDateTime endDate,
