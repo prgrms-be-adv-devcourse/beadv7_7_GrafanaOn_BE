@@ -11,6 +11,7 @@ import shop.dear.identity.auth.authentication.application.port.RefreshTokenStore
 import shop.dear.identity.auth.authentication.application.port.TokenProviderPort;
 import shop.dear.identity.auth.authentication.domain.AuthAccount;
 import shop.dear.identity.auth.authentication.domain.AuthAccountRepository;
+import shop.dear.identity.auth.authentication.domain.AuthProvider;
 import shop.dear.identity.auth.authentication.domain.exception.AuthErrorCode;
 
 import java.time.Instant;
@@ -76,6 +77,11 @@ public class AuthService {
                         AuthErrorCode.INVALID_CREDENTIALS
                 ));
 
+        // 소셜 전용 계정은 비밀번호가 없다.
+        if (!authAccount.hasPassword()) {
+            throw new BusinessException(AuthErrorCode.INVALID_CREDENTIALS);
+        }
+
         boolean passwordMatches = passwordEncoderPort.matches(
                 command.rawPassword(),
                 authAccount.getPasswordHash()
@@ -89,6 +95,58 @@ public class AuthService {
 
         return issueAndStoreTokens(authAccount);
     }
+
+    /**
+     * [소셜 로그인 흐름]
+     * 1. provider + providerId로 이미 연결된 계정을 찾는다.
+     * 2. 없다면 이메일로 기존 계정을 찾아 연동한다.
+     * 3. 그것도 없다면 새 계정과 회원 프로필을 만든다.
+     * 4. 비밀번호 로그인과 동일한 Access / Refresh 토큰을 발급한다.
+     */
+    @Transactional
+    public TokenResult loginWithSocial(final SocialLoginCommand command) {
+        AuthAccount authAccount = authAccountRepository
+                .findByProviderAndProviderId(command.provider(), command.providerId())
+                .orElseGet(() -> linkOrCreate(command));
+
+        if (!authAccount.isActive()) {
+            throw new BusinessException(AuthErrorCode.INACTIVE_ACCOUNT);
+        }
+
+        return issueAndStoreTokens(authAccount);
+    }
+
+    private AuthAccount linkOrCreate(final SocialLoginCommand command) {
+        return authAccountRepository.findByEmail(command.email())
+                .map(existing -> link(existing, command))
+                .orElseGet(() -> createFromSocial(command));
+    }
+
+    private AuthAccount link(final AuthAccount existing, final SocialLoginCommand command) {
+        if (!command.emailVerified()) {
+            throw new BusinessException(AuthErrorCode.UNVERIFIED_SOCIAL_EMAIL);
+        }
+
+        existing.linkSocial(command.provider(), command.providerId());
+
+        return authAccountRepository.save(existing);
+    }
+
+    private AuthAccount createFromSocial(final SocialLoginCommand command) {
+        AuthAccount authAccount = AuthAccount.createSocial(
+                command.email(),
+                command.provider(),
+                command.providerId()
+        );
+
+        // 배송지와 휴대폰 번호를 주지 않는다.
+        // member 테이블의 두 컬럼은 NOT NULL 상태. 사용자가 프로필에서 채우도록 한다.
+        MemberProfileResult memberProfileResult = memberProfilePort.createProfile(command.name(), "", "");
+
+        authAccount.activate(memberProfileResult.memberId());
+
+        return authAccountRepository.save(authAccount);
+    };
 
     /**
      * [재발급 흐름]
