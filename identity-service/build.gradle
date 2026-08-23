@@ -18,6 +18,12 @@ dependencies {
     // PostgreSQL
     runtimeOnly 'org.postgresql:postgresql'
 
+    // Spring Security의 crypto
+    implementation 'org.springframework.security:spring-security-crypto'
+
+    // OAuth2
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
 }
 
