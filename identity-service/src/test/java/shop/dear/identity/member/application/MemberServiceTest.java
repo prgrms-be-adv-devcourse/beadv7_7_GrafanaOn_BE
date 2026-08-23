@@ -205,6 +205,7 @@ public class MemberServiceTest {
         assertEquals(SellerStatus.ACTIVE, member.getSeller().getStatus());
         assertEquals("국민은행", member.getSeller().getAccountInfo().getBank());
         assertEquals("1234567890", member.getSeller().getAccountInfo().getAccount().value());
+        verify(authRolePort).promoteToSeller(1L);
     }
 
     @Test
@@ -339,6 +340,7 @@ public class MemberServiceTest {
         Assertions.assertFalse(member.isSellerActive());
         assertEquals(SellerStatus.WITHDRAWN, member.getSeller().getStatus());
         Assertions.assertNotNull(member.getSeller().getWithdrawnAt());
+        verify(authRolePort).demoteToBuyer(1L);
     }
 
     @Test
@@ -361,6 +363,7 @@ public class MemberServiceTest {
         assertEquals(MemberErrorCode.WITHDRAWAL_FAILED, exception.getErrorCode());
         assertTrue(member.isSellerActive());
         assertEquals(SellerStatus.ACTIVE, member.getSeller().getStatus());
+        verify(authRolePort, never()).demoteToBuyer(any());
     }
 
     @Test
