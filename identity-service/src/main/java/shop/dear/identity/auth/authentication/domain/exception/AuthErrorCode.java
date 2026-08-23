@@ -17,6 +17,7 @@ public enum AuthErrorCode implements ErrorCode {
     EXPIRED_TOKEN("AU-006", "만료된 토큰입니다."),
     INVALID_REFRESH_TOKEN("AU-007", "유효하지 않은 Refresh Token입니다."),
     REFRESH_TOKEN_REUSE_DETECTED("AU-008", "Refresh Token 재사용이 감지되었습니다. 다시 로그인해 주세요."),
+    UNVERIFIED_SOCIAL_EMAIL("AU-009", "이메일이 확인되지 않은 소셜 계정입니다."),
             ;
 
     private final String value;
