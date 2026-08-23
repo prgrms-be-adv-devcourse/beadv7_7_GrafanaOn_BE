@@ -17,6 +17,10 @@ dependencies {
     // Elasticsearch
     implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
 
+    // shedlock 관련 라이브러리
+    implementation 'net.javacrumbs.shedlock:shedlock-spring:5.15.1'
+    implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.15.1'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testImplementation 'com.fasterxml.jackson.core:jackson-databind'
 }
