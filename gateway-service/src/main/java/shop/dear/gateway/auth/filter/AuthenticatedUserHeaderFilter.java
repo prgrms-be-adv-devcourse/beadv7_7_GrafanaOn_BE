@@ -21,7 +21,7 @@ import java.util.Optional;
 @Component
 public class AuthenticatedUserHeaderFilter implements GlobalFilter, Ordered {
     private static final String MEMBER_ID_HEADER = "X-Authenticated-Member-Id";
-    private static final String ROLE_HEADER = "X-Authenticated-Role";
+    private static final String ROLE_HEADER = "X-Authenticated-Member-Role";
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
