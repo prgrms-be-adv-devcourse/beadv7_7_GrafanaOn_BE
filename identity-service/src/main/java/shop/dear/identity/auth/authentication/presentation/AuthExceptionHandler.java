@@ -91,7 +91,8 @@ public class AuthExceptionHandler {
                  INVALID_TOKEN,
                  EXPIRED_TOKEN,
                  INVALID_REFRESH_TOKEN,
-                 REFRESH_TOKEN_REUSE_DETECTED -> HttpStatus.UNAUTHORIZED;
+                 REFRESH_TOKEN_REUSE_DETECTED,
+                 UNVERIFIED_SOCIAL_EMAIL -> HttpStatus.UNAUTHORIZED;
         };
     }
 }
