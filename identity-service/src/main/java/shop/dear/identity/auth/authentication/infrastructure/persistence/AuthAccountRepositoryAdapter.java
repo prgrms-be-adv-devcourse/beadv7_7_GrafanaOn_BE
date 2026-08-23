@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import shop.dear.identity.auth.authentication.domain.AuthAccount;
 import shop.dear.identity.auth.authentication.domain.AuthAccountRepository;
+import shop.dear.identity.auth.authentication.domain.AuthProvider;
 import shop.dear.identity.auth.authentication.infrastructure.persistence.jpa.AuthAccountJpaRepository;
 
 import java.util.Optional;
@@ -26,6 +27,11 @@ public class AuthAccountRepositoryAdapter implements AuthAccountRepository {
     @Override
     public Optional<AuthAccount> findByMemberId(Long memberId) {
         return jpaRepository.findByMemberId(memberId);
+    }
+
+    @Override
+    public Optional<AuthAccount> findByProviderAndProviderId(AuthProvider provider, String providerId) {
+        return jpaRepository.findByProviderAndProviderId(provider, providerId);
     }
 
     @Override

@@ -10,5 +10,7 @@ public interface AuthAccountRepository {
 
     Optional<AuthAccount> findByMemberId(Long memberId);
 
+    Optional<AuthAccount> findByProviderAndProviderId(AuthProvider provider, String providerId);
+
     boolean existsByEmail(String email);
 }
