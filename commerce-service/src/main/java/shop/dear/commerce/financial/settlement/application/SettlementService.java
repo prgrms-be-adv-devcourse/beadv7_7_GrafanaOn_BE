@@ -89,6 +89,10 @@ public class SettlementService {
 				? event.orderId()
 				: null;
 
+		if (settlementRepository.existsByPurchaseIdOrOfferId(purchaseId, offerId)) {
+			return;
+		}
+
 		final Settlement settlement = Settlement.create(
 			policy.getId(),
 			walletId,
