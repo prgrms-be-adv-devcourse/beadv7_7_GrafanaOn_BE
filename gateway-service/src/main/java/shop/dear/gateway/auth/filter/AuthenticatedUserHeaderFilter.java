@@ -21,6 +21,7 @@ import java.util.Optional;
 @Component
 public class AuthenticatedUserHeaderFilter implements GlobalFilter, Ordered {
     private static final String MEMBER_ID_HEADER = "X-Authenticated-Member-Id";
+    private static final String ROLE_HEADER = "X-Authenticated-Role";
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -44,13 +45,19 @@ public class AuthenticatedUserHeaderFilter implements GlobalFilter, Ordered {
                                     .headers(headers -> {
                                         // 클라이언트가 직접 보낸 값은 무조건 제거한다.
                                         headers.remove(MEMBER_ID_HEADER);
+                                        headers.remove(ROLE_HEADER);
 
                                         // 검증된 JWT의 memberId만 추가한다.
-                                        user.ifPresent(authenticated ->
-                                                headers.set(
-                                                        MEMBER_ID_HEADER,
-                                                        authenticated.memberId().toString()
-                                                ));
+                                        user.ifPresent(authenticated -> {
+                                            headers.set(
+                                                    MEMBER_ID_HEADER,
+                                                    authenticated.memberId().toString()
+                                            );
+                                            headers.set(
+                                                    ROLE_HEADER,
+                                                    authenticated.role()
+                                            );
+                                        });
                                     })
                                     .build();
 

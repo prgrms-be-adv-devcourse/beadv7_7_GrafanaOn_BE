@@ -15,6 +15,7 @@ import shop.dear.identity.member.application.dto.SellerInfo;
 import shop.dear.identity.member.application.dto.UpdateProfileCommand;
 import shop.dear.identity.member.application.dto.UpdateSellerAccountCommand;
 import shop.dear.identity.member.application.dto.external.ExistsProduct;
+import shop.dear.identity.member.application.port.AuthRolePort;
 import shop.dear.identity.member.application.port.ProductPort;
 import shop.dear.identity.member.application.port.WalletPort;
 import shop.dear.identity.member.domain.constract.SellerStatus;
@@ -42,6 +43,9 @@ public class MemberServiceTest {
 
     @Mock
     private WalletPort walletPort;
+
+    @Mock
+    private AuthRolePort authRolePort;
 
     @InjectMocks
     private MemberService memberService;
