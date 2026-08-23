@@ -7,7 +7,7 @@ dependencies {
     api 'org.springframework.boot:spring-boot-starter-validation'
     api 'org.springframework.data:spring-data-commons'
 
-    // MemberRoleAop 등 @Aspect 자동 프록시 구성 (Spring Boot 4부터 starter-aop -> starter-aspectj)
+    // @Aspect 자동 프록시 구성 (Spring Boot 4부터 starter-aspectj)
     implementation 'org.springframework.boot:spring-boot-starter-aspectj'
 
     // identity의 WalletHttpClient가 CircuitBreakerFactory 타입을 직접 참조하므로 api로 노출.

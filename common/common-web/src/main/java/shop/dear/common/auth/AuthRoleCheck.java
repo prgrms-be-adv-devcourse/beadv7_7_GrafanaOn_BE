@@ -16,12 +16,12 @@ import java.util.Arrays;
 @Component
 public class AuthRoleCheck {
 
-    @Before("@annotation(AuthRole)")
-    public void checkRole(final AuthRole AuthRole) {
+    @Before("@annotation(authRole)")
+    public void checkRole(final AuthRole authRole) {
 
         final String role = currentRole();
 
-        if (!StringUtils.hasText(role) || !Arrays.asList(AuthRole.roles()).contains(role)) {
+        if (!StringUtils.hasText(role) || !Arrays.asList(authRole.roles()).contains(role)) {
             throw new BusinessException(CommonErrorCode.ACCESS_DENIED);
         }
     }
