@@ -31,7 +31,7 @@ public class ContextPropagatingExecutorService implements ExecutorService {
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes(); // 현재 HTTP 요청 정보
         Map<String, String> contextMap = MDC.getCopyOfContextMap(); // traceId를 포함한 전체 MDC 정보 (복사본)
 
-        // 작업 스레드에서 submit 진행 시 람다 객체가 생성되고 아래 명령이 실행된다.
+        // 람다 객체는 요청 스레드에서 만들어지고, 아랠 본문은 작업 스레드가 큐에서 꺼낼 때 실행된다.
         return () -> {
             // 다음 두 if 문에서 복사값을 넣는 작업을 실행한다.
             if (attributes != null) {
@@ -116,7 +116,7 @@ public class ContextPropagatingExecutorService implements ExecutorService {
         return delegate.invokeAny(wrapAll(tasks), timeout, unit);
     }
 
-    // 다음 메서드들은 wrap으로 감싸지 않는다. 인자가 없는 메서드다.
+    // 다음 메서드들은 wrap으로 감싸지 않는다. 인자에 작업이 없는 메서드다.
     @Override
     public void shutdown() {
         delegate.shutdown();
