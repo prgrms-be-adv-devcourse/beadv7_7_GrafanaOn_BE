@@ -25,6 +25,8 @@ class AuthenticatedUserHeaderFilterTest {
 
     private static final String MEMBER_ID_HEADER =
             "X-Authenticated-Member-Id";
+    private static final String ROLE_HEADER =
+            "X-Authenticated-Member-Role";
 
     private AuthenticatedUserHeaderFilter filter;
 
@@ -42,6 +44,10 @@ class AuthenticatedUserHeaderFilterTest {
                                 .header(
                                         MEMBER_ID_HEADER,
                                         "999"
+                                )
+                                .header(
+                                        ROLE_HEADER,
+                                        "ADMIN"
                                 )
                 );
 
@@ -65,12 +71,19 @@ class AuthenticatedUserHeaderFilterTest {
 
         AtomicReference<String> forwardedMemberId =
                 new AtomicReference<>();
+        AtomicReference<String> forwardedRole =
+                new AtomicReference<>();
 
         GatewayFilterChain chain = forwardedExchange -> {
             forwardedMemberId.set(
                     forwardedExchange.getRequest()
                             .getHeaders()
                             .getFirst(MEMBER_ID_HEADER)
+            );
+            forwardedRole.set(
+                    forwardedExchange.getRequest()
+                            .getHeaders()
+                            .getFirst(ROLE_HEADER)
             );
 
             return Mono.empty();
@@ -86,6 +99,8 @@ class AuthenticatedUserHeaderFilterTest {
 
         assertThat(forwardedMemberId.get())
                 .isEqualTo("1");
+        assertThat(forwardedRole.get())
+                .isEqualTo("BUYER");
     }
 
     @Test
@@ -98,9 +113,15 @@ class AuthenticatedUserHeaderFilterTest {
                                         MEMBER_ID_HEADER,
                                         "999"
                                 )
+                                .header(
+                                        ROLE_HEADER,
+                                        "ADMIN"
+                                )
                 );
 
         AtomicReference<String> forwardedMemberId =
+                new AtomicReference<>();
+        AtomicReference<String> forwardedRole =
                 new AtomicReference<>();
 
         GatewayFilterChain chain = forwardedExchange -> {
@@ -108,6 +129,11 @@ class AuthenticatedUserHeaderFilterTest {
                     forwardedExchange.getRequest()
                             .getHeaders()
                             .getFirst(MEMBER_ID_HEADER)
+            );
+            forwardedRole.set(
+                    forwardedExchange.getRequest()
+                            .getHeaders()
+                            .getFirst(ROLE_HEADER)
             );
 
             return Mono.empty();
@@ -122,6 +148,8 @@ class AuthenticatedUserHeaderFilterTest {
                 .verifyComplete();
 
         assertThat(forwardedMemberId.get())
+                .isNull();
+        assertThat(forwardedRole.get())
                 .isNull();
     }
 }
