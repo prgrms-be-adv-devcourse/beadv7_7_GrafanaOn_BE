@@ -16,6 +16,7 @@ import shop.dear.identity.auth.authentication.application.port.TokenProviderPort
 import shop.dear.identity.auth.authentication.domain.AuthAccount;
 import shop.dear.identity.auth.authentication.domain.AuthAccountRepository;
 import shop.dear.identity.auth.authentication.domain.AuthAccountStatus;
+import shop.dear.identity.auth.authentication.domain.AuthProvider;
 import shop.dear.identity.auth.authentication.domain.exception.AuthErrorCode;
 import shop.dear.identity.auth.authorization.domain.Role;
 
@@ -376,5 +377,179 @@ class AuthServiceTest {
 
         verify(refreshTokenStorePort)
                 .deleteByMemberId(1L);
+    }
+
+    /**
+     * provider + providerId로 이미 연결된 계정을 찾으면
+     * 새로 만들지 않고 그 계정으로 토큰만 발급하는가?
+     */
+    @Test
+    @DisplayName("이미 연결된 소셜 계정이면 조회만 하고 토큰을 발급한다")
+    void loginWithSocialUsesLinkedAccount() {
+        AuthAccount linked = AuthAccount.createSocial(
+                "user@gmail.com",
+                AuthProvider.GOOGLE,
+                "google-123"
+        );
+
+        linked.activate(1L);
+
+        given(authAccountRepository.findByProviderAndProviderId(
+                AuthProvider.GOOGLE,
+                "google-123"
+        )).willReturn(Optional.of(linked));
+
+        given(tokenProviderPort.issueTokens(
+                1L,
+                Role.BUYER
+        )).willReturn(socialTokens());
+
+        TokenResult result = authService.loginWithSocial(googleCommand(true));
+
+        assertSame(socialTokens().accessToken(), result.accessToken());
+
+        // 이메일 조회도, 프로필 생성도 일어나면 안 된다
+        verify(authAccountRepository, never()).findByEmail(any());
+        verify(memberProfilePort, never()).createProfile(any(), any(), any());
+    }
+
+    /**
+     * 같은 이메일의 기존 계정이 있으면 새로 만들지 않고 연동하는가?
+     * 연동 후에도 비밀번호가 남아 두 방식 모두 로그인할 수 있는가?
+     */
+    @Test
+    @DisplayName("같은 이메일의 기존 계정이 있으면 소셜을 연동한다")
+    void loginWithSocialLinksExistingAccount() {
+        AuthAccount existing = AuthAccount.create(
+                "user@gmail.com",
+                "encoded-password"
+        );
+
+        existing.activate(1L);
+
+        given(authAccountRepository.findByProviderAndProviderId(
+                any(),
+                any()
+        )).willReturn(Optional.empty());
+
+        given(authAccountRepository.findByEmail(
+                "user@gmail.com"
+        )).willReturn(Optional.of(existing));
+
+        given(authAccountRepository.save(any()))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+        given(tokenProviderPort.issueTokens(
+                1L,
+                Role.BUYER
+        )).willReturn(socialTokens());
+
+        authService.loginWithSocial(googleCommand(true));
+
+        assertEquals(AuthProvider.GOOGLE, existing.getProvider());
+        assertEquals("google-123", existing.getProviderId());
+
+        // 비밀번호를 지우면 기존 사용자가 비밀번호로 로그인할 수 없게 된다
+        assertTrue(existing.hasPassword());
+
+        verify(memberProfilePort, never()).createProfile(any(), any(), any());
+    }
+
+    /**
+     * 확인되지 않은 이메일로 연동을 허용하면
+     * 남의 이메일로 소셜 계정을 만들어 기존 계정을 가져갈 수 있다.
+     */
+    @Test
+    @DisplayName("이메일이 확인되지 않았으면 기존 계정에 연동하지 않는다")
+    void loginWithSocialRejectsUnverifiedEmail() {
+        AuthAccount existing = AuthAccount.create(
+                "user@gmail.com",
+                "encoded-password"
+        );
+
+        existing.activate(1L);
+
+        given(authAccountRepository.findByProviderAndProviderId(
+                any(),
+                any()
+        )).willReturn(Optional.empty());
+
+        given(authAccountRepository.findByEmail(
+                "user@gmail.com"
+        )).willReturn(Optional.of(existing));
+
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> authService.loginWithSocial(googleCommand(false))
+        );
+
+        assertEquals(AuthErrorCode.UNVERIFIED_SOCIAL_EMAIL, exception.getErrorCode());
+        assertNull(existing.getProviderId());
+
+        verify(authAccountRepository, never()).save(any());
+    }
+
+    /**
+     * 연결된 계정도 같은 이메일 계정도 없으면
+     * 새 계정과 Member 프로필을 함께 만드는가?
+     */
+    @Test
+    @DisplayName("연결된 계정도 같은 이메일 계정도 없으면 새로 가입시킨다")
+    void loginWithSocialCreatesNewAccount() {
+        given(authAccountRepository.findByProviderAndProviderId(
+                any(),
+                any()
+        )).willReturn(Optional.empty());
+
+        given(authAccountRepository.findByEmail(
+                "user@gmail.com"
+        )).willReturn(Optional.empty());
+
+        given(memberProfilePort.createProfile(
+                any(),
+                any(),
+                any()
+        )).willReturn(new MemberProfileResult(1L, "user_000001"));
+
+        given(authAccountRepository.save(any()))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+        given(tokenProviderPort.issueTokens(
+                1L,
+                Role.BUYER
+        )).willReturn(socialTokens());
+
+        authService.loginWithSocial(googleCommand(true));
+
+        ArgumentCaptor<AuthAccount> captor = ArgumentCaptor.forClass(AuthAccount.class);
+        verify(authAccountRepository).save(captor.capture());
+
+        AuthAccount saved = captor.getValue();
+
+        assertEquals(AuthProvider.GOOGLE, saved.getProvider());
+        assertEquals("google-123", saved.getProviderId());
+        assertEquals(AuthAccountStatus.ACTIVE, saved.getStatus());
+
+        // 소셜 전용 계정은 비밀번호가 없어야 한다
+        assertFalse(saved.hasPassword());
+    }
+
+    private SocialLoginCommand googleCommand(final boolean emailVerified) {
+        return new SocialLoginCommand(
+                AuthProvider.GOOGLE,
+                "google-123",
+                "user@gmail.com",
+                emailVerified,
+                "사용자"
+        );
+    }
+
+    private TokenResult socialTokens() {
+        return new TokenResult(
+                "access-token",
+                "refresh-token",
+                3600L,
+                1209600L
+        );
     }
 }
