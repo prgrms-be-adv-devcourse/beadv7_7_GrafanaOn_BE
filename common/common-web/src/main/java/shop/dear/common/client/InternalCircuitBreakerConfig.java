@@ -76,7 +76,7 @@ public class InternalCircuitBreakerConfig {
     // 위에서 만든 작업 스레드를 사용하도록 하는 Bean이다.
     @Bean
     public Customizer<Resilience4JCircuitBreakerFactory> internalCallExecutorCustomizer(final ExecutorService internalCallExecutor) {
-        // 팩토리를 받으면 팩토리 속 기본 작업 스레드를
+        // 팩토리를 받으면 팩토리 속 기본 작업 스레드를 우리의 스리드로 바꾼다.
         return factory -> factory.configureExecutorService(internalCallExecutor);
     }
 }
