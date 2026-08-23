@@ -17,7 +17,7 @@ public class SpringSettlementScheduler {
 	private final SettlementScheduler settlementScheduler;
 
 	//매일 새벽 1시 - 전날 생성된 정산 건을 월별 집계에 누적한다.
-	@Scheduled(cron = "0 0 1 1 * *", zone = "Asia/Seoul")
+	@Scheduled(cron = "0 0 1 * * *", zone = "Asia/Seoul")
 	public void accumulateDaily() {
 
 		LocalDate targetDate = LocalDate.now().minusDays(1);
