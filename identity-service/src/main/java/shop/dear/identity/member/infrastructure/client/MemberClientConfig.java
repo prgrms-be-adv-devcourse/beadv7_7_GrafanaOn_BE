@@ -23,4 +23,10 @@ public class MemberClientConfig {
 
         return internalRestClientFactory.builder(baseUrl).build();
     }
+
+    @Bean
+    RestClient authRestClient(@Value("${identity.client.auth-base-url}") String baseUrl) {
+
+        return internalRestClientFactory.builder(baseUrl).build();
+    }
 }

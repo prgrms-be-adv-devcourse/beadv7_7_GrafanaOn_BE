@@ -82,6 +82,11 @@ public class AuthAccount extends BaseEntity {
         this.role = Role.SELLER;
     }
 
+    // 판매자 권한 해지
+    public void demoteToBuyer() {
+        this.role = Role.BUYER;
+    }
+
     // 회원 탈퇴
     public void withdraw() {
         if (!isActive()) {

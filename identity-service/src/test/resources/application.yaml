@@ -29,6 +29,7 @@ auth:
 identity:
   client:
     commerce-base-url: http://localhost:8082
+    auth-base-url: http://localhost:8081
   # 테스트용 Secret
   security:
     account-key: "56cf2c4ba176bcf24474211dcfef0339a850a61c58c8533aa33cf025362c5d50"

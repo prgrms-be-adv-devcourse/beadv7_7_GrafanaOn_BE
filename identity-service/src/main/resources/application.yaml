@@ -24,6 +24,7 @@ auth:
 identity:
   client:
     commerce-base-url: ${COMMERCE_BASE_URL}
+    auth-base-url: ${IDENTITY_BASE_URL}
   security:
     account-key: ${AES_SECRET_KEY}
     account-iv: ${AES_SECRET_IV}
