@@ -33,14 +33,12 @@ public class SettlementRepositoryAdapter implements SettlementRepository {
     }
 
     @Override
-    public List<Settlement> findAllByInsertedAtBetween(
-        LocalDateTime startDate,
-        LocalDateTime endDate,
+    public List<Settlement> findByInsertedAtBefore(
+        LocalDateTime baseDate,
         SettlementStatus status
     ) {
-        return settlementJpaRepository.findAllByInsertedAtBetween(
-            startDate,
-            endDate,
+        return settlementJpaRepository.findByInsertedAtBefore(
+            baseDate,
             status
         );
     }

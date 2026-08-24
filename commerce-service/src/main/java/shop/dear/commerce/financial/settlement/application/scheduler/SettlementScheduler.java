@@ -29,8 +29,7 @@ public class SettlementScheduler {
 
 	public void accumulate(final LocalDate targetDate) {
 
-		final List<Settlement> settlements = settlementRepository.findAllByInsertedAtBetween(
-			targetDate.atStartOfDay(),
+		final List<Settlement> settlements = settlementRepository.findByInsertedAtBefore(
 			targetDate.plusDays(1).atStartOfDay(),
 			SettlementStatus.CREATED
 		);

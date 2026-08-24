@@ -34,13 +34,11 @@ public interface SettlementJpaRepository extends JpaRepository<Settlement, Long>
 	// 특정 기간, 특정 상태의 정산 건 전체
 	@Query("""
         SELECT s FROM Settlement s
-        WHERE s.insertedAt >= :startDate
-          AND s.insertedAt < :endDate
+        WHERE s.insertedAt < :baseDate
           AND s.state = :state
 	  """)
-	List<Settlement> findAllByInsertedAtBetween(
-		@Param("startDate")LocalDateTime startDate,
-		@Param("endDate")LocalDateTime endDate,
+	List<Settlement> findByInsertedAtBefore(
+		@Param("baseDate")LocalDateTime baseDate,
 		@Param("state") SettlementStatus state
 	);
 
