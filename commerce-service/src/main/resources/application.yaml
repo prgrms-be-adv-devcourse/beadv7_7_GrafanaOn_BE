@@ -47,8 +47,8 @@ toss:
   base-url: ${TOSS_BASE_URL:https://api.tosspayments.com}
   secret-key: ${TOSS_SECRET_KEY:}
 
-# ES를 켰다 껐다 할 수 있기 때문에 헬스 체크 false합니다.
+# ES가 죽으면 JPA로 풀백하지만, 죽었다는 사실은 알아야 함.
 management:
   health:
     elasticsearch:
-      enabled: false
+      enabled: true
