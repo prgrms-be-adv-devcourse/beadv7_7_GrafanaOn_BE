@@ -210,7 +210,7 @@ class SettlementServiceTest {
 			given(settlementPolicyService.getOrCreateDefaultPolicy())
 					.willReturn(policy(new BigDecimal("0.10"), BigDecimal.ZERO));
 			stubWalletId(SELLER_ID);
-			given(settlementRepository.existsByPurchaseIdOrOfferId(200L, null))
+			given(settlementRepository.existsByPurchaseId(200L))
 					.willReturn(false);
 
 			// when
@@ -240,7 +240,7 @@ class SettlementServiceTest {
 			given(settlementPolicyService.getOrCreateDefaultPolicy())
 					.willReturn(policy(new BigDecimal("0.10"), BigDecimal.ZERO));
 			stubWalletId(SELLER_ID);
-			given(settlementRepository.existsByPurchaseIdOrOfferId(null, 200L))
+			given(settlementRepository.existsByOfferId(200L))
 					.willReturn(false);
 
 			// when
@@ -265,7 +265,7 @@ class SettlementServiceTest {
 			given(settlementPolicyService.getOrCreateDefaultPolicy())
 					.willReturn(policy(new BigDecimal("0.05"), new BigDecimal("300.00")));
 			stubWalletId(SELLER_ID);
-			given(settlementRepository.existsByPurchaseIdOrOfferId(200L, null))
+			given(settlementRepository.existsByPurchaseId(200L))
 					.willReturn(false);
 
 			// when
@@ -290,7 +290,7 @@ class SettlementServiceTest {
 			given(settlementPolicyService.getOrCreateDefaultPolicy())
 					.willReturn(policy(new BigDecimal("0.10"), BigDecimal.ZERO));
 			stubWalletId(SELLER_ID);
-			given(settlementRepository.existsByPurchaseIdOrOfferId(200L, null))
+			given(settlementRepository.existsByPurchaseId(200L))
 					.willReturn(true);
 
 			// when
