@@ -37,6 +37,11 @@ spring:
               predicates:
                 - Path=/api/products/**,/api/purchases/**,/api/offers/**,/api/search/**,/api/carts/**,/api/payments/**,/api/deposits/**,/api/settlements/**
 
+            - id: recommendation-api-route
+              uri: ${RECOMMENDATION_SERVICE_URI:http://recommendation-service:8083}
+              predicates:
+                - Path=/api/recommendations/**
+
 logging:
   level:
     root: INFO

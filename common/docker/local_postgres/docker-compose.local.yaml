@@ -2,7 +2,8 @@ name: dear-postgres-local
 
 services:
   commerce-postgres:
-    image: postgres:16-alpine
+    # 임베딩 데이터 저장을 위한 pgvector Extension 추가
+    image: pgvector/pgvector:pg16
     container_name: commerce-postgres
     restart: always
     ports:

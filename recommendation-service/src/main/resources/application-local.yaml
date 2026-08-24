@@ -1,0 +1,53 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/dear}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+    driver-class-name: ${DB_DRIVER:org.postgresql.Driver}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        default_batch_fetch_size: 100
+
+  ai:
+    model:
+      chat: ollama
+      embedding: ollama
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      # 기본값 NEVER. 기동 시 모델을 내려받지 않으므로 Ollama가 떠 있지 않아도 부팅된다.
+      init:
+        pull-model-strategy: ${OLLAMA_PULL_MODEL_STRATEGY:never}
+      chat:
+        model: ${OLLAMA_CHAT_MODEL:llama3.1}
+      # 최초 1회: docker exec ollama-local ollama pull bge-m3
+      # 모델명은 recommendation.embedding.model-name 한 곳에서 관리한다.
+      # 재임베딩 판단(product_embedding_log.model_name)에 같은 값이 쓰이기 때문이다.
+      embedding:
+        model: ${recommendation.embedding.model-name}
+
+recommendation:
+  # Inbox -> Embedding -> pgvector 파이프라인. 끄면 관련 빈이 만들어지지 않는다.
+  pipeline:
+    enabled: true
+
+  embedding:
+    model-name: ${OLLAMA_EMBEDDING_MODEL:bge-m3}
+
+  vector:
+    # bge-m3 의 네이티브 차원. 운영(OpenAI 1536)과 맞추지 않는다.
+    # 모델이 다르면 벡터 공간도 달라 어차피 벡터를 공유할 수 없다.
+    dimensions: 1024
+    # 기동 시 product_vector 테이블을 만든다. 운영은 배포 전 Migration 으로 만든다.
+    initialize-schema: true
+
+  inbox:
+    # 1건당 임베딩이 약 8초다. 한 번에 조금씩만 가져간다.
+    batch-size: 5
+    poll-interval-ms: 5000

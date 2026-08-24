@@ -40,6 +40,7 @@ jobs:
         run: |
           PGPASSWORD=postgres psql -h localhost -U postgres -c "CREATE DATABASE commerce_test;"
           PGPASSWORD=postgres psql -h localhost -U postgres -c "CREATE DATABASE identity_test;"
+          PGPASSWORD=postgres psql -h localhost -U postgres -c "CREATE DATABASE recommendation_test;"
 
       - name: Build & Test commerce-service
         run: ./gradlew :commerce-service:build
@@ -71,3 +72,17 @@ jobs:
 
       - name: Build & Test gateway-service
         run: ./gradlew :gateway-service:build
+
+      - name: Build & Test recommendation-service
+        run: ./gradlew :recommendation-service:build
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/recommendation_test
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+
+      - name: Upload recommendation-service test report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recommendation-service-test-report
+          path: recommendation-service/build/reports/tests/test

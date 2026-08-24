@@ -1,0 +1,24 @@
+# 로컬 개발용
+name: dear-ollama-local
+
+services:
+  ollama:
+    image: ollama/ollama:0.32.14
+    container_name: ollama-local
+    restart: always
+
+    environment:
+      OLLAMA_HOST: "0.0.0.0:11434"
+      OLLAMA_KEEP_ALIVE: "30m"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      TZ: Asia/Seoul
+
+    # recommendation-service 의 기본값 http://localhost:11434
+    ports:
+      - "11434:11434"
+
+    volumes:
+      - ollama-models-local:/root/.ollama
+
+volumes:
+  ollama-models-local:

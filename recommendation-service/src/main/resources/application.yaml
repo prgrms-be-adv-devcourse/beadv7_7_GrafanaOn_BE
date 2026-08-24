@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: recommendation-service
+  config:
+    import:
+      - optional:classpath:application-monitoring.yaml
+  profiles:
+    active: local
+
+  # 채팅 모델 프로바이더는 프로필에서 고른다 (spring.ai.model.chat).
+  # local -> ollama (로컬 테스트용 무료 모델)
+  # prod  -> 아직 없음(none). OpenAI 토큰이 준비되면 붙인다.
+  #
+  # 임베딩 모델 프로바이더도 프로필에서 고른다 (spring.ai.model.embedding).
+  # local -> ollama (bge-m3)
+  # prod  -> 아직 없음(none). 기본값이 ollama 라 명시하지 않으면
+  #          운영에서 localhost:11434 를 바라보는 빈이 만들어진다.
+  #
+  # 아래는 이 서비스가 쓰지 않는 모델 종류다. 자동 구성이 기본 활성화라
+  # 꺼두지 않으면 쓰지도 않는 모델 빈이 만들어지고,
+  # 키가 필요한 프로바이더(OpenAI 등)를 추가하는 순간 기동이 실패한다.
+  ai:
+    model:
+      audio:
+        speech: none
+        transcription: none
+      image: none
+      moderation: none
+
+server:
+  port: 8083
+
+# 추천 후보/기준 상품 조회 대상 (commerce-service)
+product:
+  client:
+    base-url: ${PRODUCT_CLIENT_BASE_URL:http://localhost:8082}
+
+# 회원 스크랩(관심 상품) 조회 대상 (identity-service)
+scrap:
+  client:
+    base-url: ${SCRAP_CLIENT_BASE_URL:http://localhost:8081}

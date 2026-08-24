@@ -1,0 +1,51 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: ${DB_DRIVER}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        default_batch_fetch_size: 100
+
+  ai:
+    model:
+      # 운영에 붙일 모델이 아직 없다. none 이면 해당 모델 빈이 만들어지지 않는다.
+      # OpenAI 토큰이 준비되면 아래를 되살린다.
+      #   1) build.gradle 에 spring-ai-starter-model-openai 추가
+      #   2) chat / embedding: none -> openai
+      #   3) 주석 처리된 openai 블록 해제 + CD .env 에 OPENAI_API_KEY 추가
+      #   4) recommendation.pipeline.enabled 를 true 로
+      chat: none
+      embedding: none
+
+
+#    openai:
+#      api-key: ${OPENAI_API_KEY}
+#      chat:
+#        model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
+
+recommendation:
+  # OpenAI 를 붙이기 전까지는 파이프라인을 켜지 않는다. EmbeddingModel 이 없어 기동이 실패한다.
+  pipeline:
+    enabled: false
+
+  embedding:
+    model-name: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+
+  vector:
+    # OpenAI text-embedding-3-small 의 네이티브 차원. 차원 축소를 쓰지 않는다.
+    dimensions: 1536
+    # Extension 과 Table 은 배포 전 DB Migration 으로 만든다. (sql/schema-product-vector.sql)
+    initialize-schema: false
+
+  inbox:
+    batch-size: 5
+    poll-interval-ms: 5000
