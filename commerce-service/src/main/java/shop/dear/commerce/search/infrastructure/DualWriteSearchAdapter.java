@@ -20,6 +20,8 @@ import java.util.function.Supplier;
 
 /**
  * 쓰기는 search_product 테이블과 Elasticsearch 양쪽에, 조회는 Elasticsearch로 위임한다.
+ * ES 조회가 반복 실패하면 차단기가 열려 JPA 검색으로 전환한다.
+ *
  * search_product는 재색인의 원본이다.
  * ES 인덱스가 유실되거나 어긋아면 이 테이블을 읽어 다시 만들기 때문에, 항상 최신이어야 한다.
  * 즉, ES 쓰기가 실패해도 테이블 기록은 남아야 한다.
