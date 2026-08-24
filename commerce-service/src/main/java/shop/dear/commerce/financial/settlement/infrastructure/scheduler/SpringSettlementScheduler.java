@@ -9,6 +9,7 @@ import shop.dear.commerce.financial.settlement.application.scheduler.SettlementS
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.ZoneId;
 
 @Slf4j
 @Component
@@ -22,7 +23,7 @@ public class SpringSettlementScheduler {
 	@SchedulerLock(name = "settlement_accumulate", lockAtMostFor = "30m", lockAtLeastFor = "1m")
 	public void accumulateDaily() {
 
-		LocalDate targetDate = LocalDate.now().minusDays(1);
+		LocalDate targetDate = LocalDate.now(ZoneId.of("Asia/Seoul")).minusDays(1);
 
 		settlementScheduler.accumulate(targetDate);
 	}
@@ -32,7 +33,7 @@ public class SpringSettlementScheduler {
 	@SchedulerLock(name = "settlement_close", lockAtMostFor = "30m", lockAtLeastFor = "1m")
 	public void closeMonth() {
 
-		YearMonth targetMonth = YearMonth.now().minusMonths(1);
+		YearMonth targetMonth = YearMonth.now(ZoneId.of("Asia/Seoul")).minusMonths(1);
 
 		settlementScheduler.close(targetMonth);
 	}
@@ -42,7 +43,7 @@ public class SpringSettlementScheduler {
 	@SchedulerLock(name = "settlement_payout", lockAtMostFor = "30m", lockAtLeastFor = "1m")
 	public void payoutSettlement() {
 
-		YearMonth targetMonth = YearMonth.now().minusMonths(1);
+		YearMonth targetMonth = YearMonth.now(ZoneId.of("Asia/Seoul")).minusMonths(1);
 
 		settlementScheduler.paid(targetMonth);
 	}

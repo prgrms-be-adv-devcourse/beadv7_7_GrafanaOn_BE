@@ -13,7 +13,9 @@ import java.util.List;
 
 public interface SettlementJpaRepository extends JpaRepository<Settlement, Long> {
 
-	boolean existsByPurchaseIdOrOfferId(Long purchaseId, Long offerId);
+	boolean existsByPurchaseId(Long purchaseId);
+
+	boolean existsByOfferId(Long offerId);
 
 	@Query("""
         SELECT s FROM Settlement s
