@@ -16,10 +16,9 @@ public interface SettlementRepository {
 		SettlementStatus status
 	);
 
-	// 특정 기간, 특정 상태의 정산 건 전체 (지갑 무관)
-	List<Settlement> findAllByInsertedAtBetween(
-		LocalDateTime startDate,
-		LocalDateTime endDate,
+	// 특정일 이전 특정 상태의 정산 건 전체 (지갑 무관)
+	List<Settlement> findByInsertedAtBefore(
+		LocalDateTime baseDate,
 		SettlementStatus status
 	);
 
