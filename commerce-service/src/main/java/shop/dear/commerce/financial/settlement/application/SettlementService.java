@@ -89,7 +89,12 @@ public class SettlementService {
 				? event.orderId()
 				: null;
 
-		if (settlementRepository.existsByPurchaseIdOrOfferId(purchaseId, offerId)) {
+		boolean exists = switch (orderType) {
+			case PURCHASE -> settlementRepository.existsByPurchaseId(purchaseId);
+			case OFFER -> settlementRepository.existsByOfferId(offerId);
+		};
+
+		if (exists) {
 			return;
 		}
 
