@@ -128,12 +128,15 @@ WHERE m.nickname LIKE 'bulk\_user\_%';
 -- ── 3. 판매자 ────────────────────────────────────────────────────────
 -- 전체 회원 중 seller_ratio(%) 만큼만 판매자로 만든다.
 \echo '[3/9] seller 생성...'
-INSERT INTO seller (member_id, bank, account, status, inserted_at, updated_at)
+-- registered_at은 Seller 엔티티에 NOT NULL로 추가된 컬럼이다.
+-- 실제 판매자 등록 시점 의미이므로 가입 시점(inserted_at)으로 채운다.
+INSERT INTO seller (member_id, bank, account, status, registered_at, inserted_at, updated_at)
 SELECT
     m.id,
     (ARRAY['국민은행','신한은행','우리은행','하나은행','카카오뱅크'])[(m.id % 5) + 1],
     LPAD((m.id * 12345 % 1000000)::text, 6, '0') || '-01-' || LPAD((m.id % 1000000)::text, 6, '0'),
     'ACTIVE',
+    m.inserted_at,
     m.inserted_at,
     NOW()
 FROM member m
@@ -293,12 +296,15 @@ INSERT INTO offer_snapshot (
 SELECT seller_id, buyer_id, product_id, model_number, price, NOW(), NOW()
 FROM bulk_offer_seed;
 
+-- version은 Offer 엔티티의 낙관적 락(@Version) 필드다. NOT NULL이라 채워야 하고,
+-- SQL로 직접 넣는 데이터라 락 경합이 없으므로 초기값 0이면 된다.
 INSERT INTO offer (
-    number, buyer_id, seller_id, product_id, snapshot_id, amount,
+    number, version, buyer_id, seller_id, product_id, snapshot_id, amount,
     title, story, delivery, status, payment_status, inserted_at, updated_at
 )
 SELECT
     'OF-BULK-' || s.seq,
+    0,
     s.buyer_id, s.seller_id, s.product_id, snap.id, s.price,
     '벌크 오퍼 ' || s.seq,
     '부하테스트용 벌크 오퍼 스토리입니다.',
@@ -341,12 +347,14 @@ JOIN LATERAL (
     LIMIT 1
 ) b ON TRUE;
 
+-- version은 Purchase 엔티티의 낙관적 락(@Version) 필드다. wallet과 마찬가지로 0으로 채운다.
 INSERT INTO purchase (
-    number, buyer_id, seller_id, product_id, amount, status,
+    number, version, buyer_id, seller_id, product_id, amount, status,
     purchased_at, payment_due_at, paid_at, delivery, inserted_at, updated_at
 )
 SELECT
     'PC-BULK-' || s.seq,
+    0,
     s.buyer_id, s.seller_id, s.product_id, s.price,
     'PURCHASE_CONFIRMED',
     s.purchased_at,
