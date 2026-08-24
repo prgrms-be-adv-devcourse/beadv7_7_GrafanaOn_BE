@@ -12,4 +12,7 @@ dependencies {
 
     // identity의 WalletHttpClient가 CircuitBreakerFactory 타입을 직접 참조하므로 api로 노출.
     api 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
+
+    // bulkhead를 따로 넣는다.
+    api 'io.github.resilience4j:resilience4j-bulkhead'
 }
