@@ -19,6 +19,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EsSearchAdapter implements SearchRepository {
 
+    private static final String FUZZINESS = "AUTO";
+
     private final ElasticsearchOperations operations;
 
     @Override
@@ -40,6 +42,7 @@ public class EsSearchAdapter implements SearchRepository {
                                 .field("name")
                                 .query(keyword)
                                 .operator(Operator.And)
+                                .fuzziness(FUZZINESS)
                         )),
                 pageable
         );
@@ -66,6 +69,7 @@ public class EsSearchAdapter implements SearchRepository {
                                 .field("story_content")
                                 .query(keyword)
                                 .operator(Operator.And)
+                                .fuzziness(FUZZINESS)
                         )),
                 pageable
         );
