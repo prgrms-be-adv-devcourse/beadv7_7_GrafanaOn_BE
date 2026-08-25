@@ -16,5 +16,14 @@ public record RabbitStreamProperties(
         @DefaultValue("/")
         String virtualHost
 ) {
-
+        // 로그 출력 시 RabbitMQ 접속 credential이 노출되지 않도록 마스킹한다.
+        @Override
+        public String toString() {
+                return ("RabbitStreamProperties[host=%s, port=%d, username=****, password=****, "
+                        + "virtualHost=%s]")
+                        .formatted(
+                                host,
+                                port,
+                                virtualHost);
+        }
 }
