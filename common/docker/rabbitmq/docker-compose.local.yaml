@@ -1,0 +1,21 @@
+name: dear-rabbitmq-local
+
+services:
+  rabbitmq:
+    image: rabbitmq:4.3.5-management
+    container_name: rabbitmq-local
+    restart: always
+    ports:
+      - "5672:5672"
+      - "5552:5552"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: dear
+      RABBITMQ_DEFAULT_PASS: dear
+      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: >-
+        -rabbitmq_stream advertised_host localhost
+      TZ: Asia/Seoul
+    volumes:
+      - ./data:/var/lib/rabbitmq
+      - ./enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
