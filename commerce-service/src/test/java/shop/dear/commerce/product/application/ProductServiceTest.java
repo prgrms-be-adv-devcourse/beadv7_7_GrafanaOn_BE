@@ -33,6 +33,7 @@ import shop.dear.commerce.product.domain.model.Price;
 import shop.dear.commerce.product.domain.model.Product;
 import shop.dear.commerce.product.domain.model.ProductImage;
 import shop.dear.commerce.product.domain.repository.ProductRepository;
+import shop.dear.commerce.product.infrastructure.outbox.ProductOutboxAppender;
 import shop.dear.common.pagination.PaginationRequest;
 
 import java.math.BigDecimal;
@@ -58,6 +59,9 @@ class ProductServiceTest {
     @Autowired
     private ProductScheduler productScheduler;
 
+    @Autowired
+    private ProductOutboxAppender productOutboxAppender;
+
     @BeforeEach
     void setUp() {
         final MemberPort fakeMemberPort = new FakeMemberPort();
@@ -70,7 +74,8 @@ class ProductServiceTest {
             fakeMemberPort,
             fakeOfferPort,
             fakeProductEventPublisher,
-            fakePresignedUrlGenerator
+            fakePresignedUrlGenerator,
+            productOutboxAppender
         );
     }
 
