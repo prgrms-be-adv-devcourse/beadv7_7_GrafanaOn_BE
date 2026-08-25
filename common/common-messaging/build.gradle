@@ -1,0 +1,14 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    // RabbitMQ용 Spring Boot 자동 설정·설정 프로퍼티·메시징 기반
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+
+    // RabbitMQ Stream protocol용 RabbitStreamTemplate, StreamAdmin, StreamListenerContainer
+    implementation 'org.springframework.amqp:spring-rabbit-stream'
+
+    // Jackson ObjectMapper와 Java time 타입 직렬화 지원
+    implementation 'org.springframework.boot:spring-boot-starter-json'
+}
