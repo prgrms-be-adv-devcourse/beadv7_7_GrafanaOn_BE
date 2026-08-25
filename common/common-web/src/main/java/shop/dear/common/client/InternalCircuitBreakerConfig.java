@@ -66,8 +66,12 @@ public class InternalCircuitBreakerConfig {
         return true;
     }
 
-    // 차단기가 실제 호출을 돌리는 작업 스레드를 만드는 Bean이다.
-    @Bean(destroyMethod = "shutdown") // ExecutorService에 close()대신 shutdown()을 먼저 부르도록
+    /**
+     * 종료 시 shutdown()을 부르도록 못박는다.
+     * 지금은 명시하디 않아도 shutdown()을 부르지만, 구현체가 close()를 직접 재정의하면 close()를 부르기에
+     * 흔들리지 않도록 고정한다.
+     */
+    @Bean(destroyMethod = "shutdown")
     public ExecutorService internalCallExecutor() {
         // 진짜 작업 스레드를 컨텍스트를 옮기는 껍데기로 감싸 반환한다.
         return new ContextPropagatingExecutorService(Executors.newCachedThreadPool());
