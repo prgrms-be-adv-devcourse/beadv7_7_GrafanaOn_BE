@@ -55,14 +55,17 @@ public class ContextPropagatingExecutorServiceTest {
     }
 
     @Test
-    @DisplayName("작업이 끝나면 컨텍스트를 지워 다음 작업으로 새지 않는다.")
-    void clearsContextAfterTask() throws Exception {
-        MDC.put("traceId", "trace-1");
-        executor.submit(() -> MDC.get("traceId")).get();
+    @DisplayName("작업이 끝나면 memberId도 지워 다음 작업으로 새지 않는다")
+    void clearsMemberIdAfterTask() throws Exception {
+        final MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("X-Authenticated-Member-Id", "42");
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+
+        executor.submit(() -> InternalCallContext.getMemberId()).get();
 
         // 두 번째 작업은 컨텍스트 없이 제출한다. 같은 스레드가 재사용된다.
-        MDC.clear();
-        final String leaked = executor.submit(() -> MDC.get("traceId")).get();
+        RequestContextHolder.resetRequestAttributes();
+        final String leaked = executor.submit(() -> InternalCallContext.getMemberId()).get();
 
         assertThat(leaked).isNull();
     }
