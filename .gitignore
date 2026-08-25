@@ -188,4 +188,7 @@ gradle-app.setting
 # local monitoring
 **/docker/local_monitoring/
 
+# RabbitMQ local data
+**/docker/rabbitmq/data/*
+
 # End of https://www.toptal.com/developers/gitignore/api/java,gradle,intellij+all,macos

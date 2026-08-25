@@ -1,0 +1,26 @@
+name: dear-rabbitmq
+
+services:
+  rabbitmq:
+    image: rabbitmq:4.3.5-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: >-
+        -rabbitmq_stream advertised_host rabbitmq
+      TZ: Asia/Seoul
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - ./enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+    networks:
+      - dear-net
+
+volumes:
+  rabbitmq-data:
+
+networks:
+  dear-net:
+    external: true
