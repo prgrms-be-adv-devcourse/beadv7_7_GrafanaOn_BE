@@ -5,8 +5,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import shop.dear.common.auth.AuthUser;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,22 +38,31 @@ public class ContextPropagatingExecutorServiceTest {
     }
 
     @Test
-    @DisplayName("제출한 스레드의 요청 헤더를 작업 스레드에서 읽을 수 있다.")
-    void propagatesRequestAttributes() throws Exception {
+    @DisplayName("제출한 스레드의 memberId가 작업 스레드로 전달된다.")
+    void propagatesMemberId() throws Exception {
         final MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("X-Authenticated-Member-Id", "42");
+        request.addHeader(AuthUser.MEMBER_ID_HEADER, "42");
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
 
-        final String memberId = executor.submit(() -> {
-            final ServletRequestAttributes attributes =
-                    (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-
-            return attributes == null
-                    ? null
-                    : attributes.getRequest().getHeader("X-Authenticated-Member-Id");
-        }).get();
+        final String memberId = executor.submit(() -> InternalCallContext.getMemberId()).get();
 
         assertThat(memberId).isEqualTo("42");
+    }
+
+    /**
+     * 값만 넘기고 요청 객체는 넘기지 않는다.
+     * HttpServletRequest는 서블릿 컨테이너가 응답 후 재활용하므로 스레드를 건너가면 안 된다.
+     */
+    @Test
+    @DisplayName("요청 객체 자체는 작업 스레드로 넘어가지 않는다.")
+    void doesNotPropagateRequestAttributes() throws Exception {
+        RequestContextHolder.setRequestAttributes(
+                new ServletRequestAttributes(new MockHttpServletRequest()));
+
+        final RequestAttributes attributes =
+                executor.submit(() -> RequestContextHolder.getRequestAttributes()).get();
+
+        assertThat(attributes).isNull();
     }
 
     @Test
