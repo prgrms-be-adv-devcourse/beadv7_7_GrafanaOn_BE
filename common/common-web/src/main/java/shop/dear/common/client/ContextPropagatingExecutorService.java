@@ -5,6 +5,8 @@ import org.jspecify.annotations.NonNull;
 import org.slf4j.MDC;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import shop.dear.common.auth.AuthUser;
 
 import java.util.Collection;
 import java.util.List;
@@ -27,29 +29,58 @@ public class ContextPropagatingExecutorService implements ExecutorService {
 
 
     private <T> Callable<T> wrap(final Callable<T> task) {
-        // 요청 스레드에서 값을 미리 가져온다.
-        RequestAttributes attributes = RequestContextHolder.getRequestAttributes(); // 현재 HTTP 요청 정보
-        Map<String, String> contextMap = MDC.getCopyOfContextMap(); // traceId를 포함한 전체 MDC 정보 (복사본)
+        // 요청 스레드에서 값을 미리 가져온다. MDC만 복사한다.
+        // RequestAttributes는 내부에 HttpServletRequest를 들고 있어 request 생명주기와 어긋날 수 있다.
+        final String captureMemberId = currentMemberId();
+        final Map<String, String> captureMdc = MDC.getCopyOfContextMap(); // traceId를 포함한 전체 MDC 정보 (복사본)
 
         // 람다 객체는 요청 스레드에서 만들어지고, 아랠 본문은 작업 스레드가 큐에서 꺼낼 때 실행된다.
         return () -> {
-            // 다음 두 if 문에서 복사값을 넣는 작업을 실행한다.
-            if (attributes != null) {
-                RequestContextHolder.setRequestAttributes(attributes);
-            }
-
-            if (contextMap != null) {
-                MDC.setContextMap(contextMap);
-            }
+            final String previousMemberId = InternalCallContext.getMemberId();
+            final Map<String, String> previousMdc = MDC.getCopyOfContextMap();
 
             try {
+                applyMemberId(captureMemberId);
+                applyMdc(captureMdc);
+
                 return task.call();
             } finally {
-                //  작업이 끝나면 복사값을 지운다.
-                RequestContextHolder.resetRequestAttributes();
-                MDC.clear();
+                // 작업 스레드는 풀로 들어가 재사용되니 이전 상태로 되돌려야 한다.
+                applyMemberId(previousMemberId);
+                applyMdc(previousMdc);
             }
         };
+    }
+
+    // 요청 스레드에서 실행. 차단기 안에서 또 차단기를 타는 경우를 대비하여 스냅샷이 이미 있으면 그것을 우선한다.
+    private static String currentMemberId() {
+        String snapshot = InternalCallContext.getMemberId();
+
+        if (snapshot != null) {
+            return snapshot;
+        }
+
+        if (RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes attributes) {
+            return attributes.getRequest().getHeader(AuthUser.MEMBER_ID_HEADER);
+        }
+
+        return null;
+    }
+
+    private static void applyMemberId(final String memberId) {
+        if (memberId != null) {
+            InternalCallContext.setMemberId(memberId);
+        } else {
+            MDC.clear();
+        }
+    }
+
+    private static void applyMdc(final Map<String, String> contextMap) {
+        if (contextMap != null) {
+            MDC.setContextMap(contextMap);
+        } else {
+            MDC.clear();
+        }
     }
 
     private Runnable wrap(Runnable task) {
