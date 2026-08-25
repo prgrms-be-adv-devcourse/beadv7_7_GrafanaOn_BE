@@ -1,4 +1,4 @@
-package shop.dear.commerce.product.outbox;
+package shop.dear.commerce.product.infrastructure.outbox;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

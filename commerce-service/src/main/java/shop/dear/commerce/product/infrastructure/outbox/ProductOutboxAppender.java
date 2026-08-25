@@ -1,4 +1,4 @@
-package shop.dear.commerce.product.outbox;
+package shop.dear.commerce.product.infrastructure.outbox;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

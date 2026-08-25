@@ -1,4 +1,4 @@
-package shop.dear.commerce.product.outbox;
+package shop.dear.commerce.product.infrastructure.outbox;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -49,7 +49,7 @@ public class ProductOutbox extends BaseEntity {
     @Column(name = "retry_count", nullable = false)
     private Integer retryCount;
 
-    @Column(name = "last_error")
+    @Column(name = "last_error", columnDefinition = "TEXT")
     private String lastError;
 
     @Column(name = "sent_at")
