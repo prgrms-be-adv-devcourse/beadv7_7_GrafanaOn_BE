@@ -71,7 +71,7 @@ public class ContextPropagatingExecutorService implements ExecutorService {
         if (memberId != null) {
             InternalCallContext.setMemberId(memberId);
         } else {
-            MDC.clear();
+            InternalCallContext.clear();
         }
     }
 
