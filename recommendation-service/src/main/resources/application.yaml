@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: recommendation-service
+  config:
+    import:
+      - optional:classpath:application-monitoring.yaml
+  profiles:
+    active: local
+  jpa:
+    properties:
+      hibernate:
+        # commerce/identity와 같은 DB를 쓰되 스키마로 분리합니다.
+        default_schema: ${DB_SCHEMA:recommendation}
+
+server:
+  port: 8083

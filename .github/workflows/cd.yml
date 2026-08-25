@@ -19,6 +19,7 @@ jobs:
       commerce: ${{ steps.filter.outputs.commerce == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
       identity: ${{ steps.filter.outputs.identity == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
       gateway: ${{ steps.filter.outputs.gateway == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
+      recommendation: ${{ steps.filter.outputs.recommendation == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -33,6 +34,9 @@ jobs:
               - 'common/**'
             gateway:
               - 'gateway-service/**'
+              - 'common/**'
+            recommendation:
+              - 'recommendation-service/**'
               - 'common/**'
             root:
               - 'build.gradle'
@@ -51,7 +55,7 @@ jobs:
           chmod +x ./deploy/scripts/deploy-container.sh
 
       - name: Ensure Docker network exists
-        if: needs.changes.outputs.commerce == 'true' || needs.changes.outputs.identity == 'true' || needs.changes.outputs.gateway == 'true'
+        if: needs.changes.outputs.commerce == 'true' || needs.changes.outputs.identity == 'true' || needs.changes.outputs.gateway == 'true' || needs.changes.outputs.recommendation == 'true'
         run: docker network inspect dear-net >/dev/null 2>&1 || docker network create dear-net
 
       - name: Build commerce-service image
@@ -121,6 +125,31 @@ jobs:
       - name: Remove identity-service .env
         if: always() && needs.changes.outputs.identity == 'true'
         run: rm -f identity-service/.env
+
+      - name: Build recommendation-service image
+        if: needs.changes.outputs.recommendation == 'true'
+        run: docker build -t recommendation-service:latest -f recommendation-service/Dockerfile .
+
+      - name: Create recommendation-service .env
+        if: needs.changes.outputs.recommendation == 'true'
+        run: |
+          cat > recommendation-service/.env << EOF
+          SPRING_PROFILES_ACTIVE=prod
+          DB_URL=${{ secrets.DB_URL }}
+          DB_USERNAME=${{ secrets.DB_USERNAME }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_DRIVER=${{ vars.DB_DRIVER }}
+          DB_SCHEMA=${{ vars.RECOMMENDATION_DB_SCHEMA || 'recommendation' }}
+          EOF
+          chmod 600 recommendation-service/.env
+
+      - name: Deploy recommendation-service
+        if: needs.changes.outputs.recommendation == 'true'
+        run: ./deploy/scripts/deploy-container.sh recommendation-service 8083 8083 recommendation-service/.env
+
+      - name: Remove recommendation-service .env
+        if: always() && needs.changes.outputs.recommendation == 'true'
+        run: rm -f recommendation-service/.env
 
       - name: Build gateway-service image
         if: needs.changes.outputs.gateway == 'true'

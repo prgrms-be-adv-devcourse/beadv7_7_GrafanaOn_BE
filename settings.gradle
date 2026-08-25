@@ -3,6 +3,7 @@ rootProject.name = 'dear'
 include 'identity-service'
 include 'commerce-service'
 include 'gateway-service'
+include 'recommendation-service'
 
 include ':common:common-monitoring'
 include ':common:common-web'
