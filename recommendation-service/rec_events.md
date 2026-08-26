@@ -9,7 +9,7 @@
 ```
 commerce-service                                    recommendation-service 
                                                                                           
-  ProductService.createProduct/update/delete         InternalProductEventController       
+  ProductService.createProduct/update/delete         InternalRecommendationController       
     │  @Transactional                                  POST /internal/recommendation/…    
                           
     ├─ productOutboxAppender.append()                          ▼                          
@@ -164,7 +164,7 @@ shop/dear/recommendation/
 │   ├── RecommendationInboxJpaRepository     JPA
 │   └── InboxService                         데이터 적재
 └── presentation/
-    ├── InternalProductEventController       수신 엔드포인트
+    ├── InternalRecommendationController     수신 엔드포인트
     └── dto/request/ProductEventRelayRequest 요청 DTO
 ```
 

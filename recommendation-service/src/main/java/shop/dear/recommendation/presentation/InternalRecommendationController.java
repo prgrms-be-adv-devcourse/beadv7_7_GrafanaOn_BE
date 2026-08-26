@@ -19,7 +19,7 @@ import static shop.dear.common.response.ApiResponse.success;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/internal/recommendation")
-public class InternalProductEventController {
+public class InternalRecommendationController {
 
     private final InboxService inboxService;
 
