@@ -18,7 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(InternalRecommendationController.class)
 class InternalRecommendationControllerTest {
 
-    private static final String URI = "/internal/recommendation/product-events";
+    private static final String URI = "/internal/recommendations/product-events";
 
     @Autowired
     private MockMvc mockMvc;
