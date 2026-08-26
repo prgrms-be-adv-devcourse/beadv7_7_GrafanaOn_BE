@@ -29,7 +29,7 @@ public class RecommendationHttpClient {
         log.info("[RecommendationHttpClient] recommendation - 상품 이벤트 전달 요청. size={}", batch.size());
 
         recommendationRestClient.post()
-            .uri("/internal/recommendation/product-events")
+            .uri("/internal/recommendations/product-events")
             .body(toApiRequests(batch))
             .retrieve()
             .toBodilessEntity();
