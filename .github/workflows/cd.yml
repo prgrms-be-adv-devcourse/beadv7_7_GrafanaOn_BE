@@ -111,8 +111,6 @@ jobs:
           COMMERCE_BASE_URL=${{ vars.COMMERCE_BASE_URL }}
           AES_SECRET_KEY=${{ secrets.AES_SECRET_KEY }}
           AES_SECRET_IV=${{ secrets.AES_SECRET_IV }}
-          AES_SECRET_KEY=${{ secrets.AES_SECRET_KEY }}
-          AES_SECRET_IV=${{ secrets.AES_SECRET_IV }}
           GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
           OAUTH_REDIRECT_URI=${{ secrets.OAUTH_REDIRECT_URI }}
