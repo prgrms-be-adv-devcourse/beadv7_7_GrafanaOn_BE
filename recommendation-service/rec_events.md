@@ -78,7 +78,15 @@ postgreSQL은 논리적 복제(Logical Replication)와 Logical Decoding 기능�
 Outbox패턴 도입 시 수신 측은 **at-least-once**와 멱등성을 보장해야 합니다. at-least-once는 중복 수신이 될 수 있다는 것으로, 수신측에서는 중복 데이터를 검증하여 제거해야 합니다.
 
 - 발신 측 outbox 행의 `id`를 `event_id`로 저장하고 **UNIQUE 제약**을 겁니다.
-- 적재 전에 이미 존재하는 `event_id`를 한 번의 쿼리로 조회해 걸러냅니다.
+- 같은 배치 안에 동일한 `event_id`가 들어와도 한쪽이 UNIQUE 위반으로 실패하지 않도록 PostgreSQL의 DO NOTHING 옵션을 이용합니다.
+
+```sql
+insert into recommendation_inbox (...) values (...)
+on conflict (event_id) do nothing
+```
+
+중복 판정이 INSERT 안에서 일어나므로 동일한 이벤트가 동시에 들어와도 한 건만 남고 나머지는 예외 없이 조용히 버려집니다.
+(해당 옵션을 사용하기 위해서는 사용할 필드에 unique제약이 필요합니다.)
 
 
 ---
@@ -161,7 +169,7 @@ shop/dear/recommendation/
 ├── infrastructure/inbox/
 │   ├── RecommendationInbox                  엔티티
 │   ├── InboxStatus, InboxEventType          상태 / 이벤트 종류
-│   ├── RecommendationInboxJpaRepository     JPA
+│   ├── RecommendationInboxJpaRepository     JPA (적재 시 ON CONFLICT DO NOTHING)
 │   └── InboxService                         데이터 적재
 └── presentation/
     ├── InternalRecommendationController     수신 엔드포인트

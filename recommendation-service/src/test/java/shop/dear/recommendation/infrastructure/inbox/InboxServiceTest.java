@@ -68,6 +68,16 @@ class InboxServiceTest {
     }
 
     @Test
+    @DisplayName("한 배치 안에 같은 eventId가 두 번 들어와도 한 건만 적재된다")
+    void savesOnceWhenBatchHasDuplicates() {
+        inboxService.saveProductEvents(List.of(inbox(1L), inbox(1L), inbox(2L)));
+
+        assertThat(recommendationInboxJpaRepository.findAll())
+            .extracting(RecommendationInbox::getEventId)
+            .containsExactlyInAnyOrder(1L, 2L);
+    }
+
+    @Test
     @DisplayName("빈 배치를 받아도 예외 없이 넘어간다")
     void acceptsEmptyBatch() {
         inboxService.saveProductEvents(List.of());
