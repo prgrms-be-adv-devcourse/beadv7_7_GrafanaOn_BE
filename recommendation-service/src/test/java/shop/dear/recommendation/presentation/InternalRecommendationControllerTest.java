@@ -15,8 +15,8 @@ import static org.mockito.Mockito.never;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(InternalProductEventController.class)
-class InternalProductEventControllerTest {
+@WebMvcTest(InternalRecommendationController.class)
+class InternalRecommendationControllerTest {
 
     private static final String URI = "/internal/recommendation/product-events";
 
