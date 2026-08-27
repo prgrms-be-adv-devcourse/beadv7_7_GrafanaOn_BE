@@ -52,7 +52,7 @@ public class SearchRepositoryAdapter implements SearchRepository {
 
     /**
      * 관련도는 ES가 쿼리를 실행하면서 계산하는 값이기 때문에 JPA에는 대응하는 컬럼이 없다.
-     * ES 장에로 이 어댑터가 풀백으로 불릴 때 그대로 넘기면 Spring Date JPA가 엔티티 속성으로 해석하려다 실패하게 된다.
+     * ES 장애로 이 어댑터가 폴백으로 불릴 때 그대로 넘기면 Spring Date JPA가 엔티티 속성으로 해석하려다 실패하게 된다.
      * 따라서 이 경우에는 최신순으로 해석하도록 조치한다.
      */
     private Pageable withoutScoreSort(final Pageable pageable) {
