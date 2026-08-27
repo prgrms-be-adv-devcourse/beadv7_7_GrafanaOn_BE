@@ -1,0 +1,22 @@
+{
+  "index": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+  },
+  "analysis": {
+    "filter": {
+      "bigram": {
+        "type": "ngram",
+        "min_gram": 2,
+        "max_gram": 2
+      }
+    },
+    "analyzer": {
+      "korean_ngram": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": ["lowercase", "bigram"]
+      }
+    }
+  }
+}
