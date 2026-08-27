@@ -116,16 +116,13 @@ public class RecommendationInbox extends BaseEntity {
         this.status = InboxStatus.PROCESSED;
     }
 
-    public void markAsFailed() {
+    public void markAsFailed(final String reason) {
+        this.retryCount++;
+        this.lastError = reason;
         this.status = InboxStatus.FAILED;
     }
 
     public boolean isPending() {
         return this.status == InboxStatus.PENDING;
-    }
-
-    //과거 이벤트로 최신 데이터를 덮어쓰지 않기 위해 검증
-    public boolean isStaleAgainst(final LocalDateTime lastProcessedOccurredAt) {
-        return lastProcessedOccurredAt != null && this.occurredAt.isBefore(lastProcessedOccurredAt);
     }
 }
