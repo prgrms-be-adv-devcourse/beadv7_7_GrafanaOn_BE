@@ -6,6 +6,7 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.rabbit.stream.producer.RabbitStreamTemplate;
 import org.springframework.stereotype.Component;
+import shop.dear.common.messaging.StreamMessageHeaders;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -17,8 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Component
 public class RabbitStreamPublisher implements StreamPublisher {
-
-    private static final String EVENT_TYPE_HEADER = "eventType";
 
     private final Environment environment;
 
@@ -45,7 +44,7 @@ public class RabbitStreamPublisher implements StreamPublisher {
         // eventId, eventType, 본문 형식 등 메시지 메타데이터 구성
         MessageProperties properties = new MessageProperties();
         properties.setMessageId(eventId);
-        properties.setHeader(EVENT_TYPE_HEADER, eventType);
+        properties.setHeader(StreamMessageHeaders.EVENT_TYPE, eventType);
         properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
         properties.setContentEncoding(StandardCharsets.UTF_8.name());
 
