@@ -17,3 +17,23 @@ spring:
         format_sql: true
         highlight_sql: true
         default_batch_fetch_size: 100
+
+recommendation:
+
+  embedding:
+    model-name: ${OLLAMA_EMBEDDING_MODEL:bge-m3}
+
+  vector:
+    dimensions: 1024
+    # 운영 코드가 product_vector SQL 을 수식할 때 쓰는 값. main 의 application.yaml 과 같다.
+    schema: ${DB_SCHEMA:recommendation}
+    # ddl-auto 는 JPA 엔티티만 만든다. product_vector 는 엔티티가 아니라
+    # ProductVectorSchemaInitializer 가 만든다.
+    initialize-schema: true
+
+  # 테스트 클래스패스의 application.yaml 은 main 의 것을 대체한다(병합이 아니다).
+  # RecommendationService 가 @Value 로 읽으므로 여기에도 있어야 컨텍스트가 뜬다.
+  similar:
+    max-distance: 0.45
+    default-size: 10
+    max-size: 50

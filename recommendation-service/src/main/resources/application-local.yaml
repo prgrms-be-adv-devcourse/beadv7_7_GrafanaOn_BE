@@ -16,3 +16,35 @@ spring:
         format_sql: true
         highlight_sql: true
         default_batch_fetch_size: 100
+
+  ai:
+    model:
+      chat: ollama
+      embedding: ollama
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      # 모델 다운로드 전략 : Always 항상 다운로드, When Missing 없을 때만 다운로드, Never 다운로드 안함
+      init:
+        pull-model-strategy: ${OLLAMA_PULL_MODEL_STRATEGY:never}
+      chat:
+        model: ${OLLAMA_CHAT_MODEL:llama3.1}
+      # 최초 1회: docker exec ollama-local ollama pull bge-m3
+      embedding:
+        model: ${recommendation.embedding.model-name}
+
+recommendation:
+  # Inbox 폴링 -> 임베딩 -> product_vector 적재 파이프라인 활성화 여부
+  pipeline:
+    enabled: ${RECOMMENDATION_PIPELINE_ENABLED:true}
+
+  embedding:
+    model-name: ${OLLAMA_EMBEDDING_MODEL:bge-m3}
+
+  vector:
+    dimensions: 1024
+    # 기동 시 product_vector 테이블을 생성
+    initialize-schema: true
+
+  inbox:
+    batch-size: 5
+    poll-interval-ms: 5000

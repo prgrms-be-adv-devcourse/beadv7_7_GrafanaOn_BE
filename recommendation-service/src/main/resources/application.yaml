@@ -12,11 +12,29 @@ spring:
       data-source-properties:
         reWriteBatchedInserts: true
 
+  # openAI는 모든 모델타입을 자동구성합니다.
+  # 사용하지 않는 모델은 none처리
+  ai:
+    model:
+      audio:
+        speech: none
+        transcription: none
+      image: none
+      moderation: none
   jpa:
     properties:
       hibernate:
         # commerce/identity와 같은 DB를 쓰되 스키마로 분리합니다.
         default_schema: ${DB_SCHEMA:recommendation}
+
+recommendation:
+  vector:
+    schema: ${DB_SCHEMA:recommendation}
+
+  similar:
+    max-distance: ${RECOMMENDATION_MAX_DISTANCE:0.45}
+    default-size: ${RECOMMENDATION_DEFAULT_SIZE:10}
+    max-size: ${RECOMMENDATION_MAX_SIZE:50}
 
 server:
   port: 8084

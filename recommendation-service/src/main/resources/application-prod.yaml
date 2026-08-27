@@ -14,3 +14,34 @@ spring:
         format_sql: true
         highlight_sql: true
         default_batch_fetch_size: 100
+
+# 테스트 완료 후 운영에 활성화시키려면
+#  ai:
+#    model:
+#      chat: openai
+#      embedding: openai
+#    openai:
+#      api-key: ${OPENAI_API_KEY}
+#      chat:
+#        model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
+
+  ai:
+    model:
+      chat: none
+      embedding: none
+
+recommendation:
+#  테스트 후 true 로 변경 또는, ConditionalOnProperty 어노테이션 제거
+  pipeline:
+    enabled: ${RECOMMENDATION_PIPELINE_ENABLED:false}
+
+  embedding:
+    model-name: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+
+  vector:
+    dimensions: 1536
+    initialize-schema: false
+
+  inbox:
+    batch-size: 5
+    poll-interval-ms: 5000
