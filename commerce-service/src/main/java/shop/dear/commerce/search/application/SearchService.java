@@ -76,7 +76,7 @@ public class SearchService {
         // 최신 순, 조회수 높은 순, 가격 낮은 순, 가격 높은 순
         return switch (sort) {
 
-            // Spring  Data Elasticsearch가 "_score"를 필드가 아닌 스코어 정렬로 변환해준다.
+            // Spring Data Elasticsearch가 "_score"를 필드가 아닌 스코어 정렬로 변환해준다.
             case RELEVANCE -> Sort.by(Sort.Direction.DESC, "_score");
             case LATEST -> Sort.by(Sort.Direction.DESC, "productInsertedAt");
             case VIEW_COUNT -> Sort.by(Sort.Direction.DESC, "viewCount");
