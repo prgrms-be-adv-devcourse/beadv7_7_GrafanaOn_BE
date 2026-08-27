@@ -20,6 +20,8 @@ import java.util.List;
 public class EsSearchAdapter implements SearchRepository {
 
     private static final String FUZZINESS = "AUTO";
+    private static final float NAME_BOOST = 3.0f;
+    private static final String NGRAM_MIN_SHOULD_MATCH = "50%";
 
     private final ElasticsearchOperations operations;
 
@@ -38,11 +40,19 @@ public class EsSearchAdapter implements SearchRepository {
     public Page<SearchProduct> searchByProductName(String keyword, Pageable pageable) {
         return search(
                 NativeQuery.builder()
-                        .withQuery(q -> q.match(m -> m
-                                .field("name")
-                                .query(keyword)
-                                .operator(Operator.And)
-                                .fuzziness(FUZZINESS)
+                        .withQuery(q -> q.bool(b -> b
+                                .should(s -> s.match(m -> m
+                                    .field("name")
+                                    .query(keyword)
+                                    .operator(Operator.And)
+                                    .fuzziness(FUZZINESS)
+                                    .boost(NAME_BOOST)
+                                ))
+                                .should(s -> s.match(m -> m
+                                        .field("name.ngram")
+                                        .query(keyword)
+                                        .minimumShouldMatch(NGRAM_MIN_SHOULD_MATCH)
+                                ))
                         )),
                 pageable
         );

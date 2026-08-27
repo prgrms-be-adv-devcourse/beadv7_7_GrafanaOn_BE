@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Document(indexName = SearchProductDocument.INDEX_ALIAS)
-@Setting(shards = 1, replicas = 0) // 단일 노드 구성
+@Setting(settingPath = "elasticsearch/search-product-settings.json") // 단일 노드 구성 + ngram 분석기
 public class SearchProductDocument {
 
     /**
@@ -35,8 +35,14 @@ public class SearchProductDocument {
     @Id // Elasticsearch는 springframework의 ID를 인식함. jakarta.persistence 사용 X
     private Long productId;
 
-    // nori 사용
-    @Field(name = "name", type = FieldType.Text, analyzer = "nori")
+    // nori는 오타가 나면 형태소를 다르게 쪼개는 경우가 있다. 그래서 fuzziness가 오작동.
+    // 문자 2-gram 서브필드를 함께 둔다.
+    @MultiField(
+            mainField = @Field(name = "name", type = FieldType.Text, analyzer = "nori"),
+            otherFields = {
+                    @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "korean_ngram")
+            }
+    )
     private String productName;
 
     @Field(name = "model_number", type = FieldType.Keyword)
