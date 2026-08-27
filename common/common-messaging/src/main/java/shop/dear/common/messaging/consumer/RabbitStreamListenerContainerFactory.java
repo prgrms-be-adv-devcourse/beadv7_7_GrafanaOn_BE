@@ -1,6 +1,7 @@
 package shop.dear.common.messaging.consumer;
 
 import com.rabbitmq.stream.Environment;
+import com.rabbitmq.stream.OffsetSpecification;
 import jakarta.annotation.PreDestroy;
 import org.springframework.rabbit.stream.listener.StreamListenerContainer;
 import org.springframework.stereotype.Component;
@@ -67,6 +68,10 @@ public class RabbitStreamListenerContainerFactory {
         container.setConsumerCustomizer((id, builder) -> {
             // broker는 이 논리 Consumer 이름별로 마지막 저장 offset을 관리
             builder.name(consumerName);
+
+            // 저장된 offset이 없는 최초 Consumer는 Stream의 첫 메시지부터 소비
+            // 이미 저장된 offset이 있으면 broker가 해당 위치를 기준으로 구독 재개
+            builder.offset(OffsetSpecification.first());
 
             // Listener가 context.storeOffset()을 호출할 때만 broker에 offset을 저장
             builder.manualTrackingStrategy();
