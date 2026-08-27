@@ -17,20 +17,6 @@ public class RecommendationInboxAdapter implements ProductEventStore {
 	private final RecommendationInboxJpaRepository jpaRepository;
 
 	@Override
-	public int append(final LocalDateTime now, final ProductEvent event) {
-		return jpaRepository.insertIgnoringDuplicate(now,
-			RecommendationInbox.of(
-				event.eventId(),
-				event.aggregateType(),
-				event.aggregateId(),
-				InboxEventType.valueOf(event.eventType()),
-				event.payload(),
-				event.occurredAt()
-			)
-		);
-	}
-
-	@Override
 	public List<ProductEvent> findPending(final int limit) {
 		return jpaRepository.findByStatusOrderByOccurredAtAsc(InboxStatus.PENDING, Limit.of(limit)).stream()
 			.map(this::toEvent)
