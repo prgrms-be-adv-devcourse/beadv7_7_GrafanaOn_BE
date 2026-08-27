@@ -43,6 +43,34 @@ class RabbitStreamMessageListenerTest {
     }
 
     @Test
+    @DisplayName("메시지 변환에 실패하면 offset을 저장하지 않고 Consumer를 종료한 뒤 재시작을 요청한다")
+    void onStreamMessage_messageConversionFailure_closesConsumerAndRequestsRestart() {
+        StreamMessageHandler messageHandler = mock(StreamMessageHandler.class);
+        StreamConsumerFailureHandler failureHandler = mock(StreamConsumerFailureHandler.class);
+        RabbitStreamMessageListener listener =
+                new RabbitStreamMessageListener(messageHandler, failureHandler);
+
+        RuntimeException exception = new RuntimeException("메시지 변환 실패");
+        Message message = mock(Message.class);
+        when(message.getProperties()).thenThrow(exception);
+
+        MessageHandler.Context context = mock(MessageHandler.Context.class);
+        Consumer consumer = mock(Consumer.class);
+        when(context.consumer()).thenReturn(consumer);
+
+        RuntimeException thrown = assertThrows(
+                RuntimeException.class,
+                () -> listener.onStreamMessage(message, context)
+        );
+
+        assertEquals(exception, thrown);
+        verifyNoInteractions(messageHandler);
+        verify(context, never()).storeOffset();
+        verify(consumer).close();
+        verify(failureHandler).onFailure(exception);
+    }
+
+    @Test
     @DisplayName("메시지 처리에 실패하면 native Consumer를 종료하고 재시작을 요청한다")
     void onStreamMessage_handlerFailure_closesConsumerAndRequestsRestart() {
         StreamMessageHandler messageHandler = mock(StreamMessageHandler.class);
