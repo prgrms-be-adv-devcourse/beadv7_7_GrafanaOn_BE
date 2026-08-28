@@ -3,6 +3,8 @@ package shop.dear.common.messaging.consumer;
 import com.rabbitmq.stream.Environment;
 import com.rabbitmq.stream.OffsetSpecification;
 import jakarta.annotation.PreDestroy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.rabbit.stream.listener.StreamListenerContainer;
 import org.springframework.stereotype.Component;
 import shop.dear.common.messaging.config.RabbitStreamProperties;
@@ -12,6 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * RabbitMQ Stream Consumer Container를 생성하고, 처리 실패 후 재시작을 관리하는 Factory
@@ -23,8 +26,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class RabbitStreamListenerContainerFactory {
 
+    private static final Logger log =
+            LoggerFactory.getLogger(RabbitStreamListenerContainerFactory.class);
+
     // RabbitMQ Stream 연결과 native Consumer 생성을 담당하는 client Environment
     private final Environment environment;
+
+    // Container 재시작 연속 실패 시 허용하는 최대 시도 횟수
+    private final int consumerRestartMaxAttempts;
 
     // 실패한 Consumer Container의 재시작 작업만 실행하는 전용 scheduler
     private final ScheduledExecutorService restartScheduler;
@@ -37,6 +46,7 @@ public class RabbitStreamListenerContainerFactory {
             final RabbitStreamProperties properties
     ) {
         this.environment = environment;
+        this.consumerRestartMaxAttempts = properties.consumerRestartMaxAttempts();
         this.restartScheduler = Executors.newSingleThreadScheduledExecutor();
         this.consumerRestartDelay = properties.consumerRestartDelay();
     }
@@ -61,6 +71,10 @@ public class RabbitStreamListenerContainerFactory {
         // 같은 Container가 연속 실패해도 재시작 작업은 한 번만 예약되도록 한다.
         final AtomicBoolean restartScheduled = new AtomicBoolean(false);
 
+        // 이 Container의 stop/start가 연속으로 실패한 횟수
+        // 재시작에 성공하면 0으로 초기화
+        final AtomicInteger consecutiveRestartFailures = new AtomicInteger(0);
+
         // 이 Container가 구독할 RabbitMQ Stream 이름을 지정
         container.setQueueNames(streamName);
 
@@ -83,7 +97,12 @@ public class RabbitStreamListenerContainerFactory {
         container.setupMessageListener(
                 new RabbitStreamMessageListener(
                         messageHandler,
-                        exception -> scheduleRestart(container, restartScheduled)
+                        exception -> scheduleRestart(
+                                container,
+                                consumerName,
+                                restartScheduled,
+                                consecutiveRestartFailures
+                        )
                 )
         );
 
@@ -101,8 +120,15 @@ public class RabbitStreamListenerContainerFactory {
      */
     private void scheduleRestart(
             final StreamListenerContainer container,
-            final AtomicBoolean restartScheduled
+            final String consumerName,
+            final AtomicBoolean restartScheduled,
+            final AtomicInteger consecutiveRestartFailures
     ) {
+        // 최대 재시작 실패 횟수에 도달한 Consumer는 자동 재시작하지 않는다.
+        if (consecutiveRestartFailures.get() >= consumerRestartMaxAttempts) {
+            return;
+        }
+
         // 이미 재시작이 예약됐다면 같은 Container에 대한 중복 예약을 막는다.
         if (!restartScheduled.compareAndSet(false, true)) {
             return;
@@ -112,13 +138,48 @@ public class RabbitStreamListenerContainerFactory {
             try {
                 // Listener가 닫은 native Consumer를 Container에서 정리
                 container.stop();
-            } finally {
-                // 새 Consumer가 기동 직후 다시 실패하면 다음 재시작을 예약할 수 있게 한다.
-                restartScheduled.set(false);
+
+                // Container가 새 native Consumer를 생성해, broker에 저장된 offset 다음부터 다시 구독
+                container.start();
+
+                // 재시작에 성공하면 연속 실패 횟수를 초기화한다.
+                consecutiveRestartFailures.set(0);
+            } catch (RuntimeException exception) {
+                final int failedAttempts = consecutiveRestartFailures.incrementAndGet();
+
+                if (failedAttempts >= consumerRestartMaxAttempts) {
+                    log.error(
+                            "RabbitMQ Stream Consumer 재시작이 최대 횟수만큼 실패했습니다. "
+                                    + "consumerName={}, maxAttempts={}",
+                            consumerName,
+                            consumerRestartMaxAttempts,
+                            exception
+                    );
+                } else {
+                    log.warn(
+                            "RabbitMQ Stream Consumer 재시작에 실패했습니다. "
+                                    + "다음 재시작을 예약합니다. consumerName={}, attempt={}/{}",
+                            consumerName,
+                            failedAttempts,
+                            consumerRestartMaxAttempts,
+                            exception
+                    );
+
+                    // Container 중지 또는 시작에 실패하면 다음 재시작을 다시 예약
+                    restartScheduled.set(false);
+                    scheduleRestart(
+                            container,
+                            consumerName,
+                            restartScheduled,
+                            consecutiveRestartFailures
+                    );
+                    return;
+                }
             }
 
-            // Container가 새 native Consumer를 생성해, broker에 저장된 offset 다음부터 다시 구독
-            container.start();
+            // 현재 재시작 작업을 종료한다.
+            // 최대 실패 도달 여부는 consecutiveRestartFailures로 판단한다.
+            restartScheduled.set(false);
         }, consumerRestartDelay.toMillis(), TimeUnit.MILLISECONDS);
     }
 
