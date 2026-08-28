@@ -6,6 +6,12 @@ spring:
       - optional:classpath:application-monitoring.yaml
   profiles:
     active: local
+
+  datasource:
+    hikari:
+      data-source-properties:
+        reWriteBatchedInserts: true
+
   jpa:
     properties:
       hibernate:
