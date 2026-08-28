@@ -20,4 +20,4 @@ toss:
 
 wallet:
   client:
-    base-url: ${WALLET_CLIENT_BASE_URL}
+    base-url: ${WALLET_CLIENT_BASE_URL:http://localhost:8083}
