@@ -30,6 +30,8 @@ import shop.dear.commerce.product.domain.model.Price;
 import shop.dear.commerce.product.domain.model.Product;
 import shop.dear.commerce.product.domain.model.ProductImage;
 import shop.dear.commerce.product.domain.repository.ProductRepository;
+import shop.dear.commerce.product.infrastructure.outbox.ProductOutboxAppender;
+import shop.dear.commerce.product.infrastructure.outbox.ProductOutboxEvent;
 import shop.dear.common.event.product.ProductChangedEvent;
 import shop.dear.common.event.product.ProductDeletedEvent;
 import shop.dear.common.exception.BusinessException;
@@ -49,6 +51,7 @@ public class ProductService {
     private final OfferPort offerPort;
     private final ProductEventPublisher productEventPublisher;
     private final PresignedUrlGenerator presignedUrlGenerator;
+    private final ProductOutboxAppender productOutboxAppender;
 
     public List<PresignedUrlInfoDto> generatePresignedUrls(final Long memberId, final GeneratePresignedUrlsCommand generatePresignedUrlsCommand) {
         validateMember(memberId);
@@ -99,7 +102,7 @@ public class ProductService {
 
         final Product savedProduct = productRepository.save(product);
 
-        productEventPublisher.publish(new ProductChangedEvent(
+        final ProductChangedEvent event = new ProductChangedEvent(
                 savedProduct.getId(),
                 savedProduct.getName(),
                 savedProduct.getModelNumber(),
@@ -112,7 +115,15 @@ public class ProductService {
                 savedProduct.getDescription(),
                 fullStory.toString().trim(),
                 savedProduct.getInsertedAt()
-        ));
+        );
+
+        productOutboxAppender.append(
+            savedProduct.getId(),
+            ProductOutboxEvent.PRODUCT_UPDATED,
+            event.fullStory()
+        );
+
+        productEventPublisher.publish(event);
     }
 
     private void validateSeller(final Long memberId) {
@@ -154,7 +165,7 @@ public class ProductService {
 
         final Product savedProduct = productRepository.save(updatedProduct);
 
-        productEventPublisher.publish(new ProductChangedEvent(
+        final ProductChangedEvent event = new ProductChangedEvent(
                 savedProduct.getId(),
                 savedProduct.getName(),
                 savedProduct.getModelNumber(),
@@ -167,7 +178,15 @@ public class ProductService {
                 savedProduct.getDescription(),
                 fullStory.toString().trim(),
                 savedProduct.getInsertedAt()
-        ));
+        );
+
+        productOutboxAppender.append(
+            savedProduct.getId(),
+            ProductOutboxEvent.PRODUCT_UPDATED,
+            event.fullStory()
+        );
+
+        productEventPublisher.publish(event);
     }
 
     private void validateDeleted(final Product product) {
@@ -202,7 +221,15 @@ public class ProductService {
 
         product.delete();
 
-        productEventPublisher.publish(new ProductDeletedEvent(productId));
+        final ProductDeletedEvent event = new ProductDeletedEvent(productId);
+
+        productOutboxAppender.append(
+            productId,
+            ProductOutboxEvent.PRODUCT_DELETED,
+            null
+        );
+
+        productEventPublisher.publish(event);
     }
 
     private void validateProductDeletable(final Product product) {

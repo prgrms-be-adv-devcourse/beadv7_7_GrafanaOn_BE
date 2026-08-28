@@ -4,6 +4,7 @@ include 'identity-service'
 include 'commerce-service'
 include 'financial-service'
 include 'gateway-service'
+include 'recommendation-service'
 
 include ':common:common-monitoring'
 include ':common:common-web'

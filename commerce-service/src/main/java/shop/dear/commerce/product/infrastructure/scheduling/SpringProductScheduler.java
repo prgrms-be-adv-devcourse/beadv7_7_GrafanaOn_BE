@@ -6,6 +6,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import shop.dear.commerce.product.application.ProductScheduler;
 import shop.dear.commerce.product.application.dto.external.PublishProductInfo;
+import shop.dear.commerce.product.infrastructure.outbox.OutboxPollingScheduler;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -13,10 +14,16 @@ import shop.dear.commerce.product.application.dto.external.PublishProductInfo;
 public class SpringProductScheduler {
 
     private final ProductScheduler productScheduler;
+    private final OutboxPollingScheduler outboxPollingScheduler;
 
     @Scheduled(cron = "0 0 20 * * *")
     public void runPublishJob() {
         final PublishProductInfo info = productScheduler.publishDailyProducts();
         log.info("상품 상태 변경 완료 (범위: {} ~ {}): 총 {}건", info.startTime(), info.endTime(), info.count());
+    }
+
+    @Scheduled(fixedRate = 5000)
+    public void runOutboxJob() {
+        outboxPollingScheduler.sendPendingEvents();
     }
 }
