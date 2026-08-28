@@ -19,6 +19,7 @@ jobs:
       commerce: ${{ steps.filter.outputs.commerce == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
       identity: ${{ steps.filter.outputs.identity == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
       gateway: ${{ steps.filter.outputs.gateway == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
+      financial: ${{ steps.filter.outputs.financial == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -33,6 +34,9 @@ jobs:
               - 'common/**'
             gateway:
               - 'gateway-service/**'
+              - 'common/**'
+            financial:
+              - 'financial-service/**'
               - 'common/**'
             root:
               - 'build.gradle'
@@ -51,7 +55,7 @@ jobs:
           chmod +x ./deploy/scripts/deploy-container.sh
 
       - name: Ensure Docker network exists
-        if: needs.changes.outputs.commerce == 'true' || needs.changes.outputs.identity == 'true' || needs.changes.outputs.gateway == 'true'
+        if: needs.changes.outputs.commerce == 'true' || needs.changes.outputs.identity == 'true' || needs.changes.outputs.gateway == 'true' || needs.changes.outputs.financial == 'true'
         run: docker network inspect dear-net >/dev/null 2>&1 || docker network create dear-net
 
       - name: Build commerce-service image
@@ -149,3 +153,29 @@ jobs:
       - name: Remove gateway-service .env
         if: always() && needs.changes.outputs.gateway == 'true'
         run: rm -f gateway-service/.env
+
+      - name: Build financial-service image
+        if: needs.changes.outputs.financial == 'true'
+        run: docker build -t financial-service:latest -f financial-service/Dockerfile .
+
+      - name: Create financial-service .env
+        if: needs.changes.outputs.financial == 'true'
+        run: |
+          cat > financial-service/.env << EOF
+          SPRING_PROFILES_ACTIVE=prod
+          DB_URL=${{ secrets.DB_URL }}
+          DB_USERNAME=${{ secrets.DB_USERNAME }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_DRIVER=${{ vars.DB_DRIVER }}
+          TOSS_SECRET_KEY=${{ secrets.TOSS_SECRET_KEY }}
+          TOSS_BASE_URL=${{ vars.TOSS_BASE_URL }}
+          EOF
+          chmod 600 financial-service/.env
+
+      - name: Deploy financial-service
+        if: needs.changes.outputs.financial == 'true'
+        run: ./deploy/scripts/deploy-container.sh financial-service 8083 8083 financial-service/.env
+
+      - name: Remove financial-service .env
+        if: always() && needs.changes.outputs.financial == 'true'
+        run: rm -f financial-service/.env
