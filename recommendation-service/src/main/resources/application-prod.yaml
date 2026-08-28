@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+logging:
+  file:
+    name: /app/logs/recommendation-service.log
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 7

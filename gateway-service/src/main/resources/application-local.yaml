@@ -14,3 +14,8 @@ spring:
               uri: ${COMMERCE_SERVICE_URI:http://localhost:8082}
               predicates:
                 - Path=/api/products/**,/api/offers/**,/api/purchases/**,/api/deposits/**,/api/payments/**,/api/search/**,/api/carts/**,/api/settlements/**
+
+            - id: recommendation-api-route
+              uri: ${RECOMMENDATION_SERVICE_URI:http://localhost:8083}
+              predicates:
+                  - Path=/api/behaviors/**

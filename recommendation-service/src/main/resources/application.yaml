@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: recommendation-service
+  config:
+    import:
+      - optional:classpath:application-monitoring.yaml
+  profiles:
+    active: local
+
+server:
+  port: 8083
