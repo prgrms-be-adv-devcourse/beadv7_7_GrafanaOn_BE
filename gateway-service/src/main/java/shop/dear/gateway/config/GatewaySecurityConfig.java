@@ -91,6 +91,14 @@ public class GatewaySecurityConfig {
                                 "/api/actuator/prometheus"
                         ).permitAll()
 
+                        // 내부적으로 forward
+                        .pathMatchers("/fallback/**").permitAll()
+                        // 구글 로그인 시작과 콜백
+                        .pathMatchers(
+                                "/api/auth/oauth2/authorization/**",
+                                "/api/auth/oauth2/callback/**"
+                        ).permitAll()
+
                         .anyExchange().authenticated()
                 )
 

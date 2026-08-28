@@ -71,6 +71,10 @@ public class PurchaseService {
         final ProductInfo product = productPort.getProduct(command.productId());
         validateProductForPurchase(command.buyerId(), product);
 
+        if (!productPort.tradeProduct(command.productId())) {
+            throw new BusinessException(PRODUCT_ALREADY_TRADING);
+        }
+
         final LocalDateTime paymentDueAt =
                 LocalDateTime.now().plusMinutes(PAYMENT_DUE_MINUTES);
 

@@ -26,7 +26,7 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
     @Query("UPDATE Product p SET p.viewCount = p.viewCount + 1 WHERE p.id = :productId AND p.deletedAt IS NULL")
     void increaseViewCount(@Param("productId") Long productId);
 
-    Page<Product> findAllBySellerIdAndDeletedAtIsNull(final Long sellerId, final Pageable pageable);
+    Page<Product> findAllBySellerId(final Long sellerId, final Pageable pageable);
 
     @Query("""
         SELECT p FROM Product p
@@ -37,7 +37,7 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
             AND (:category IS NULL OR p.category = :category)
             ORDER BY p.viewCount DESC, p.insertedAt DESC
     """)
-    Page<Product> findAllBySaleTypeAndStatusAndCreatedAtAndCategoryAndDeletedAtIsNull(
+    Page<Product> findAllBySaleTypeAndStatusAndCreatedAtAndCategory(
         @Param("saleType") final ProductSaleType saleType,
         @Param("status") final ProductStatus status,
         @Param("startDate") final LocalDateTime startDate,
@@ -52,7 +52,6 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
         WHERE p.status = 'PREPARING'
           AND p.insertedAt >= :startTime
           AND p.insertedAt < :endTime
-          AND p.deletedAt IS NULL
         """)
     int updateStatusToOnSale(@Param("startTime") final LocalDateTime startTime, @Param("endTime") final LocalDateTime endTime);
 

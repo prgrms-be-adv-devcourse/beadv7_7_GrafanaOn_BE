@@ -15,6 +15,7 @@ import shop.dear.identity.member.application.dto.SellerInfo;
 import shop.dear.identity.member.application.dto.UpdateProfileCommand;
 import shop.dear.identity.member.application.dto.UpdateSellerAccountCommand;
 import shop.dear.identity.member.application.dto.external.ExistsProduct;
+import shop.dear.identity.member.application.port.AuthRolePort;
 import shop.dear.identity.member.application.port.ProductPort;
 import shop.dear.identity.member.application.port.WalletPort;
 import shop.dear.identity.member.domain.constract.SellerStatus;
@@ -42,6 +43,9 @@ public class MemberServiceTest {
 
     @Mock
     private WalletPort walletPort;
+
+    @Mock
+    private AuthRolePort authRolePort;
 
     @InjectMocks
     private MemberService memberService;
@@ -201,6 +205,7 @@ public class MemberServiceTest {
         assertEquals(SellerStatus.ACTIVE, member.getSeller().getStatus());
         assertEquals("국민은행", member.getSeller().getAccountInfo().getBank());
         assertEquals("1234567890", member.getSeller().getAccountInfo().getAccount().value());
+        verify(authRolePort).promoteToSeller(1L);
     }
 
     @Test
@@ -335,6 +340,7 @@ public class MemberServiceTest {
         Assertions.assertFalse(member.isSellerActive());
         assertEquals(SellerStatus.WITHDRAWN, member.getSeller().getStatus());
         Assertions.assertNotNull(member.getSeller().getWithdrawnAt());
+        verify(authRolePort).demoteToBuyer(1L);
     }
 
     @Test
@@ -357,6 +363,7 @@ public class MemberServiceTest {
         assertEquals(MemberErrorCode.WITHDRAWAL_FAILED, exception.getErrorCode());
         assertTrue(member.isSellerActive());
         assertEquals(SellerStatus.ACTIVE, member.getSeller().getStatus());
+        verify(authRolePort, never()).demoteToBuyer(any());
     }
 
     @Test

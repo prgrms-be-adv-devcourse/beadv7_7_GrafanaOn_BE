@@ -5,8 +5,6 @@ include 'commerce-service'
 include 'gateway-service'
 include 'recommendation-service'
 
-
 include ':common:common-monitoring'
 include ':common:common-web'
 include ':common:common-jpa'
-

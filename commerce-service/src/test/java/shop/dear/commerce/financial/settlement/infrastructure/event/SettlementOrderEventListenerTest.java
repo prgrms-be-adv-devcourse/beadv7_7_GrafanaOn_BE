@@ -38,6 +38,6 @@ public class SettlementOrderEventListenerTest {
         listener.handle(event);
 
         // then
-        verify(settlementService).createPendingSettlement(event);
+        verify(settlementService).createSettlement(event);
     }
 }

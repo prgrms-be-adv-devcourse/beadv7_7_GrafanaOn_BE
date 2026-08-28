@@ -6,6 +6,17 @@ spring:
       - optional:classpath:application-monitoring.yaml
   profiles:
     active: local
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+            redirect-uri: ${OAUTH_REDIRECT_URI}
 
 # JWT
 auth:
@@ -21,12 +32,18 @@ auth:
     same-site: ${AUTH_COOKIE_SAME_SITE:Strict}
     path: ${AUTH_COOKIE_PATH:/api/auth}
 
+  oauth2:
+    success-redirect-uri: ${OAUTH_SUCCESS_REDIRECT_URI}
+
 identity:
   client:
     commerce-base-url: ${COMMERCE_BASE_URL}
+    auth-base-url: ${IDENTITY_BASE_URL}
   security:
     account-key: ${AES_SECRET_KEY}
     account-iv: ${AES_SECRET_IV}
 
 server:
   port: 8081
+  # 게이트웨이 뒤에 있으므로 X-Forwarded-* 반영
+  forward-headers-strategy: framework

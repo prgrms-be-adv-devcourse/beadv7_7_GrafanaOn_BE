@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.Duration;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Configuration
 public class InternalCircuitBreakerConfig {
@@ -62,5 +64,23 @@ public class InternalCircuitBreakerConfig {
         }
 
         return true;
+    }
+
+    /**
+     * 종료 시 shutdown()을 부르도록 못박는다.
+     * 지금은 명시하디 않아도 shutdown()을 부르지만, 구현체가 close()를 직접 재정의하면 close()를 부르기에
+     * 흔들리지 않도록 고정한다.
+     */
+    @Bean(destroyMethod = "shutdown")
+    public ExecutorService internalCallExecutor() {
+        // 진짜 작업 스레드를 컨텍스트를 옮기는 껍데기로 감싸 반환한다.
+        return new ContextPropagatingExecutorService(Executors.newCachedThreadPool());
+    }
+
+    // 위에서 만든 작업 스레드를 사용하도록 하는 Bean이다.
+    @Bean
+    public Customizer<Resilience4JCircuitBreakerFactory> internalCallExecutorCustomizer(final ExecutorService internalCallExecutor) {
+        // 팩토리를 받으면 팩토리 속 기본 작업 스레드를 우리의 스리드로 바꾼다.
+        return factory -> factory.configureExecutorService(internalCallExecutor);
     }
 }

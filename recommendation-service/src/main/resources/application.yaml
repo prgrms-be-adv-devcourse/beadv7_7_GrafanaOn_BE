@@ -7,5 +7,16 @@ spring:
   profiles:
     active: local
 
+  datasource:
+    hikari:
+      data-source-properties:
+        reWriteBatchedInserts: true
+
+  jpa:
+    properties:
+      hibernate:
+        # commerce/identity와 같은 DB를 쓰되 스키마로 분리합니다.
+        default_schema: ${DB_SCHEMA:recommendation}
+
 server:
-  port: 8083
+  port: 8084

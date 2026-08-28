@@ -182,6 +182,9 @@ gradle-app.setting
 # PostgreSQL local data
 **/docker/local_postgres/data/*
 
+# elasticsearch local data local data
+**/docker/elasticsearch/data/*
+
 # local monitoring
 **/docker/local_monitoring/
 

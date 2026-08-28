@@ -33,6 +33,7 @@ import shop.dear.commerce.product.domain.model.Price;
 import shop.dear.commerce.product.domain.model.Product;
 import shop.dear.commerce.product.domain.model.ProductImage;
 import shop.dear.commerce.product.domain.repository.ProductRepository;
+import shop.dear.commerce.product.infrastructure.outbox.ProductOutboxAppender;
 import shop.dear.common.pagination.PaginationRequest;
 
 import java.math.BigDecimal;
@@ -58,6 +59,9 @@ class ProductServiceTest {
     @Autowired
     private ProductScheduler productScheduler;
 
+    @Autowired
+    private ProductOutboxAppender productOutboxAppender;
+
     @BeforeEach
     void setUp() {
         final MemberPort fakeMemberPort = new FakeMemberPort();
@@ -70,7 +74,8 @@ class ProductServiceTest {
             fakeMemberPort,
             fakeOfferPort,
             fakeProductEventPublisher,
-            fakePresignedUrlGenerator
+            fakePresignedUrlGenerator,
+            productOutboxAppender
         );
     }
 
@@ -378,6 +383,25 @@ class ProductServiceTest {
         assertThat(result.getContent().getFirst().viewCount()).isEqualTo(savedProduct.getViewCount());
     }
 
+    @DisplayName("삭제된 상품이면 판매자 상품 목록에 조회되지 않는다.")
+    @Test
+    void givenSellerId_whenGetSellerProductIsAlreadyDeleted_thenReturnProducts() {
+        //Given
+        final Long sellerId = 1L;
+        final Product product = createProduct(sellerId);
+        product.addImage("test1.png", 1);
+        final Product savedProduct = productRepository.save(product);
+
+        productService.deleteProduct(sellerId, savedProduct.getId());
+
+        //When
+        final PaginationRequest paginationRequest = new PaginationRequest(1, 10, 2, 2);
+        final Page<GetSellerProductDto> result = productService.getSellerProducts(sellerId, paginationRequest.toPageable());
+
+        //Then
+        assertThat(result.getTotalElements()).isEqualTo(0);
+    }
+
     @DisplayName("판매자가 등록한 상품목록 조회 시 페이징 처리한다.")
     @Test
     void givenPageInfo_whenGetSellerProducts_thenReturnPagingProducts() {
@@ -511,6 +535,30 @@ class ProductServiceTest {
             ProductStatus.SOLD_OUT,
             null,
             ProductCategory.BOOTS,
+            paginationRequest.toPageable()
+        );
+
+        // Then
+        assertThat(result.getTotalElements()).isEqualTo(0);
+    }
+
+    @DisplayName("삭제된 상품이면 상품 목록에 조회되지 않는다.")
+    @Test
+    void givenProductDelete_whenGetAllProduct_thenReturnEmptyList() {
+        // Given
+        final Long sellerId = 1L;
+        final Product product = createProduct(sellerId, ProductSaleType.OFFER); // status = PREPARING
+        final Product savedProduct = productRepository.save(product);
+
+        productService.deleteProduct(sellerId, savedProduct.getId());
+
+        // When
+        final PaginationRequest paginationRequest = new PaginationRequest(1, 10, 2, 2);
+        final Page<GetProductDto> result = productService.getAllProduct(
+            null,
+            null,
+            null,
+            null,
             paginationRequest.toPageable()
         );
 

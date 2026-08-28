@@ -1,6 +1,7 @@
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/dear}
+    # 운영 DB와 분리한다. ddl-auto: create-drop이 여기 있는 스키마를 지웠다 새로 만든다.
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/dear_test}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:root}
     driver-class-name: ${DB_DRIVER:org.postgresql.Driver}
@@ -12,6 +13,19 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+  # 실제 호출 X
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-client-id
+            client-secret: test-client-secret
+            scope:
+              - email
+              - profile
+            redirect-uri: http://localhost:8080/api/auth/oauth2/callback/google
 auth:
   jwt:
     issuer: test-identity-service
@@ -26,10 +40,15 @@ auth:
     same-site: Strict
     path: /api/auth
 
+  oauth2:
+    success-redirect-uri: http://localhost:3000/oauth/callback
+
 identity:
   client:
     commerce-base-url: http://localhost:8082
+    auth-base-url: http://localhost:8081
   # 테스트용 Secret
   security:
     account-key: "56cf2c4ba176bcf24474211dcfef0339a850a61c58c8533aa33cf025362c5d50"
     account-iv: "9a273be1934c638c2472dedc7176cdcd"
+

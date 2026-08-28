@@ -36,4 +36,14 @@ public class ProductClientConfig {
             })
             .build();
     }
+
+    @Bean
+    RestClient productRecommendationRestClient(@Value("${recommendation.client.base-url}") final String baseUrl) {
+        return internalRestClientFactory.builder(baseUrl)
+            .defaultStatusHandler(HttpStatusCode::isError, (request, response) -> {
+                log.error("[RecommendationRestClient Error] URI: {}, Status: {}", request.getURI(), response.getStatusCode());
+                throw new BusinessException(ProductHttpErrorCode.EXTERNAL_API_ERROR);
+            })
+            .build();
+    }
 }

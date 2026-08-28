@@ -1,6 +1,7 @@
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/dear}
+    # 운영 DB와 분리한다. ddl-auto: create-drop이 여기 있는 스키마를 지웠다 새로 만든다.
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/dear_test}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:root}
     driver-class-name: ${DB_DRIVER:org.postgresql.Driver}
@@ -30,6 +31,10 @@ offer:
 wallet:
   client:
     base-url: ${WALLET_CLIENT_BASE_URL:http://localhost:8082}
+
+recommendation:
+  client:
+    base-url: ${RECOMMENDATION_CLIENT_BASE_URL:http://localhost:8084}
 
 secret:
   aws:

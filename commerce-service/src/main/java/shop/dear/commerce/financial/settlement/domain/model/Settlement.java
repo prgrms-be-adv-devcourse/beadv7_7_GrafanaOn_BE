@@ -6,11 +6,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.dear.commerce.financial.settlement.domain.constant.SettlementStatus;
 import shop.dear.audit.BaseEntity;
+import shop.dear.commerce.financial.settlement.domain.exception.SettlementErrorCode;
+import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "settlement")
+@Table(name = "settlement",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_settlement_purchase", columnNames = "purchase_id"),
+        @UniqueConstraint(name = "uk_settlement_offer",    columnNames = "offer_id")
+    }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Settlement extends BaseEntity {
@@ -61,7 +68,7 @@ public class Settlement extends BaseEntity {
             this.grossAmount = grossAmount;
             this.feeAmount = feeAmount;
             this.netAmount = netAmount;
-            this.state = SettlementStatus.PENDING;
+            this.state = SettlementStatus.CREATED;
     }
 
     public static Settlement create(
@@ -84,7 +91,27 @@ public class Settlement extends BaseEntity {
         );
     }
 
-    public void payout(){
+    public void accumulated() {
+        validateState(SettlementStatus.CREATED);
+
+        this.state = SettlementStatus.PENDING;
+    }
+
+    public void payout() {
+        validateState(SettlementStatus.PENDING);
+
         this.state = SettlementStatus.COMPLETED;
+    }
+
+    public void fail() {
+        validateState(SettlementStatus.PENDING);
+
+        this.state = SettlementStatus.FAILED;
+    }
+
+    private void validateState(final SettlementStatus expected) {
+        if (this.state != expected) {
+            throw new BusinessException(SettlementErrorCode.INVALID_SETTLEMENT_STATUS_TRANSITION);
+        }
     }
 }

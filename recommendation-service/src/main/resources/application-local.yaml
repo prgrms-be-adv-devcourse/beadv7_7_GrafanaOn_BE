@@ -4,6 +4,8 @@ spring:
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:root}
     driver-class-name: ${DB_DRIVER:org.postgresql.Driver}
+    hikari:
+      connection-init-sql: CREATE SCHEMA IF NOT EXISTS ${DB_SCHEMA:recommendation}
 
   jpa:
     hibernate:

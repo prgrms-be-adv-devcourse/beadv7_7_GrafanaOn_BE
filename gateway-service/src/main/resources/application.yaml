@@ -18,6 +18,44 @@ management:
     gateway:
       access: read-only
 
+# 차단기 설정
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        # 게이트웨이는 시간으로 판단
+        sliding-window-type: TIME_BASED
+        sliding-window-size: 30
+        minimum-number-of-calls: 20
+
+        failure-rate-threshold:  50
+
+        slow-call-rate-threshold: 80
+
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 5
+        automatic-transition-from-open-to-half-open-enabled: true
+
+    instances:
+      # 느린 기준은 경로마다 다를 수 있다.
+      identityAuth:
+        base-config: default
+        slow-call-duration-threshold: 3s
+
+      identityApi:
+        base-config: default
+        slow-call-duration-threshold: 3s
+
+      commerceSearch:
+        base-config: default
+        # 실제 측정값 p95 90ms 근거
+        slow-call-duration-threshold: 1s
+
+      commerceApi:
+        base-config: default
+        # 일단 넉넉하게, 추후 감소 예정
+        slow-call-duration-threshold: 10s
+
 # JWT 설정 추가
 auth:
   jwt:

@@ -8,6 +8,9 @@ dependencies {
     // Spring Cloud Gateway는 WebFlux 기반
     implementation 'org.springframework.cloud:spring-cloud-starter-gateway-server-webflux'
 
+    // 라우트 차단기. 리액티브 스택용이라 common-web의 서블릿용과 아티팩트가 다르다.
+    implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j'
+
     // Gateway 인증 정책
     implementation 'org.springframework.boot:spring-boot-starter-security'
 

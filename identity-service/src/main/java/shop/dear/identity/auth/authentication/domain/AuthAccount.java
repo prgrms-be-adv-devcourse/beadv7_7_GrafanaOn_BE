@@ -28,8 +28,15 @@ public class AuthAccount extends BaseEntity {
     @Column(name = "email", nullable = false, unique = true, length = 150)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "password_hash")
     private String passwordHash;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "provider", nullable = false, length = 20)
+    private AuthProvider provider;
+
+    @Column(name = "provider_id", length = 100)
+    private String providerId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
@@ -41,13 +48,16 @@ public class AuthAccount extends BaseEntity {
 
     private AuthAccount(
             final String email,
-            final String passwordHash
+            final String passwordHash,
+            final AuthProvider provider,
+            final String providerId
     ) {
         validateEmail(email);
-        validatePasswordHash(passwordHash);
 
         this.email = email.trim().toLowerCase(Locale.ROOT);
         this.passwordHash = passwordHash;
+        this.provider = provider;
+        this.providerId = providerId;
         this.role = Role.BUYER;
         this.status = AuthAccountStatus.PENDING;
     }
@@ -56,7 +66,28 @@ public class AuthAccount extends BaseEntity {
             final String email,
             final String passwordHash
     ) {
-        return new AuthAccount(email, passwordHash);
+        validatePasswordHash(passwordHash); // 여기서 패스워드 검증
+
+        return new AuthAccount(email, passwordHash, AuthProvider.LOCAL, null);
+    }
+
+    // 소셜로 처음 들어온 사용자의 계정 생성. 비밀번호는 없다.
+    public static AuthAccount createSocial(
+            final String email,
+            final AuthProvider provider,
+            final String providerId
+    ) {
+        return new AuthAccount(email, null, provider, providerId);
+    }
+
+    // 이메일로 가입해 둔 기존 계정에 소셜을 연결한다. 비밀번호는 그대로 둔다.
+    public void linkSocial(final AuthProvider provider, final String providerId) {
+        this.provider = provider;
+        this.providerId = providerId;
+    }
+
+    public boolean hasPassword() {
+        return passwordHash != null && !passwordHash.isBlank();
     }
 
     public void activate(final Long memberId) {
@@ -82,6 +113,11 @@ public class AuthAccount extends BaseEntity {
         this.role = Role.SELLER;
     }
 
+    // 판매자 권한 해지
+    public void demoteToBuyer() {
+        this.role = Role.BUYER;
+    }
+
     // 회원 탈퇴
     public void withdraw() {
         if (!isActive()) {
@@ -96,18 +132,15 @@ public class AuthAccount extends BaseEntity {
         return status == AuthAccountStatus.ACTIVE;
     }
 
-    private void validateEmail(final String email) {
+    private static void validateEmail(final String email) {
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("이메일은 필수로 입력해야 합니다.");
         }
     }
 
-    private void validatePasswordHash(final String passwordHash) {
+    private static void validatePasswordHash(final String passwordHash) {
         if (passwordHash == null || passwordHash.isBlank()) {
             throw new IllegalArgumentException("비밀번호를 입력해 주세요.");
         }
     }
-
-
-
 }

@@ -79,6 +79,7 @@ class PurchaseServiceTest {
 
             stubMemberExists(1L);
             given(productPort.getProduct(10L)).willReturn(product);
+            given(productPort.tradeProduct(10L)).willReturn(true);
             given(purchaseRepository.save(any(Purchase.class)))
                     .willAnswer(invocation -> invocation.getArgument(0));
 
@@ -92,6 +93,7 @@ class PurchaseServiceTest {
             assertThat(purchase.getAmount()).isEqualTo(new BigDecimal("10000"));
 
             verifyMemberExists(1L);
+            verify(productPort).tradeProduct(10L);
             verify(purchaseRepository).save(any(Purchase.class));
 
             final ArgumentCaptor<PaymentRequestedEvent> paymentCaptor =

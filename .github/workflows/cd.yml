@@ -19,6 +19,7 @@ jobs:
       commerce: ${{ steps.filter.outputs.commerce == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
       identity: ${{ steps.filter.outputs.identity == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
       gateway: ${{ steps.filter.outputs.gateway == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
+      recommendation: ${{ steps.filter.outputs.recommendation == 'true' || steps.filter.outputs.root == 'true' || inputs.force_all == true }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -33,6 +34,9 @@ jobs:
               - 'common/**'
             gateway:
               - 'gateway-service/**'
+              - 'common/**'
+            recommendation:
+              - 'recommendation-service/**'
               - 'common/**'
             root:
               - 'build.gradle'
@@ -51,7 +55,7 @@ jobs:
           chmod +x ./deploy/scripts/deploy-container.sh
 
       - name: Ensure Docker network exists
-        if: needs.changes.outputs.commerce == 'true' || needs.changes.outputs.identity == 'true' || needs.changes.outputs.gateway == 'true'
+        if: needs.changes.outputs.commerce == 'true' || needs.changes.outputs.identity == 'true' || needs.changes.outputs.gateway == 'true' || needs.changes.outputs.recommendation == 'true'
         run: docker network inspect dear-net >/dev/null 2>&1 || docker network create dear-net
 
       - name: Build commerce-service image
@@ -71,6 +75,7 @@ jobs:
           PRODUCT_CLIENT_BASE_URL=${{ secrets.PRODUCT_CLIENT_BASE_URL }}
           OFFER_CLIENT_BASE_URL=${{ secrets.OFFER_CLIENT_BASE_URL }}
           WALLET_CLIENT_BASE_URL=${{ secrets.WALLET_CLIENT_BASE_URL }}
+          RECOMMENDATION_CLIENT_BASE_URL=${{ secrets.RECOMMENDATION_CLIENT_BASE_URL }}
           AWS_S3_BUCKET_NAME=${{ vars.AWS_S3_BUCKET_NAME }}
           AWS_REGION=${{ vars.AWS_REGION }}
           AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
@@ -109,8 +114,13 @@ jobs:
           AUTH_COOKIE_SAME_SITE=${{ vars.AUTH_COOKIE_SAME_SITE }}
           AUTH_COOKIE_PATH=${{ vars.AUTH_COOKIE_PATH }}
           COMMERCE_BASE_URL=${{ vars.COMMERCE_BASE_URL }}
+          IDENTITY_BASE_URL=${{ vars.IDENTITY_BASE_URL }}
           AES_SECRET_KEY=${{ secrets.AES_SECRET_KEY }}
           AES_SECRET_IV=${{ secrets.AES_SECRET_IV }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          OAUTH_REDIRECT_URI=${{ secrets.OAUTH_REDIRECT_URI }}
+          OAUTH_SUCCESS_REDIRECT_URI=${{ secrets.OAUTH_SUCCESS_REDIRECT_URI }}
           EOF
           chmod 600 identity-service/.env
 
@@ -121,6 +131,31 @@ jobs:
       - name: Remove identity-service .env
         if: always() && needs.changes.outputs.identity == 'true'
         run: rm -f identity-service/.env
+
+      - name: Build recommendation-service image
+        if: needs.changes.outputs.recommendation == 'true'
+        run: docker build -t recommendation-service:latest -f recommendation-service/Dockerfile .
+
+      - name: Create recommendation-service .env
+        if: needs.changes.outputs.recommendation == 'true'
+        run: |
+          cat > recommendation-service/.env << EOF
+          SPRING_PROFILES_ACTIVE=prod
+          DB_URL=${{ secrets.DB_URL }}
+          DB_USERNAME=${{ secrets.DB_USERNAME }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_DRIVER=${{ vars.DB_DRIVER }}
+          DB_SCHEMA=${{ vars.RECOMMENDATION_DB_SCHEMA || 'recommendation' }}
+          EOF
+          chmod 600 recommendation-service/.env
+
+      - name: Deploy recommendation-service
+        if: needs.changes.outputs.recommendation == 'true'
+        run: ./deploy/scripts/deploy-container.sh recommendation-service 8084 8084 recommendation-service/.env
+
+      - name: Remove recommendation-service .env
+        if: always() && needs.changes.outputs.recommendation == 'true'
+        run: rm -f recommendation-service/.env
 
       - name: Build gateway-service image
         if: needs.changes.outputs.gateway == 'true'

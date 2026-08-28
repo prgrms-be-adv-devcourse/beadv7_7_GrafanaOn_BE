@@ -7,9 +7,6 @@ import org.springframework.stereotype.Component;
 import shop.dear.commerce.financial.wallet.application.WalletService;
 import shop.dear.commerce.financial.wallet.application.dto.EarnCommand;
 import shop.dear.common.event.settlement.SettlementPayoutEvent;
-import shop.dear.common.event.settlement.SettlementPayoutItem;
-
-import java.util.List;
 
 @Slf4j
 @Component
@@ -18,18 +15,18 @@ public class WalletSettlementEventHandler {
 
     private final WalletService walletService;
 
-    // 정산 데이터를 받아 해당 지갑에 예치금을 충전한다.
+    // 월별 정산 집계 금액을 해당 지갑에 예치금으로 충전한다.
+    // reference 는 집계 식별자이므로 원장에도 월 1건으로 남는다.
     @EventListener
     public void handle(final SettlementPayoutEvent event) {
 
-        final List<EarnCommand> commands = event.items().stream()
-                .map(item -> toEarnCommand(event.walletId(), item))
-                .toList();
+        walletService.earn(new EarnCommand(
+            event.walletId(),
+            event.netAmount(),
+            event.settlementBatchId()
+        ));
 
-        walletService.earnAll(event.walletId(), commands);
-    }
-
-    private EarnCommand toEarnCommand(final Long walletId, final SettlementPayoutItem item) {
-        return new EarnCommand(walletId, item.netAmount(), item.settlementId());
+        log.info("[Wallet] 정산 지급 충전 - walletId={}, period={}, batchId={}, amount={}",
+            event.walletId(), event.period(), event.settlementBatchId(), event.netAmount());
     }
 }
