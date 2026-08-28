@@ -1,0 +1,24 @@
+plugins {
+    id 'org.springframework.boot'
+}
+
+dependencies {
+    implementation project(':common:common-monitoring')
+    implementation project(':common:common-web')
+    implementation project(':common:common-jpa')
+
+    // PostgreSQL
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // ShedLock (settlement / wallet 스케줄러용)
+    implementation 'net.javacrumbs.shedlock:shedlock-spring:5.15.1'
+    implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.15.1'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind'
+}
+
+// plain jar 생성 false
+tasks.named('jar') {
+    enabled = false
+}
