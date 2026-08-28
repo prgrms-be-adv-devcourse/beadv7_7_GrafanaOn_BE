@@ -200,7 +200,7 @@ INDEX  idx_recommendation_inbox_aggregate_occurred_at  (aggregate_id, occurred_a
 
 ### 5.3 내부 API 
 
-`POST /internal/recommendation/product-events` (recommendation-service, 포트 8083)
+`POST /internal/recommendation/product-events` (recommendation-service, 포트 8084)
 
 ```json
 [

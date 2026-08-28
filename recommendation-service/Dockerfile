@@ -6,5 +6,5 @@ RUN ./gradlew :recommendation-service:bootJar --no-daemon
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=build /app/recommendation-service/build/libs/*.jar app.jar
-EXPOSE 8083
+EXPOSE 8084
 ENTRYPOINT ["java", "-jar", "app.jar"]

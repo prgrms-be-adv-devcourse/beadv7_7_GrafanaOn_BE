@@ -81,7 +81,7 @@ spring:
                     fallbackUri: forward:/fallback/commerce-api
 
             - id: recommendation-api-route
-              uri: ${RECOMMENDATION_SERVICE_URI:http://recommendation-service:8083}
+              uri: ${RECOMMENDATION_SERVICE_URI:http://recommendation-service:8084}
               predicates:
                 - Path=/api/recommendations/**
 

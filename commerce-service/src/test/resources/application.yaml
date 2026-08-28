@@ -34,7 +34,7 @@ wallet:
 
 recommendation:
   client:
-    base-url: ${RECOMMENDATION_CLIENT_BASE_URL:http://localhost:8083}
+    base-url: ${RECOMMENDATION_CLIENT_BASE_URL:http://localhost:8084}
 
 secret:
   aws:
