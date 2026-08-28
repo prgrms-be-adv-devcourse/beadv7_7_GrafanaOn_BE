@@ -13,7 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InboxService {
 
-    private final RecommendationInboxJpaRepository recommendationInboxJpaRepository;
+    private final RecommendationInboxJdbcRepository recommendationInboxJdbcRepository;
 
     @Transactional
     public void saveProductEvents(final List<RecommendationInbox> inboxes) {
@@ -22,9 +22,8 @@ public class InboxService {
         }
 
         final LocalDateTime now = LocalDateTime.now();
-        final int saved = inboxes.stream()
-            .mapToInt(inbox -> recommendationInboxJpaRepository.insertIgnoringDuplicate(now, inbox))
-            .sum();
+
+        final int saved = recommendationInboxJdbcRepository.insertIgnoringDuplicate(now, inboxes);
 
         log.info("[InboxService] inbox 적재 완료. received={}, saved={}, skipped={}",
             inboxes.size(), saved, inboxes.size() - saved);
