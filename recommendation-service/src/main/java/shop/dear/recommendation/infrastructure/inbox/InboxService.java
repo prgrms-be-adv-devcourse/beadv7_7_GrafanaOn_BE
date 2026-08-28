@@ -23,9 +23,8 @@ public class InboxService {
 
         final LocalDateTime now = LocalDateTime.now();
 
-        final int saved = recommendationInboxJdbcRepository.insertIgnoringDuplicate(now, inboxes);
+        recommendationInboxJdbcRepository.insertIgnoringDuplicate(now, inboxes);
 
-        log.info("[InboxService] inbox 적재 완료. received={}, saved={}, skipped={}",
-            inboxes.size(), saved, inboxes.size() - saved);
+        log.info("[InboxService] inbox 적재 완료. received={}", inboxes.size());
     }
 }
