@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: financial-service
+  config:
+    import:
+      - optional:classpath:application-monitoring.yaml
+  profiles:
+    active: local
+  task:
+    scheduling:
+      pool:
+        size: 2
+
+server:
+  port: 8083
+
+toss:
+  base-url: ${TOSS_BASE_URL:https://api.tosspayments.com}
+  secret-key: ${TOSS_SECRET_KEY:}
