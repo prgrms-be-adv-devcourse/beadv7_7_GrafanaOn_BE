@@ -13,6 +13,7 @@ spring:
     show-sql: true
     properties:
       hibernate:
+        default_schema: ${DB_SCHEMA:recommendation}
         format_sql: true
         highlight_sql: true
         default_batch_fetch_size: 100
