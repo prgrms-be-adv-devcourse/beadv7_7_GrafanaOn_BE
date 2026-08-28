@@ -30,10 +30,6 @@ offer:
   client:
     base-url: ${OFFER_CLIENT_BASE_URL}
 
-wallet:
-  client:
-    base-url: ${WALLET_CLIENT_BASE_URL}
-
 recommendation:
   client:
     base-url: ${RECOMMENDATION_CLIENT_BASE_URL}

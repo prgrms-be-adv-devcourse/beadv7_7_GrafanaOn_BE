@@ -28,10 +28,6 @@ offer:
   client:
     base-url: ${OFFER_CLIENT_BASE_URL:http://localhost:8082}
 
-wallet:
-  client:
-    base-url: ${WALLET_CLIENT_BASE_URL:http://localhost:8082}
-
 recommendation:
   client:
     base-url: ${RECOMMENDATION_CLIENT_BASE_URL:http://localhost:8084}
