@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,14 +36,14 @@ public class RecommendationInboxJdbcRepository {
         this.insertSql = INSERT_SQL.formatted(schema);
     }
 
-    public int insertIgnoringDuplicate(final LocalDateTime now, final List<RecommendationInbox> inboxes) {
+    public void insertIgnoringDuplicate(final LocalDateTime now, final List<RecommendationInbox> inboxes) {
         if (inboxes.isEmpty()) {
-            return 0;
+            return;
         }
 
         final Timestamp nowTimestamp = Timestamp.valueOf(now);
 
-        final int[] affected = jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
+        jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
             @Override
             public void setValues(final PreparedStatement ps, final int i) throws SQLException {
 
@@ -67,7 +66,5 @@ public class RecommendationInboxJdbcRepository {
                 return inboxes.size();
             }
         });
-
-        return affected.length;
     }
 }
