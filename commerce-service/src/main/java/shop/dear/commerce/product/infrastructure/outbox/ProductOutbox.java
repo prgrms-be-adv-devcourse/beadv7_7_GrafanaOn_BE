@@ -39,7 +39,7 @@ public class ProductOutbox extends BaseEntity {
     private ProductOutboxEvent eventType;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "payload", updatable = false)
+    @Column(name = "payload", nullable = false, updatable = false)
     private String payload;
 
     @Enumerated(EnumType.STRING)
