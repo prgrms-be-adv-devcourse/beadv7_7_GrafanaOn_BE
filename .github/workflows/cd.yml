@@ -109,6 +109,7 @@ jobs:
           AUTH_COOKIE_SAME_SITE=${{ vars.AUTH_COOKIE_SAME_SITE }}
           AUTH_COOKIE_PATH=${{ vars.AUTH_COOKIE_PATH }}
           COMMERCE_BASE_URL=${{ vars.COMMERCE_BASE_URL }}
+          IDENTITY_BASE_URL=${{ vars.IDENTITY_BASE_URL }}
           AES_SECRET_KEY=${{ secrets.AES_SECRET_KEY }}
           AES_SECRET_IV=${{ secrets.AES_SECRET_IV }}
           GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
