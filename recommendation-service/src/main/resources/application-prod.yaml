@@ -43,5 +43,5 @@ recommendation:
     initialize-schema: false
 
   inbox:
-    batch-size: 5
+    batch-size: 100
     poll-interval-ms: 5000
