@@ -20,3 +20,11 @@ out/
 
 # 로컬 전용 설정 제외
 **/application-local.yaml
+
+# 빌드에 불필요한 것들
+k6/
+common/docker/
+env/
+deploy/
+*.pem
+*.md
