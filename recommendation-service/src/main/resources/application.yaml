@@ -13,4 +13,4 @@ spring:
         default_schema: ${DB_SCHEMA:recommendation}
 
 server:
-  port: 8083
+  port: 8084

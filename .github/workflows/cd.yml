@@ -146,7 +146,7 @@ jobs:
 
       - name: Deploy recommendation-service
         if: needs.changes.outputs.recommendation == 'true'
-        run: ./deploy/scripts/deploy-container.sh recommendation-service 8083 8083 recommendation-service/.env
+        run: ./deploy/scripts/deploy-container.sh recommendation-service 8084 8084 recommendation-service/.env
 
       - name: Remove recommendation-service .env
         if: always() && needs.changes.outputs.recommendation == 'true'
