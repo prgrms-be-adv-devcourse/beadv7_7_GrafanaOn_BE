@@ -5,6 +5,7 @@ import jakarta.annotation.PreDestroy;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.rabbit.stream.producer.RabbitStreamTemplate;
+import org.springframework.rabbit.stream.support.StreamMessageProperties;
 import org.springframework.stereotype.Component;
 import shop.dear.common.messaging.StreamMessageHeaders;
 
@@ -42,7 +43,7 @@ public class RabbitStreamPublisher implements StreamPublisher {
         );
 
         // eventId, eventType, 본문 형식 등 메시지 메타데이터 구성
-        MessageProperties properties = new MessageProperties();
+        StreamMessageProperties properties = new StreamMessageProperties();
         properties.setMessageId(eventId);
         properties.setHeader(StreamMessageHeaders.EVENT_TYPE, eventType);
         properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
