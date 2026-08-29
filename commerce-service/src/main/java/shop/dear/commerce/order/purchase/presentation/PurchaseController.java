@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import shop.dear.commerce.order.purchase.application.PurchaseFacade;
 import shop.dear.commerce.order.purchase.application.PurchaseService;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.commerce.order.purchase.presentation.dto.CreatePurchaseRequest;
@@ -34,6 +35,7 @@ import static shop.dear.common.response.ApiResponse.successWithData;
 public class PurchaseController {
 
     private final PurchaseService purchaseService;
+    private final PurchaseFacade purchaseFacade;
 
     @GetMapping("/{purchaseId}")
     public ResponseEntity<ApiResponse<PurchaseResponse>> getPurchase(
@@ -70,7 +72,7 @@ public class PurchaseController {
             @Valid @RequestBody final CreatePurchaseRequest request,
             @AuthUser final Long buyerId
     ) {
-        final Purchase purchase = purchaseService.createPurchase(request.toCommand(buyerId));
+        final Purchase purchase = purchaseFacade.createPurchase(request.toCommand(buyerId));
         final PurchaseResponse response = PurchaseResponse.from(purchase);
         return ResponseEntity.status(HttpStatus.CREATED).body(successWithData(response));
     }
