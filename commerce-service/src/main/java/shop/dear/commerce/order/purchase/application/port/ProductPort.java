@@ -7,4 +7,6 @@ public interface ProductPort {
   ProductInfo getProduct(Long productId);
 
   boolean tradeProduct(Long productId);
+
+  void cancelTradeProduct(Long productId);
 }
