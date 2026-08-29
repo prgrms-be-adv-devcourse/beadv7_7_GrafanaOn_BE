@@ -64,17 +64,20 @@ public class PurchaseService {
         return purchaseRepository.findByBuyerId(buyerId, pageable);
     }
 
+    // Product 상태(ON_SALE 등)를 조회/검증만 하는 단계. 아직 Product 상태를 변경하지 않으므로 실패해도 보상 불필요
+    public ProductInfo validateAndGetProduct(final Long buyerId, final Long productId) {
+        validateMemberExists(buyerId);
+
+        final ProductInfo product = productPort.getProduct(productId);
+        validateProductForPurchase(buyerId, product);
+
+        return product;
+    }
+
+    // productPort.tradeProduct()로 이미 TRADING 전환에 성공한 이후 호출되는 단계.
+    // 이 메서드 실행 중 실패하면 PurchaseFacade가 Product 상태 보상(outbox 기록)을 수행함
     @Transactional
-    public Purchase createPurchase(final CreatePurchaseCommand command) {
-        validateMemberExists(command.buyerId());
-
-        final ProductInfo product = productPort.getProduct(command.productId());
-        validateProductForPurchase(command.buyerId(), product);
-
-        if (!productPort.tradeProduct(command.productId())) {
-            throw new BusinessException(PRODUCT_ALREADY_TRADING);
-        }
-
+    public Purchase createPurchase(final CreatePurchaseCommand command, final ProductInfo product) {
         final LocalDateTime paymentDueAt =
                 LocalDateTime.now().plusMinutes(PAYMENT_DUE_MINUTES);
 
