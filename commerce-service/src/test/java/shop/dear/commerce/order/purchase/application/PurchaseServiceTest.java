@@ -67,72 +67,30 @@ class PurchaseServiceTest {
     private PurchaseService purchaseService;
 
     @Nested
-    @DisplayName("createPurchase")
-    class CreatePurchase {
-
-        @Test
-        @DisplayName("상품 정보로 구매를 생성한다")
-        void createsPurchase() {
-            // given
-            final CreatePurchaseCommand command = createCommand(1L, 10L);
-            final ProductInfo product = productInfo(2L);
-
-            stubMemberExists(1L);
-            given(productPort.getProduct(10L)).willReturn(product);
-            given(productPort.tradeProduct(10L)).willReturn(true);
-            given(purchaseRepository.save(any(Purchase.class)))
-                    .willAnswer(invocation -> invocation.getArgument(0));
-
-            // when
-            final Purchase purchase = purchaseService.createPurchase(command);
-
-            // then
-            assertThat(purchase.getBuyerId()).isEqualTo(1L);
-            assertThat(purchase.getSellerId()).isEqualTo(2L);
-            assertThat(purchase.getProductId()).isEqualTo(10L);
-            assertThat(purchase.getAmount()).isEqualTo(new BigDecimal("10000"));
-
-            verifyMemberExists(1L);
-            verify(productPort).tradeProduct(10L);
-            verify(purchaseRepository).save(any(Purchase.class));
-
-            final ArgumentCaptor<PaymentRequestedEvent> paymentCaptor =
-                    ArgumentCaptor.forClass(PaymentRequestedEvent.class);
-            verify(purchaseEventPublisher).publish(paymentCaptor.capture());
-
-            final PaymentRequestedEvent paymentEvent = paymentCaptor.getValue();
-            assertThat(paymentEvent.orderId()).isEqualTo(purchase.getId());
-            assertThat(paymentEvent.memberId()).isEqualTo(purchase.getBuyerId());
-            assertThat(paymentEvent.amount()).isEqualTo(purchase.getAmount());
-            assertThat(paymentEvent.orderType()).isEqualTo(OrderType.PURCHASE.name());
-        }
+    @DisplayName("validateAndGetProduct")
+    class ValidateAndGetProduct {
 
         @Test
         @DisplayName("존재하지 않는 구매자면 예외를 던진다")
         void throwsException_whenBuyerNotExists() {
             // given
-            final CreatePurchaseCommand command = createCommand(1L, 10L);
-
             willThrow(new BusinessException(PurchaseErrorCode.PURCHASE_NOT_FOUND))
                     .given(memberPort)
                     .validateMemberExists(1L);
 
             // when & then
             assertThatThrownBy(() ->
-                    purchaseService.createPurchase(command)
+                    purchaseService.validateAndGetProduct(1L, 10L)
             )
                     .isInstanceOf(BusinessException.class);
 
             verify(productPort, never()).getProduct(anyLong());
-            verify(purchaseRepository, never()).save(any(Purchase.class));
-            verifyNoInteractions(purchaseEventPublisher);
         }
 
         @Test
         @DisplayName("본인이 판매하는 상품이면 예외를 던진다")
         void throwsException_whenBuyerIsSeller() {
             // given
-            final CreatePurchaseCommand command = createCommand(1L, 10L);
             final ProductInfo product = productInfo(1L, "ON_SALE", "IMMEDIATE");
 
             stubMemberExists(1L);
@@ -140,20 +98,16 @@ class PurchaseServiceTest {
 
             // when & then
             assertThatThrownBy(() ->
-                    purchaseService.createPurchase(command)
+                    purchaseService.validateAndGetProduct(1L, 10L)
             )
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", PurchaseErrorCode.CANNOT_PURCHASE_OWN_PRODUCT);
-
-            verify(purchaseRepository, never()).save(any(Purchase.class));
-            verifyNoInteractions(purchaseEventPublisher);
         }
 
         @Test
         @DisplayName("판매 중인 상품이 아니면 예외를 던진다")
         void throwsException_whenProductNotOnSale() {
             // given
-            final CreatePurchaseCommand command = createCommand(1L, 10L);
             final ProductInfo product = productInfo(2L, "SOLD_OUT", "IMMEDIATE");
 
             stubMemberExists(1L);
@@ -161,20 +115,16 @@ class PurchaseServiceTest {
 
             // when & then
             assertThatThrownBy(() ->
-                    purchaseService.createPurchase(command)
+                    purchaseService.validateAndGetProduct(1L, 10L)
             )
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", PurchaseErrorCode.PRODUCT_NOT_ON_SALE);
-
-            verify(purchaseRepository, never()).save(any(Purchase.class));
-            verifyNoInteractions(purchaseEventPublisher);
         }
 
         @Test
         @DisplayName("즉시구매 가능한 상품이 아니면 예외를 던진다")
         void throwsException_whenProductNotImmediatePurchase() {
             // given
-            final CreatePurchaseCommand command = createCommand(1L, 10L);
             final ProductInfo product = productInfo(2L, "ON_SALE", "OFFER");
 
             stubMemberExists(1L);
@@ -182,19 +132,27 @@ class PurchaseServiceTest {
 
             // when & then
             assertThatThrownBy(() ->
-                    purchaseService.createPurchase(command)
+                    purchaseService.validateAndGetProduct(1L, 10L)
             )
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", PurchaseErrorCode.PRODUCT_NOT_FOR_IMMEDIATE_PURCHASE);
-
-            verify(purchaseRepository, never()).save(any(Purchase.class));
-            verifyNoInteractions(purchaseEventPublisher);
         }
 
-        private ProductInfo productInfo(
-                final Long sellerId
-        ) {
-            return productInfo(sellerId, "ON_SALE", "IMMEDIATE");
+        @Test
+        @DisplayName("검증을 통과하면 상품 정보를 반환한다")
+        void returnsProduct_whenValid() {
+            // given
+            final ProductInfo product = productInfo(2L, "ON_SALE", "IMMEDIATE");
+
+            stubMemberExists(1L);
+            given(productPort.getProduct(10L)).willReturn(product);
+
+            // when
+            final ProductInfo result = purchaseService.validateAndGetProduct(1L, 10L);
+
+            // then
+            assertThat(result).isEqualTo(product);
+            verifyMemberExists(1L);
         }
 
         private ProductInfo productInfo(
@@ -213,6 +171,63 @@ class PurchaseServiceTest {
                     LocalDate.of(2026, 1, 1),
                     ProductSaleType.valueOf(saleType),
                     ProductStatus.valueOf(status),
+                    0L,
+                    "상품 설명",
+                    LocalDateTime.now()
+            );
+        }
+    }
+
+    @Nested
+    @DisplayName("createPurchase")
+    class CreatePurchase {
+
+        @Test
+        @DisplayName("상품 정보로 구매를 생성한다")
+        void createsPurchase() {
+            // given
+            final CreatePurchaseCommand command = createCommand(1L, 10L);
+            final ProductInfo product = productInfo(2L);
+
+            given(purchaseRepository.save(any(Purchase.class)))
+                    .willAnswer(invocation -> invocation.getArgument(0));
+
+            // when
+            final Purchase purchase = purchaseService.createPurchase(command, product);
+
+            // then
+            assertThat(purchase.getBuyerId()).isEqualTo(1L);
+            assertThat(purchase.getSellerId()).isEqualTo(2L);
+            assertThat(purchase.getProductId()).isEqualTo(10L);
+            assertThat(purchase.getAmount()).isEqualTo(new BigDecimal("10000"));
+
+            verify(purchaseRepository).save(any(Purchase.class));
+
+            final ArgumentCaptor<PaymentRequestedEvent> paymentCaptor =
+                    ArgumentCaptor.forClass(PaymentRequestedEvent.class);
+            verify(purchaseEventPublisher).publish(paymentCaptor.capture());
+
+            final PaymentRequestedEvent paymentEvent = paymentCaptor.getValue();
+            assertThat(paymentEvent.orderId()).isEqualTo(purchase.getId());
+            assertThat(paymentEvent.memberId()).isEqualTo(purchase.getBuyerId());
+            assertThat(paymentEvent.amount()).isEqualTo(purchase.getAmount());
+            assertThat(paymentEvent.orderType()).isEqualTo(OrderType.PURCHASE.name());
+        }
+
+        private ProductInfo productInfo(
+                final Long sellerId
+        ) {
+            return new ProductInfo(
+                    sellerId,
+                    List.of(),
+                    "상품명",
+                    "브랜드",
+                    new BigDecimal("10000"),
+                    "MODEL-001",
+                    "카테고리",
+                    LocalDate.of(2026, 1, 1),
+                    ProductSaleType.valueOf("IMMEDIATE"),
+                    ProductStatus.valueOf("ON_SALE"),
                     0L,
                     "상품 설명",
                     LocalDateTime.now()
