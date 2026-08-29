@@ -56,4 +56,4 @@ spring:
             - id: recommendation-api-route
               uri: ${RECOMMENDATION_SERVICE_URI:http://localhost:8084}
               predicates:
-                - Path=/api/recommendations/**, /api/behaviors/**
+                - Path=/api/recommendations/**,/api/behaviors/**
