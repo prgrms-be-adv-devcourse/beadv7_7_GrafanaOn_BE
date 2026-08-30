@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import shop.dear.recommendation.domain.model.Embedding;
-import shop.dear.recommendation.domain.model.RecommendationItem;
+import shop.dear.recommendation.domain.model.RecommendationSimilarItem;
 import shop.dear.recommendation.domain.repository.ProductVectorRepository;
 
 import java.util.List;
@@ -60,7 +60,7 @@ public class ProductVectorJdbcAdapter implements ProductVectorRepository {
 	}
 
 	@Override
-	public List<RecommendationItem> findSimilar(
+	public List<RecommendationSimilarItem> findSimilar(
 		final Long productId, final double maxDistance, final int limit
 	) {
 		return this.jdbcTemplate.query("""
@@ -74,7 +74,7 @@ public class ProductVectorJdbcAdapter implements ProductVectorRepository {
 			 ORDER BY distance
 			 LIMIT ?
 			""".formatted(this.table),
-			(rs, rowNum) -> new RecommendationItem(rs.getLong("product_id"), rs.getDouble("distance")),
+			(rs, rowNum) -> new RecommendationSimilarItem(rs.getLong("product_id"), rs.getDouble("distance")),
 			productId, maxDistance, limit
 		);
 	}

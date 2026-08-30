@@ -9,7 +9,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import shop.dear.recommendation.domain.model.RecommendationItem;
+import shop.dear.recommendation.domain.model.RecommendationSimilarItem;
 import shop.dear.recommendation.domain.repository.ProductVectorRepository;
 
 import java.util.List;
@@ -83,10 +83,10 @@ class RecommendationServiceTest {
 	@DisplayName("저장소가 돌려준 가까운 순서를 그대로 유지한다")
 	void keepsRepositoryOrder() {
 		given(this.productVectorRepository.findSimilar(anyLong(), anyDouble(), anyInt()))
-			.willReturn(List.of(new RecommendationItem(104L, 0.11d), new RecommendationItem(109L, 0.27d)));
+			.willReturn(List.of(new RecommendationSimilarItem(104L, 0.11d), new RecommendationSimilarItem(109L, 0.27d)));
 
-		final List<RecommendationItem> items = this.recommendationService.findSimilarItems(101L, null);
+		final List<RecommendationSimilarItem> items = this.recommendationService.findSimilarItems(101L, null);
 
-		assertThat(items).extracting(RecommendationItem::productId).containsExactly(104L, 109L);
+		assertThat(items).extracting(RecommendationSimilarItem::productId).containsExactly(104L, 109L);
 	}
 }

@@ -9,7 +9,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.recommendation.application.RecommendationService;
 import shop.dear.recommendation.domain.exception.RecommendationErrorCode;
-import shop.dear.recommendation.domain.model.RecommendationItem;
+import shop.dear.recommendation.domain.model.RecommendationSimilarItem;
 
 import java.util.List;
 
@@ -34,8 +34,8 @@ class RecommendationControllerTest {
 	@DisplayName("가까운 순으로 rank 를 1부터 매겨 응답한다")
 	void returnsRankedItems() throws Exception {
 		given(recommendationService.findSimilarItems(101L, 2)).willReturn(List.of(
-			new RecommendationItem(104L, 0.11d),
-			new RecommendationItem(109L, 0.27d)
+			new RecommendationSimilarItem(104L, 0.11d),
+			new RecommendationSimilarItem(109L, 0.27d)
 		));
 
 		mockMvc.perform(get(URI).param("productId", "101").param("size", "2"))
