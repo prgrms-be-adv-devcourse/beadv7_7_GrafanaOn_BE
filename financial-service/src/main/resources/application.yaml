@@ -17,3 +17,7 @@ server:
 toss:
   base-url: ${TOSS_BASE_URL:https://api.tosspayments.com}
   secret-key: ${TOSS_SECRET_KEY:}
+
+wallet:
+  client:
+    base-url: ${WALLET_CLIENT_BASE_URL:http://localhost:8083}
