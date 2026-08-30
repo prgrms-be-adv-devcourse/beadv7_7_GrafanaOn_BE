@@ -4,6 +4,7 @@ import com.rabbitmq.stream.Environment;
 import jakarta.annotation.PreDestroy;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.rabbit.stream.producer.RabbitStreamTemplate;
 import org.springframework.rabbit.stream.support.StreamMessageProperties;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * JSON payload를 RabbitMQ Stream으로 발행하는 StreamPublisher 구현체
  */
 @Component
+@ConditionalOnProperty(prefix = "messaging.rabbitmq.stream", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class RabbitStreamPublisher implements StreamPublisher {
 
     private final Environment environment;
