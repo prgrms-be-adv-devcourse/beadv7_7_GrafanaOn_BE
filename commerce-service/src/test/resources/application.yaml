@@ -32,6 +32,10 @@ recommendation:
   client:
     base-url: ${RECOMMENDATION_CLIENT_BASE_URL:http://localhost:8084}
 
+financial:
+  client:
+    base-url: ${FINANCIAL_CLIENT_BASE_URL:http://localhost:8083}
+
 secret:
   aws:
     s3:

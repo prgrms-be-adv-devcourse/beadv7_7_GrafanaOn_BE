@@ -34,6 +34,10 @@ recommendation:
   client:
     base-url: ${RECOMMENDATION_CLIENT_BASE_URL}
 
+financial:
+  client:
+    base-url: ${FINANCIAL_CLIENT_BASE_URL}
+
 secret:
   aws:
     s3:
