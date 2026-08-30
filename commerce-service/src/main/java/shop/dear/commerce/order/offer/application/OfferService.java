@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import shop.dear.commerce.common.event.FinishedOrderEventPublisher;
 import shop.dear.commerce.order.offer.application.dto.CreateOfferCommand;
 import shop.dear.commerce.order.offer.application.dto.CreateOfferSnapshotCommand;
 import shop.dear.commerce.order.offer.application.port.OfferEventPublisher;
@@ -23,7 +22,6 @@ import shop.dear.commerce.order.offer.domain.constant.OfferReleaseReason;
 import shop.dear.common.event.financial.PaymentHoldRequestedEvent;
 import shop.dear.common.event.financial.PaymentReleaseRequestedEvent;
 import shop.dear.common.event.financial.PaymentRequestedEvent;
-import shop.dear.common.event.order.FinishedOrderEvent;
 import shop.dear.common.type.OrderType;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.common.exception.CommonErrorCode;
@@ -47,7 +45,6 @@ public class OfferService {
 
     private final OfferRepository offerRepository;
     private final OfferEventPublisher offerEventPublisher;
-    private final FinishedOrderEventPublisher finishedOrderEventPublisher;
     private final OfferSnapshotRepository offerSnapshotRepository;
     private final ProductPort productPort;
     private final MemberPort memberPort;
@@ -148,17 +145,6 @@ public class OfferService {
                 offer.getBuyerId(),
                 offer.getAmount()
         ));
-
-        final FinishedOrderEvent finishedOrderEvent = new FinishedOrderEvent(
-                offer.getId(),
-                offer.getBuyerId(),
-                offer.getSellerId(),
-                offer.getProductId(),
-                offer.getAmount(),
-                OrderType.OFFER.name()
-        );
-        offerEventPublisher.publish(finishedOrderEvent);
-        finishedOrderEventPublisher.publish(finishedOrderEvent);
 
         releaseOtherPendingOffers(offer);
     }
