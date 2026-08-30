@@ -26,7 +26,7 @@ public class BehaviorEventRepositoryAdapter implements BehaviorEventRepository {
     }
 
     @Override
-    public List<RecommendationBehaviorEvent> findByMememberIdAndOccurredAtAfter(Long memberId, LocalDateTime occurredAt) {
+    public List<RecommendationBehaviorEvent> findByMemberIdAndOccurredAtAfter(Long memberId, LocalDateTime occurredAt) {
         return behaviorEventJpaRepository.findByMemberIdAndOccurredAtAfter(memberId, occurredAt);
     }
 
