@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 import shop.dear.commerce.order.offer.application.dto.CreateOfferCommand;
 import shop.dear.commerce.order.offer.application.dto.CreateOfferSnapshotCommand;
+import shop.dear.commerce.common.event.FinishedOrderEventPublisher;
 import shop.dear.commerce.order.offer.application.port.OfferEventPublisher;
 import shop.dear.commerce.order.offer.domain.constant.OfferStatus;
 import shop.dear.commerce.order.offer.domain.model.Offer;
@@ -57,6 +58,9 @@ class OfferServiceTest {
 
     @Mock
     private OfferEventPublisher offerEventPublisher;
+
+    @Mock
+    private FinishedOrderEventPublisher finishedOrderEventPublisher;
 
     @Mock
     private OfferSnapshotRepository offerSnapshotRepository;
@@ -153,6 +157,8 @@ class OfferServiceTest {
             assertThat(event.sellerId()).isEqualTo(offer.getSellerId());
             assertThat(event.productId()).isEqualTo(offer.getProductId());
             assertThat(event.amount()).isEqualTo(offer.getAmount());
+
+            verify(finishedOrderEventPublisher).publish(event);
 
             final ArgumentCaptor<PaymentRequestedEvent> paymentCaptor =
                     ArgumentCaptor.forClass(PaymentRequestedEvent.class);
