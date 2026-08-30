@@ -52,8 +52,6 @@ SELECT s.product_id                AS product_id,
   FROM recommendation.product_vector s,      -- s = 후보
        recommendation.product_vector b       -- b = 기준
  WHERE b.product_id  = ?
-   AND b.model_name  = ?
-   AND s.model_name  = b.model_name
    AND s.product_id <> b.product_id
    AND (s.embedding <=> b.embedding) < ?
  ORDER BY distance
