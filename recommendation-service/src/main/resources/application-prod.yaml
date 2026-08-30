@@ -15,6 +15,31 @@ spring:
         highlight_sql: true
         default_batch_fetch_size: 100
 
+  ai:
+    model:
+      # ChatModel 은 사용하지 않는다. 켜면 불필요한 자동구성만 늘어난다.
+      chat: none
+      embedding: openai
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      embedding:
+        # recommendation.embedding.model-name 과 어긋나면 product_vector.model_name 이
+        # 실제 모델과 달라지므로 한 곳에서만 관리한다.
+        model: ${recommendation.embedding.model-name}
+
+recommendation:
+  embedding:
+    model-name: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+
+  vector:
+    dimensions: 1536
+    initialize-schema: false
+
+  inbox:
+    batch-size: 100
+    poll-interval-ms: 5000
+    initial-delay-ms: 10000
+    max-retry-count: 5
 logging:
   file:
     name: /app/logs/recommendation-service.log

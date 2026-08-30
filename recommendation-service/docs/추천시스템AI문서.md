@@ -72,7 +72,7 @@ Recommendation API
 | 단계               | 상태                          |
 | ---------------- |-----------------------------|
 | ① Outbox / Relay | 구현 중 — [rec_events.md](상품이벤트문서.md)        |
-| ② 임베딩 파이프라인      | **구현 중** — [rec_embedding.md](./rec_embedding.md) |
+| ② 임베딩 파이프라인      | **구현 중** — [rec_embedding.md](AI임베딩문서.md) |
 | ③ 유사 상품 조회 API   | 구현 중 — rec_similar.md       |
 
 ---

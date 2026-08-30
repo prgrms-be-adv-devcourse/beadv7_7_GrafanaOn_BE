@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,30 +47,24 @@ class RecommendationInboxTest {
     }
 
     @Test
-    @DisplayName("처리에 실패하면 FAILED가 된다")
+    @DisplayName("처리에 실패하면 FAILED가 되고 사유와 시도 횟수가 남는다")
     void markAsFailed() {
-        inbox.markAsFailed();
+        inbox.markAsFailed("임베딩 실패");
 
         assertEquals(InboxStatus.FAILED, inbox.getStatus());
         assertFalse(inbox.isPending());
+        assertEquals("임베딩 실패", inbox.getLastError());
+        assertEquals(1, inbox.getRetryCount());
     }
 
     @Test
-    @DisplayName("마지막 처리 시각보다 이전에 발생한 이벤트는 오래된 것으로 판단한다")
-    void staleWhenOlderThanLastProcessed() {
-        assertTrue(inbox.isStaleAgainst(OCCURRED_AT.plusSeconds(1)));
-    }
+    @DisplayName("재시도할 때마다 시도 횟수가 쌓이고 마지막 사유로 갱신된다")
+    void markAsFailedAccumulatesRetryCount() {
+        inbox.markAsFailed("모델 서버 연결 실패");
+        inbox.markAsFailed("타임아웃");
 
-    @Test
-    @DisplayName("마지막 처리 시각과 같거나 이후에 발생한 이벤트는 오래된 것이 아니다")
-    void notStaleWhenSameOrNewer() {
-        assertFalse(inbox.isStaleAgainst(OCCURRED_AT));
-        assertFalse(inbox.isStaleAgainst(OCCURRED_AT.minusSeconds(1)));
-    }
-
-    @Test
-    @DisplayName("처리 이력이 없으면(null) 오래된 것이 아니다")
-    void notStaleWhenNeverProcessed() {
-        assertFalse(inbox.isStaleAgainst(null));
+        assertEquals(InboxStatus.FAILED, inbox.getStatus());
+        assertEquals("타임아웃", inbox.getLastError());
+        assertEquals(2, inbox.getRetryCount());
     }
 }
