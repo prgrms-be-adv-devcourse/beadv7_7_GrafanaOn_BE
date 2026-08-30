@@ -6,12 +6,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public interface RecommendationInboxJpaRepository extends JpaRepository<RecommendationInbox, Long> {
 
-    List<RecommendationInbox> findByStatusOrderByOccurredAtAsc(final InboxStatus status, final Limit limit);
+    List<RecommendationInbox> findByStatusInAndRetryCountLessThanOrderByOccurredAtAsc(
+        final Collection<InboxStatus> statuses,
+        final int retryCountLessThan,
+        final Limit limit
+    );
 
     Optional<RecommendationInbox> findByEventId(final Long eventId);
 

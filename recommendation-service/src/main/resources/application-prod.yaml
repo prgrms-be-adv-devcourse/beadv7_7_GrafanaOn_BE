@@ -38,3 +38,5 @@ recommendation:
   inbox:
     batch-size: 100
     poll-interval-ms: 5000
+    initial-delay-ms: 10000
+    max-retry-count: 5

@@ -7,10 +7,10 @@ import shop.dear.recommendation.application.EmbeddingService;
 import shop.dear.recommendation.application.dto.ProductEvent;
 import shop.dear.recommendation.application.dto.ProductPayload;
 import shop.dear.recommendation.application.port.ProductEventStore;
+import shop.dear.recommendation.application.port.ProductEmbedder;
 import shop.dear.recommendation.domain.model.Embedding;
 import shop.dear.recommendation.domain.repository.ProductVectorRepository;
 import tools.jackson.databind.ObjectMapper;
-import shop.dear.recommendation.domain.repository.ProductEmbedder;
 
 import java.time.LocalDateTime;
 

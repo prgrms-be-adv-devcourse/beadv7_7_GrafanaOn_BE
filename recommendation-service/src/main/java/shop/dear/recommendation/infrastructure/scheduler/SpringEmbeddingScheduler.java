@@ -30,17 +30,20 @@ public class SpringEmbeddingScheduler {
 		this.batchSize = batchSize;
 	}
 
-	@Scheduled(fixedDelayString = "${recommendation.inbox.poll-interval-ms}")
-	public void pollPendingEvents() {
-		final List<ProductEvent> pending = this.eventStore.findPending(this.batchSize);
+	@Scheduled(
+		initialDelayString = "${recommendation.inbox.initial-delay-ms}",
+		fixedDelayString = "${recommendation.inbox.poll-interval-ms}"
+	)
+	public void pollEvents() {
+		final List<ProductEvent> events = this.eventStore.findProcessable(this.batchSize);
 
-		if (pending.isEmpty()) {
+		if (events.isEmpty()) {
 			return;
 		}
 
-		log.info("이벤트 {}건 처리 시작", pending.size());
+		log.info("이벤트 {}건 처리 시작", events.size());
 
-		for (final ProductEvent event : pending) {
+		for (final ProductEvent event : events) {
 			try {
 				this.productEventHandler.process(event);
 			} catch (final Exception e) {

@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import shop.dear.recommendation.domain.model.Embedding;
 import shop.dear.recommendation.domain.repository.ProductVectorRepository;
-import shop.dear.recommendation.domain.repository.ProductEmbedder;
+import shop.dear.recommendation.application.port.ProductEmbedder;
 import shop.dear.recommendation.application.dto.ProductEvent;
 import tools.jackson.databind.json.JsonMapper;
 import shop.dear.recommendation.application.port.ProductEventStore;
@@ -148,5 +148,20 @@ class ProductEventHandlerTest {
 
 		then(embeddingService).should().markFailed(eq(event.eventId()), anyString());
 		then(productEmbedder).should(never()).embed(anyString());
+	}
+
+	@Test
+	@DisplayName("임베딩 호출이 실패하면 적재하지 않고 실패로 남긴다")
+	void embeddingFailureIsMarkedFailed() {
+		neverProcessedBefore();
+		final ProductEvent event =
+			event("PRODUCT_UPDATED", "{\"productId\":100,\"story\":\"이야기\"}");
+		given(productVectorRepository.findStory(PRODUCT_ID)).willReturn(Optional.empty());
+		given(productEmbedder.embed(anyString())).willThrow(new RuntimeException("모델 서버 연결 실패"));
+
+		productEventHandler.process(event);
+
+		then(embeddingService).should().markFailed(eq(event.eventId()), anyString());
+		then(embeddingService).should(never()).save(anyLong(), anyLong(), anyString(), any());
 	}
 }

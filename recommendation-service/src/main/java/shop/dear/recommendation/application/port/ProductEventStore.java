@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface ProductEventStore {
 
-	List<ProductEvent> findPending(int limit);
+	List<ProductEvent> findProcessable(int limit);
 
 	Optional<LocalDateTime> findLatestProcessedOccurredAt(String aggregateId);
 

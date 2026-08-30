@@ -37,6 +37,14 @@ recommendation:
   embedding:
     model-name: ${OLLAMA_EMBEDDING_MODEL:bge-m3}
 
+  # common 의 SchedulingConfig 가 @EnableScheduling 이라 테스트 컨텍스트에서도 스케줄러가 산다.
+  # 첫 실행을 멀리 미뤄 테스트 중에는 폴링이 돌지 않게 한다.
+  inbox:
+    batch-size: 100
+    poll-interval-ms: 5000
+    initial-delay-ms: 3600000
+    max-retry-count: 3
+
   vector:
     dimensions: 1024
     # 운영 코드가 product_vector SQL 을 수식할 때 쓰는 값. main 의 application.yaml 과 같다.

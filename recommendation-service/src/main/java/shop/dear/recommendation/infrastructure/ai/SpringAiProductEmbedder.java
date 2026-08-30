@@ -1,14 +1,12 @@
 package shop.dear.recommendation.infrastructure.ai;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import shop.dear.common.exception.BusinessException;
 import shop.dear.recommendation.domain.model.Embedding;
-import shop.dear.recommendation.domain.repository.ProductEmbedder;
+import shop.dear.recommendation.application.port.ProductEmbedder;
 
 import java.util.List;
 

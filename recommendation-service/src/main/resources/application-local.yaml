@@ -44,3 +44,7 @@ recommendation:
   inbox:
     batch-size: 100
     poll-interval-ms: 5000
+    # 기동 직후 첫 폴링까지의 지연
+    initial-delay-ms: 5000
+    # 실패한 이벤트도 이 횟수까지는 신규와 함께 다시 집는다
+    max-retry-count: 3

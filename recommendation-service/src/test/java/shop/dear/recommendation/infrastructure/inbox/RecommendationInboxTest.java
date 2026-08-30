@@ -56,4 +56,15 @@ class RecommendationInboxTest {
         assertEquals("임베딩 실패", inbox.getLastError());
         assertEquals(1, inbox.getRetryCount());
     }
+
+    @Test
+    @DisplayName("재시도할 때마다 시도 횟수가 쌓이고 마지막 사유로 갱신된다")
+    void markAsFailedAccumulatesRetryCount() {
+        inbox.markAsFailed("모델 서버 연결 실패");
+        inbox.markAsFailed("타임아웃");
+
+        assertEquals(InboxStatus.FAILED, inbox.getStatus());
+        assertEquals("타임아웃", inbox.getLastError());
+        assertEquals(2, inbox.getRetryCount());
+    }
 }
