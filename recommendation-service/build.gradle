@@ -7,8 +7,8 @@ dependencies {
     implementation project(':common:common-web')
     implementation project(':common:common-jpa')
 
-    // Spring AI - 현재는 로컬 테스트용 Ollama 만 사용
-    // implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+    // Spring AI - 로컬은 Ollama(bge-m3), 운영은 OpenAI(text-embedding-3-small)
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
     implementation 'org.springframework.ai:spring-ai-starter-model-ollama'
 
     // PostgreSQL

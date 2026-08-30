@@ -33,10 +33,6 @@ spring:
         model: ${recommendation.embedding.model-name}
 
 recommendation:
-  # Inbox 폴링 -> 임베딩 -> product_vector 적재 파이프라인 활성화 여부
-  pipeline:
-    enabled: ${RECOMMENDATION_PIPELINE_ENABLED:true}
-
   embedding:
     model-name: ${OLLAMA_EMBEDDING_MODEL:bge-m3}
 

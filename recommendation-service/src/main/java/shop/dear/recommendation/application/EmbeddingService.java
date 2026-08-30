@@ -1,6 +1,5 @@
 package shop.dear.recommendation.application;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,7 +12,6 @@ import shop.dear.recommendation.domain.repository.ProductVectorRepository;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "recommendation.pipeline", name = "enabled", havingValue = "true")
 public class EmbeddingService {
 
 	private final ProductEventStore eventStore;

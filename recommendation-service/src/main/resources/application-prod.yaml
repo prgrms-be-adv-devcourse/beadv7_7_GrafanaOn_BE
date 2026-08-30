@@ -15,26 +15,19 @@ spring:
         highlight_sql: true
         default_batch_fetch_size: 100
 
-# 테스트 완료 후 운영에 활성화시키려면
-#  ai:
-#    model:
-#      chat: openai
-#      embedding: openai
-#    openai:
-#      api-key: ${OPENAI_API_KEY}
-#      chat:
-#        model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
-
   ai:
     model:
+      # ChatModel 은 사용하지 않는다. 켜면 불필요한 자동구성만 늘어난다.
       chat: none
-      embedding: none
+      embedding: openai
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      embedding:
+        # recommendation.embedding.model-name 과 어긋나면 product_vector.model_name 이
+        # 실제 모델과 달라지므로 한 곳에서만 관리한다.
+        model: ${recommendation.embedding.model-name}
 
 recommendation:
-#  테스트 후 true 로 변경 또는, ConditionalOnProperty 어노테이션 제거
-  pipeline:
-    enabled: ${RECOMMENDATION_PIPELINE_ENABLED:false}
-
   embedding:
     model-name: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
 

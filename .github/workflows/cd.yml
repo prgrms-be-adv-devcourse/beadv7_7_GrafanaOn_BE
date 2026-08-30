@@ -152,6 +152,7 @@ jobs:
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           DB_DRIVER=${{ vars.DB_DRIVER }}
           DB_SCHEMA=${{ vars.RECOMMENDATION_DB_SCHEMA || 'recommendation' }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
           EOF
           chmod 600 recommendation-service/.env
 

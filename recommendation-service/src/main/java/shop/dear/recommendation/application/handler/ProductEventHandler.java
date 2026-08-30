@@ -2,7 +2,6 @@ package shop.dear.recommendation.application.handler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import shop.dear.recommendation.application.EmbeddingService;
 import shop.dear.recommendation.application.dto.ProductEvent;
@@ -19,7 +18,6 @@ import java.time.LocalDateTime;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "recommendation.pipeline", name = "enabled", havingValue = "true")
 public class ProductEventHandler {
 
 	private final ProductEventStore eventStore;

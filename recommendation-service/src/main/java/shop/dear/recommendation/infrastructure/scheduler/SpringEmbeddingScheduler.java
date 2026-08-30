@@ -2,7 +2,6 @@ package shop.dear.recommendation.infrastructure.scheduler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import shop.dear.recommendation.application.handler.ProductEventHandler;
@@ -15,7 +14,6 @@ import java.util.List;
 
 @Slf4j
 @Component
-@ConditionalOnProperty(prefix = "recommendation.pipeline", name = "enabled", havingValue = "true")
 public class SpringEmbeddingScheduler {
 
 	private final ProductEventStore eventStore;

@@ -21,6 +21,7 @@ public class RecommendationController {
 
 	private final RecommendationService recommendationService;
 
+	//임시 end point, 최소추천 api 구현되면 ai 로직 붙이기
 	@GetMapping("/similar")
 	public ResponseEntity<ApiResponse<List<RecommendSimilarItemsResponse>>> recommendSimilarItems(
 		@RequestParam(required = false) final Long productId,

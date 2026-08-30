@@ -7,6 +7,20 @@ spring:
     hikari:
       connection-init-sql: CREATE SCHEMA IF NOT EXISTS ${DB_SCHEMA:recommendation}
 
+  ai:
+    model:
+      embedding: ollama
+      chat: none
+      image: none
+      moderation: none
+      audio:
+        speech: none
+        transcription: none
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      embedding:
+        model: ${recommendation.embedding.model-name}
+
   jpa:
     hibernate:
       ddl-auto: create-drop
