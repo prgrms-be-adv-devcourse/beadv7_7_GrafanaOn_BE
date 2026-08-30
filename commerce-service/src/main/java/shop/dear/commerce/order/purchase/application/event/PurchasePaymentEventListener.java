@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import shop.dear.commerce.common.event.FinishedOrderEventPublisher;
 import shop.dear.commerce.order.purchase.application.port.PurchaseEventPublisher;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.commerce.order.purchase.domain.repository.PurchaseRepository;
@@ -28,6 +29,7 @@ public class PurchasePaymentEventListener {
 
     private final PurchaseRepository purchaseRepository;
     private final PurchaseEventPublisher purchaseEventPublisher;
+    private final FinishedOrderEventPublisher finishedOrderEventPublisher;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -46,16 +48,17 @@ public class PurchasePaymentEventListener {
 
         purchase.pay();
 
-        purchaseEventPublisher.publish(
-                new FinishedOrderEvent(
-                        purchase.getId(),
-                        purchase.getBuyerId(),
-                        purchase.getSellerId(),
-                        purchase.getProductId(),
-                        purchase.getAmount(),
-                        OrderType.PURCHASE.name()
-                )
+        final FinishedOrderEvent finishedOrderEvent = new FinishedOrderEvent(
+                purchase.getId(),
+                purchase.getBuyerId(),
+                purchase.getSellerId(),
+                purchase.getProductId(),
+                purchase.getAmount(),
+                OrderType.PURCHASE.name()
         );
+
+        purchaseEventPublisher.publish(finishedOrderEvent);
+        finishedOrderEventPublisher.publish(finishedOrderEvent);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
