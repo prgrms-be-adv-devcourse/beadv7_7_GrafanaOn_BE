@@ -211,3 +211,13 @@ jobs:
       - name: Remove financial-service .env
         if: always() && needs.changes.outputs.financial == 'true'
         run: rm -f financial-service/.env
+
+      - name: Prune unused docker images
+        if: always()
+        run: |
+          echo "== 정리 전"
+          docker system df
+          docker image prune -f
+          docker builder prune -f --filter "until=168h"
+          echo "== 정리 후"
+          docker system df
