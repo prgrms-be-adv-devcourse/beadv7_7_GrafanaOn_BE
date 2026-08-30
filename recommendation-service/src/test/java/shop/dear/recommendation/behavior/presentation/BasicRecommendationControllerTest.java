@@ -4,9 +4,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import shop.dear.common.auth.AuthUserArgumentResolver;
+import shop.dear.common.auth.AuthUserWebMvcConfig;
+import shop.dear.common.exception.CommonExceptionHandler;
 import shop.dear.recommendation.behavior.application.BasicRecommendationService;
 import shop.dear.recommendation.behavior.application.dto.BasicRecommendationResponse;
 import shop.dear.recommendation.behavior.application.dto.RecommendationItemResponse;
@@ -19,6 +23,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(BasicRecommendationController.class)
+@Import({
+        AuthUserArgumentResolver.class,
+        AuthUserWebMvcConfig.class,
+        CommonExceptionHandler.class
+})
 class BasicRecommendationControllerTest {
 
     private static final String URI = "/api/recommendations";
