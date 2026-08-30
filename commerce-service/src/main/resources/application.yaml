@@ -51,6 +51,19 @@ toss:
   base-url: ${TOSS_BASE_URL:https://api.tosspayments.com}
   secret-key: ${TOSS_SECRET_KEY:}
 
+messaging:
+  rabbitmq:
+    stream:
+      host: ${RABBITMQ_STREAM_HOST}
+      port: ${RABBITMQ_STREAM_PORT:5552}
+      username: ${RABBITMQ_STREAM_USERNAME}
+      password: ${RABBITMQ_STREAM_PASSWORD}
+      virtualHost: ${RABBITMQ_STREAM_VIRTUAL_HOST:/}
+
+outbox:
+  relay:
+    fixed-delay: ${OUTBOX_RELAY_FIXED_DELAY:5000}
+
 # ES가 죽으면 JPA로 풀백하지만, 죽었다는 사실은 알아야 함.
 management:
   health:
