@@ -13,15 +13,23 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
+@Table(
+        name = "recommendation_behavior_event",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_behavior_event_event_id",
+                        columnNames = "event_id"
+                )
+        }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "recommendation_behavior_event")
 public class RecommendationBehaviorEvent extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "event_id", nullable = false, unique = true)
+    @Column(name = "event_id", nullable = false)
     private String eventId;
 
     @Column(name = "recommendation_id")

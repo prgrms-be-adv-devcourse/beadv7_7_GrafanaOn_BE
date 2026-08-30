@@ -6,6 +6,9 @@ import shop.dear.recommendation.behavior.domain.model.RecommendationBehaviorEven
 import shop.dear.recommendation.behavior.domain.repository.BehaviorEventRepository;
 import shop.dear.recommendation.behavior.infrastructure.persistence.jpa.BehaviorEventJpaRepository;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 public class BehaviorEventRepositoryAdapter implements BehaviorEventRepository {
@@ -21,5 +24,10 @@ public class BehaviorEventRepositoryAdapter implements BehaviorEventRepository {
     public boolean existsByEventId(String eventId) {
         return behaviorEventJpaRepository.existsByEventId(eventId);
     }
-    
+
+    @Override
+    public List<RecommendationBehaviorEvent> findByMememberIdAndOccurredAtAfter(Long memberId, LocalDateTime occurredAt) {
+        return behaviorEventJpaRepository.findByMemberIdAndOccurredAtAfter(memberId, occurredAt);
+    }
+
 }

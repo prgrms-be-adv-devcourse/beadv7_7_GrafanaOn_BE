@@ -1,10 +1,10 @@
 package shop.dear.recommendation.behavior.domain.constant;
 
 public enum BehaviorType {
-    VIEW,
+    IMPRESSION,
     CLICK,
+    VIEW,
     SCRAP,
     CART_ADD,
-    PURCHASE,
-    IMPRESSION
+    PURCHASE
 }
