@@ -6,6 +6,7 @@ dependencies {
     implementation project(':common:common-monitoring')
     implementation project(':common:common-web')
     implementation project(':common:common-jpa')
+    implementation project(':commerce-service')
 
     // PostgreSQL
     runtimeOnly 'org.postgresql:postgresql'

@@ -14,3 +14,11 @@ spring:
         format_sql: true
         highlight_sql: true
         default_batch_fetch_size: 100
+
+logging:
+  file:
+    name: /app/logs/recommendation-service.log
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 7
