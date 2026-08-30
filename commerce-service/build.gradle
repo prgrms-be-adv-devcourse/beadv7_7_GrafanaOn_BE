@@ -21,7 +21,12 @@ dependencies {
     testImplementation 'com.fasterxml.jackson.core:jackson-databind'
 }
 
-//plain jar 생성 false
+//plain jar 생성 true
 tasks.named('jar') {
-    enabled = false
+    enabled = true
+    archiveClassifier = 'plain'
+}
+
+tasks.named('bootJar') {
+    archiveClassifier = ''
 }

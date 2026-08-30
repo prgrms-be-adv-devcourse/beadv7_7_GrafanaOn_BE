@@ -40,3 +40,10 @@ recommendation:
     poll-interval-ms: 5000
     initial-delay-ms: 10000
     max-retry-count: 5
+logging:
+  file:
+    name: /app/logs/recommendation-service.log
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 7

@@ -6,6 +6,7 @@ dependencies {
     implementation project(':common:common-monitoring')
     implementation project(':common:common-web')
     implementation project(':common:common-jpa')
+    implementation project(':commerce-service')
 
     // Spring AI - 로컬은 Ollama(bge-m3), 운영은 OpenAI(text-embedding-3-small)
     implementation 'org.springframework.ai:spring-ai-starter-model-openai'
