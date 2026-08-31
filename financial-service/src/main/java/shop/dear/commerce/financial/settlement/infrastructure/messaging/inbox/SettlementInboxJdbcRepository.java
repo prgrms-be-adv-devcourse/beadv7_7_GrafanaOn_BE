@@ -7,33 +7,32 @@ import org.springframework.stereotype.Repository;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
 public class SettlementInboxJdbcRepository {
 
-    private static final String INSERT_SQL = """
-            insert into settlement_inbox (
-                inserted_at, updated_at, event_id, event_type, aggregate_type,
-                aggregate_id, stream_name, payload, status, retry_count,
-                last_error
-            ) values (
-                ?, ?, ?, ?, ?,
-                ?, ?, cast(? as jsonb), ?, ?,
-                ?
-            )
-            on conflict (event_id) do nothing
-            returning id
-            """;
+    private static final String UPSERT_SQL = """
+        insert into settlement_inbox (
+            inserted_at, updated_at, event_id, event_type, aggregate_type,
+            aggregate_id, stream_name, payload, status, retry_count,
+            last_error
+        ) values (
+            ?, ?, ?, ?, ?,
+            ?, ?, cast(? as jsonb), ?, ?,
+            ?
+        )
+        on conflict (event_id) do update set event_id = excluded.event_id
+        returning id, status
+    """;
 
     private final JdbcTemplate jdbcTemplate;
 
-    public Optional<Long> insertIgnoringDuplicate(final SettlementInbox inbox) {
+    public InboxSaveResult insertOrGetExisting(final SettlementInbox inbox) {
         final Timestamp now = Timestamp.valueOf(LocalDateTime.now());
 
-        final Long id = jdbcTemplate.query(
-                INSERT_SQL,
+        final InboxSaveResult result = jdbcTemplate.query(
+                UPSERT_SQL,
                 ps -> {
                     ps.setTimestamp(1, now);
                     ps.setTimestamp(2, now);
@@ -54,10 +53,20 @@ public class SettlementInboxJdbcRepository {
                     ps.setInt(10, inbox.getRetryCount());
                     ps.setString(11, inbox.getLastError());
                 },
-                // on conflict do nothing 이면 returning 도 아무 행을 내지 않는다.
-                rs -> rs.next() ? rs.getLong("id") : null
+                rs -> rs.next()
+                        ? new InboxSaveResult(
+                                rs.getLong("id"),
+                                InboxMessageStatus.valueOf(rs.getString("status"))
+                        )
+                        : null
         );
 
-        return Optional.ofNullable(id);
+        if (result == null) {
+            throw new IllegalStateException(
+                    "settlement_inbox 적재 결과를 확인하지 못했습니다. eventId=" + inbox.getEventId()
+            );
+        }
+
+        return result;
     }
 }

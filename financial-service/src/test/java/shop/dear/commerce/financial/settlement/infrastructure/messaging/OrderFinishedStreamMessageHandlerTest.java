@@ -8,8 +8,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import shop.dear.commerce.financial.settlement.infrastructure.messaging.inbox.InboxMessageStatus;
-import shop.dear.commerce.financial.settlement.infrastructure.messaging.inbox.SettlementInbox;
-import shop.dear.commerce.financial.settlement.infrastructure.messaging.inbox.InboxMessageStatus;
+import shop.dear.commerce.financial.settlement.infrastructure.messaging.inbox.InboxSaveResult;
 import shop.dear.commerce.financial.settlement.infrastructure.messaging.inbox.SettlementInbox;
 import shop.dear.commerce.financial.settlement.infrastructure.messaging.inbox.SettlementInboxProcessor;
 import shop.dear.commerce.financial.settlement.infrastructure.messaging.inbox.SettlementInboxService;
@@ -17,10 +16,9 @@ import shop.dear.common.messaging.consumer.StreamMessage;
 import shop.dear.common.type.OrderType;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -63,7 +61,8 @@ class OrderFinishedStreamMessageHandlerTest {
         // given
         final StreamMessage message =
                 new StreamMessage(EVENT_ID, "FinishedOrderEvent", PAYLOAD, 42L);
-        given(settlementInboxService.save(any())).willReturn(Optional.of(INBOX_ID));
+        given(settlementInboxService.save(any()))
+                .willReturn(new InboxSaveResult(INBOX_ID, InboxMessageStatus.PENDING));
 
         // when
         handler.handle(message);
@@ -84,17 +83,50 @@ class OrderFinishedStreamMessageHandlerTest {
     }
 
     @Test
-    void handle_skipsSettlementWhenMessageIsDuplicate() {
+    void handle_retriesSettlementWhenDuplicateInboxIsStillPending() {
         // given
+        // 적재 직후 장애로 정산까지 가지 못한 메시지는 재수신 시 기존 PENDING 행을 돌려받는다.
         final StreamMessage message =
                 new StreamMessage(EVENT_ID, "FinishedOrderEvent", PAYLOAD, 42L);
-        given(settlementInboxService.save(any())).willReturn(Optional.empty());
+        given(settlementInboxService.save(any()))
+                .willReturn(new InboxSaveResult(INBOX_ID, InboxMessageStatus.PENDING));
 
         // when
         handler.handle(message);
 
         // then
-        // 이미 적재된 메시지는 이미 처리도 끝났거나 FAILED 로 남아 있다.
+        // 중복이라는 이유로 건너뛰지 않고 남은 정산 처리를 이어서 수행한다.
+        verify(settlementInboxProcessor).process(INBOX_ID);
+    }
+
+    @Test
+    void handle_skipsSettlementWhenInboxIsAlreadyProcessed() {
+        // given
+        final StreamMessage message =
+                new StreamMessage(EVENT_ID, "FinishedOrderEvent", PAYLOAD, 42L);
+        given(settlementInboxService.save(any()))
+                .willReturn(new InboxSaveResult(INBOX_ID, InboxMessageStatus.PROCESSED));
+
+        // when
+        handler.handle(message);
+
+        // then
+        verify(settlementInboxProcessor, never()).process(anyLong());
+    }
+
+    @Test
+    void handle_skipsSettlementWhenInboxIsAlreadyFailed() {
+        // given
+        final StreamMessage message =
+                new StreamMessage(EVENT_ID, "FinishedOrderEvent", PAYLOAD, 42L);
+        given(settlementInboxService.save(any()))
+                .willReturn(new InboxSaveResult(INBOX_ID, InboxMessageStatus.FAILED));
+
+        // when
+        handler.handle(message);
+
+        // then
+        // FAILED 재시도는 retryCount 와 backoff 를 관리하는 재처리 주체가 담당한다.
         verify(settlementInboxProcessor, never()).process(anyLong());
     }
 
@@ -103,15 +135,36 @@ class OrderFinishedStreamMessageHandlerTest {
         // given
         final StreamMessage message =
                 new StreamMessage(EVENT_ID, "FinishedOrderEvent", PAYLOAD, 42L);
-        given(settlementInboxService.save(any())).willReturn(Optional.of(INBOX_ID));
+        given(settlementInboxService.save(any()))
+                .willReturn(new InboxSaveResult(INBOX_ID, InboxMessageStatus.PENDING));
         willThrow(new IllegalStateException("지갑 조회 실패"))
                 .given(settlementInboxProcessor).process(INBOX_ID);
 
         // when & then
-        // 예외를 밖으로 던지면 Consumer 가 이 메시지에서 무한 재시작한다.
+        // FAILED 로 남기는 데 성공했다면 재수신해도 건너뛰므로 예외를 던지지 않는다.
         assertThatCode(() -> handler.handle(message)).doesNotThrowAnyException();
 
         verify(settlementInboxProcessor).markFailed(eq(INBOX_ID), eq("지갑 조회 실패"));
+    }
+
+    @Test
+    void handle_propagatesWhenMarkingFailedAlsoFails() {
+        // given
+        final StreamMessage message =
+                new StreamMessage(EVENT_ID, "FinishedOrderEvent", PAYLOAD, 42L);
+        given(settlementInboxService.save(any()))
+                .willReturn(new InboxSaveResult(INBOX_ID, InboxMessageStatus.PENDING));
+        willThrow(new IllegalStateException("지갑 조회 실패"))
+                .given(settlementInboxProcessor).process(INBOX_ID);
+        willThrow(new IllegalStateException("DB 연결 실패"))
+                .given(settlementInboxProcessor).markFailed(eq(INBOX_ID), any());
+
+        // when & then
+        // FAILED 로도 남기지 못하면 inbox 가 PENDING 으로 남는다.
+        // 이때 정상 반환하면 offset 이 저장되어 메시지가 다시 오지 않으므로 예외를 전파한다.
+        assertThatThrownBy(() -> handler.handle(message))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("FAILED 로 기록하지 못했습니다");
     }
 
     @Test
