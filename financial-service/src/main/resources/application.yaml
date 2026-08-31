@@ -21,3 +21,13 @@ toss:
 wallet:
   client:
     base-url: ${WALLET_CLIENT_BASE_URL:http://localhost:8083}
+
+order:
+  client:
+    base-url: ${ORDER_CLIENT_BASE_URL:http://localhost:8082}
+
+payment:
+  outbox:
+    relay:
+      fixed-delay: ${PAYMENT_OUTBOX_RELAY_FIXED_DELAY:5000}
+      max-retry-count: ${PAYMENT_OUTBOX_MAX_RETRY_COUNT:3}
