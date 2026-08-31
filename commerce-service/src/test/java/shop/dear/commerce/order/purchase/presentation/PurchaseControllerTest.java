@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import shop.dear.commerce.order.purchase.application.PurchaseFacade;
 import shop.dear.commerce.order.purchase.application.PurchaseService;
 import shop.dear.commerce.order.purchase.domain.model.Purchase;
 import shop.dear.common.auth.AuthUser;
@@ -40,6 +41,9 @@ class PurchaseControllerTest {
     @MockitoBean
     private PurchaseService purchaseService;
 
+    @MockitoBean
+    private PurchaseFacade purchaseFacade;
+
     @Test
     @DisplayName("즉시구매 생성에 성공하면 201을 반환한다")
     void createPurchaseSuccess() throws Exception {
@@ -52,7 +56,7 @@ class PurchaseControllerTest {
                 "서울시 강남구",
                 LocalDateTime.now()
         );
-        given(purchaseService.createPurchase(any())).willReturn(purchase);
+        given(purchaseFacade.createPurchase(any())).willReturn(purchase);
 
         // when & then
         mockMvc.perform(post("/api/purchases")
@@ -75,7 +79,7 @@ class PurchaseControllerTest {
                         .content(objectMapper.writeValueAsString(new Request(0L, "서울시 강남구"))))
                 .andExpect(status().isBadRequest());
 
-        verify(purchaseService, never()).createPurchase(any());
+        verify(purchaseFacade, never()).createPurchase(any());
     }
 
     @Test
@@ -88,7 +92,7 @@ class PurchaseControllerTest {
                         .content(objectMapper.writeValueAsString(new Request(10L, " "))))
                 .andExpect(status().isBadRequest());
 
-        verify(purchaseService, never()).createPurchase(any());
+        verify(purchaseFacade, never()).createPurchase(any());
     }
 
     @Test

@@ -24,6 +24,7 @@ public class ProductHttpClient implements ProductPort {
 
   private static final String PRODUCT_URI = "/internal/products/{productId}";
   private static final String TRADE_URI = "/internal/products/{productId}/trade";
+  private static final String TRADE_CANCEL_URI = "/internal/products/{productId}/trade/cancel";
 
   private final RestClient restClient;
 
@@ -104,6 +105,24 @@ public class ProductHttpClient implements ProductPort {
       }
 
       return response.getData();
+    } catch (final ResourceAccessException e) {
+      throw new BusinessException(PRODUCT_LOOKUP_FAILED, e.getMessage());
+    }
+  }
+
+  @Override
+  public void cancelTradeProduct(final Long productId) {
+    try {
+      restClient.post()
+              .uri(TRADE_CANCEL_URI, productId)
+              .retrieve()
+              .onStatus(status -> status.value() == 404, (request, responseSpec) -> {
+                throw new BusinessException(PRODUCT_NOT_FOUND);
+              })
+              .onStatus(HttpStatusCode::isError, (request, responseSpec) -> {
+                throw new BusinessException(PRODUCT_LOOKUP_FAILED);
+              })
+              .toBodilessEntity();
     } catch (final ResourceAccessException e) {
       throw new BusinessException(PRODUCT_LOOKUP_FAILED, e.getMessage());
     }
