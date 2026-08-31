@@ -12,7 +12,13 @@ public record TrackBehaviorRequest (
     BehaviorType eventType,
     LocalDateTime occurredAt
 ) {
-   public TrackBehaviorCommand toCommand(final Long memberId) {
-       return TrackBehaviorCommand.from(this, memberId);
+   public TrackBehaviorCommand toCommand() {
+       return new TrackBehaviorCommand(
+               eventId,
+               recommendationId,
+               productId,
+               eventType,
+               occurredAt
+       );
    }
 }
