@@ -7,21 +7,10 @@ import shop.dear.recommendation.behavior.presentation.dto.TrackBehaviorRequest;
 import java.time.LocalDateTime;
 
 public record TrackBehaviorCommand(
-    String eventId,
-    String recommendationId,
-    Long memberId,
-    Long productId,
-    BehaviorType eventType,
-    LocalDateTime occurredAt
+        String eventId,
+        String recommendationId,
+        Long productId,
+        BehaviorType eventType,
+        LocalDateTime occurredAt
 ) {
-    public static TrackBehaviorCommand from(final TrackBehaviorRequest request) {
-        return new TrackBehaviorCommand(
-            request.eventId(),
-                request.recommendationId(),
-                request.memberId(),
-                request.productId(),
-                request.eventType(),
-                request.occurredAt()
-        );
-    }
 }

@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import shop.dear.commerce.product.domain.constant.ProductCategory;
 import shop.dear.commerce.product.domain.constant.ProductStatus;
 import shop.dear.recommendation.behavior.application.dto.BasicRecommendationResponse;
+import shop.dear.recommendation.behavior.application.dto.RecommendationContext;
 import shop.dear.recommendation.behavior.application.dto.RecommendationItemResponse;
 import shop.dear.recommendation.behavior.domain.model.RecommendationItem;
 import shop.dear.recommendation.behavior.domain.model.UserInterest;
@@ -39,7 +40,8 @@ class BasicRecommendationServiceTest {
         given(userInterestRepository.findByMemberIdOrderByScoreDesc(1L))
                 .willReturn(List.of());
 
-        BasicRecommendationResponse response = basicRecommendationService.recommend(1L, 10);
+        RecommendationContext context = basicRecommendationService.createContext(1L);
+        BasicRecommendationResponse response = basicRecommendationService.recommend(context, "test", 10);
 
         assertThat(response.items()).isEmpty();
     }
@@ -68,7 +70,8 @@ class BasicRecommendationServiceTest {
                 .willReturn(List.of(item1, item2));
 
         // when
-        BasicRecommendationResponse response = basicRecommendationService.recommend(1L, 10);
+        RecommendationContext context = basicRecommendationService.createContext(1L);
+        BasicRecommendationResponse response = basicRecommendationService.recommend(context, "test", 10);
 
         // then
         List<RecommendationItemResponse> items = response.items();
@@ -76,5 +79,32 @@ class BasicRecommendationServiceTest {
         assertThat(items.get(0).productId()).isEqualTo(100L);
         assertThat(items.get(1).productId()).isEqualTo(200L);
         assertThat(items.get(0).rank()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("외부에서 전달한 recommendationId를 그대로 응답에 담는다")
+    void preservesGivenRecommendationId() {
+        // given
+        UserInterest interest = UserInterest.create(
+                1L,
+                ProductCategory.SNEAKERS,
+                10.0,
+                LocalDateTime.now()
+        );
+        RecommendationItem item = RecommendationItem.create(
+                100L, ProductCategory.SNEAKERS, ProductStatus.ON_SALE, 10L
+        );
+
+        given(userInterestRepository.findByMemberIdOrderByScoreDesc(1L))
+                .willReturn(List.of(interest));
+        given(recommendationItemRepository.findCandidates(List.of(ProductCategory.SNEAKERS)))
+                .willReturn(List.of(item));
+
+        RecommendationContext context = basicRecommendationService.createContext(1L);
+        BasicRecommendationResponse response = basicRecommendationService.recommend(context, "test", 10);
+
+        // then
+        assertThat(response.recommendationId()).isEqualTo("test");
+        assertThat(response.items()).hasSize(1);
     }
 }

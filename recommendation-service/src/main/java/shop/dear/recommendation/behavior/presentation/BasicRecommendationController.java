@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
-import shop.dear.recommendation.behavior.application.BasicRecommendationService;
+import shop.dear.recommendation.behavior.application.RecommendationFacadeService;
 import shop.dear.recommendation.behavior.application.dto.BasicRecommendationResponse;
 
 @RestController
@@ -16,7 +16,7 @@ import shop.dear.recommendation.behavior.application.dto.BasicRecommendationResp
 @RequestMapping("/api/recommendations")
 public class BasicRecommendationController {
 
-    private final BasicRecommendationService basicRecommendationService;
+    private final RecommendationFacadeService recommendationFacadeService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<BasicRecommendationResponse>> recommend(
@@ -24,7 +24,7 @@ public class BasicRecommendationController {
             @RequestParam(defaultValue = "10") final int limit
     ) {
         BasicRecommendationResponse response =
-                basicRecommendationService.recommend(memberId, limit);
+                recommendationFacadeService.recommend(memberId, limit);
 
         return ResponseEntity.ok(ApiResponse.successWithData(response));
     }

@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import static shop.dear.common.response.ApiResponse.success;
+
+import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
 import shop.dear.recommendation.behavior.application.BehaviorEventService;
 import shop.dear.recommendation.behavior.presentation.dto.TrackBehaviorRequest;
@@ -20,9 +22,10 @@ public class BehaviorEventController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<Void>> trackBehaviorEvent(
+            @AuthUser final Long memberId,
             @RequestBody final TrackBehaviorRequest request
     ) {
-        behaviorEventService.track(request.toCommand());
+        behaviorEventService.track(memberId, request.toCommand());
         return ResponseEntity.ok(success());
     }
 }

@@ -1,6 +1,5 @@
 package shop.dear.recommendation.infrastructure.ai;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.document.DocumentTransformer;
 import org.springframework.stereotype.Component;
