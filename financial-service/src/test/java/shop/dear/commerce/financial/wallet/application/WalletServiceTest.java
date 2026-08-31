@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class WalletServiceTest {
@@ -598,6 +599,33 @@ public class WalletServiceTest {
         assertEquals(0, walletRepository.getSaveCount());
     }
 
+    @Test
+    @DisplayName("동시 생성으로 Wallet 저장 시 유니크 충돌이 발생해도 정상 처리한다.")
+    void saveWallet_whenDuplicateCreationCausesUniqueConstraintViolation_doesNothing() {
+        // given
+        walletRepository.createWalletThenFailOnSave();
+
+        // when & then
+        assertDoesNotThrow(() -> walletService.saveWallet(1L));
+        assertEquals(
+                1L,
+                walletRepository.findByMemberId(1L).orElseThrow().getMemberId()
+        );
+    }
+
+    @Test
+    @DisplayName("Wallet이 없는 상태에서 저장 무결성 오류가 발생하면 예외를 다시 던진다.")
+    void saveWallet_whenWalletDoesNotExistAfterDataIntegrityViolation_throwsException() {
+        // given
+        walletRepository.failOnSave();
+
+        // when & then
+        assertThrows(
+                DataIntegrityViolationException.class,
+                () -> walletService.saveWallet(1L)
+        );
+    }
+
     private static class FakeReleaseValidationQueryPort
             implements ReleaseValidationQueryPort {
 
@@ -639,6 +667,7 @@ public class WalletServiceTest {
         private final Map<Long, Wallet> wallets = new HashMap<>();
         private int saveCount;
         private boolean failOnSave;
+        private boolean createWalletThenFailOnSave;
 
         @Override
         public Optional<Wallet> findById(final Long walletId) {
@@ -654,6 +683,11 @@ public class WalletServiceTest {
 
         @Override
         public Wallet save(final Wallet wallet) {
+            if (createWalletThenFailOnSave) {
+                wallets.put(wallet.getMemberId(), Wallet.create(wallet.getMemberId()));
+                throw new DataIntegrityViolationException("duplicate wallet");
+            }
+
             if (failOnSave) {
                 throw new DataIntegrityViolationException("duplicate release");
             }
@@ -673,6 +707,10 @@ public class WalletServiceTest {
 
         void failOnSave() {
             failOnSave = true;
+        }
+
+        void createWalletThenFailOnSave() {
+            createWalletThenFailOnSave = true;
         }
     }
 }

@@ -160,12 +160,25 @@ public class WalletService {
         walletRepository.save(wallet);
     }
 
-    @Transactional
+    // 동시 생성으로 member_id 유니크 충돌이 발생했을 때,
+    // Repository 저장 트랜잭션에서 발생한 예외를 이 메서드에서 정상 처리하기 위해
+    // 서비스 트랜잭션을 사용하지 않는다.
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void saveWallet(final Long memberId) {
         if (walletRepository.findByMemberId(memberId).isPresent()) {
             return;
         }
 
-        walletRepository.save(Wallet.create(memberId));
+        // 조회가 끝난 뒤 다른 요청이 먼저 Wallet을 저장하면,
+        // 이 저장 요청은 member_id 유니크 제약 위반으로 실패할 수 있다.
+        try {
+            walletRepository.save(Wallet.create(memberId));
+        } catch (final DataIntegrityViolationException exception) {
+            // Wallet이 조회되면 다른 요청이 이미 생성한 것이므로 정상 종료한다.
+            // 조회되지 않으면 유니크 충돌이 아닌 DB 무결성 오류일 수 있으므로 예외를 다시 던진다.
+            if (walletRepository.findByMemberId(memberId).isEmpty()) {
+                throw exception;
+            }
+        }
     }
 }
