@@ -59,3 +59,8 @@ recommendation:
     max-distance: 0.40
     default-size: 10
     max-size: 50
+
+messaging:
+  rabbitmq:
+    stream:
+      enabled: false
