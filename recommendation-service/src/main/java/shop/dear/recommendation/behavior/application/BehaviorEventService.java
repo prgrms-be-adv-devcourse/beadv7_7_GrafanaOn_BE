@@ -20,7 +20,7 @@ public class BehaviorEventService {
     private final BehaviorEventRepository behaviorEventRepository;
 
     @Transactional
-    public void track(final TrackBehaviorCommand command) {
+    public void track(final Long memberId, final TrackBehaviorCommand command) {
         if (behaviorEventRepository.existsByEventId(command.eventId())) {
             log.warn(
                     "[traceId={}] 중복된 행동 이벤트. eventId={}",
@@ -33,7 +33,7 @@ public class BehaviorEventService {
         RecommendationBehaviorEvent event = RecommendationBehaviorEvent.create(
                 command.eventId(),
                 command.recommendationId(),
-                command.memberId(),
+                memberId,
                 command.productId(),
                 command.eventType(),
                 command.occurredAt()

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import shop.dear.common.auth.AuthUser;
 import shop.dear.common.response.ApiResponse;
 import shop.dear.recommendation.behavior.application.UserInterestCalculationService;
 import shop.dear.recommendation.behavior.presentation.dto.CalculateUserInterestRequest;
@@ -19,10 +20,11 @@ public class UserInterestCalculationController {
 
     @PostMapping("/calculate")
     public ResponseEntity<ApiResponse<Void>> calculateUserInterests(
+            @AuthUser final Long memberId,
             @RequestBody final CalculateUserInterestRequest request
     ) {
         userInterestCalculationService.calculateUserInterests(
-                request.memberId(),
+                memberId,
                 request.since()
         );
         return ResponseEntity.ok(ApiResponse.success());

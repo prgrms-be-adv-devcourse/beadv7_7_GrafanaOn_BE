@@ -11,7 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import shop.dear.common.auth.AuthUserArgumentResolver;
 import shop.dear.common.auth.AuthUserWebMvcConfig;
 import shop.dear.common.exception.CommonExceptionHandler;
-import shop.dear.recommendation.behavior.application.BasicRecommendationService;
+import shop.dear.recommendation.behavior.application.RecommendationFacadeService;
 import shop.dear.recommendation.behavior.application.dto.BasicRecommendationResponse;
 import shop.dear.recommendation.behavior.application.dto.RecommendationItemResponse;
 
@@ -36,7 +36,7 @@ class BasicRecommendationControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private BasicRecommendationService basicRecommendationService;
+    private RecommendationFacadeService recommendationFacadeService;
 
     @Test
     @DisplayName("인증 헤더가 있으면 추천 결과를 반환한다")
@@ -45,7 +45,7 @@ class BasicRecommendationControllerTest {
                 "rec-1",
                 List.of(new RecommendationItemResponse(100L, 10.5, 1))
         );
-        given(basicRecommendationService.recommend(1L, 10)).willReturn(response);
+        given(recommendationFacadeService.recommend(1L, 10)).willReturn(response);
 
         mockMvc.perform(get(URI)
                         .header("X-Authenticated-Member-Id", "1")
