@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.product.domain.constant.ProductCategory;
 import shop.dear.recommendation.behavior.application.dto.BasicRecommendationResponse;
+import shop.dear.recommendation.behavior.application.dto.RecommendationContext;
 import shop.dear.recommendation.behavior.application.dto.RecommendationItemResponse;
 import shop.dear.recommendation.behavior.domain.model.RecommendationItem;
 import shop.dear.recommendation.behavior.domain.model.UserInterest;
@@ -15,14 +16,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
-
-/* V1 (초기 추천 알고리즘)
- * UserInterest 상위 카테고리 조회
-   -> 카테고리 ON_SALE 상품 후보 조회
-   -> 사용자 관심도 + 상품 viewCount 기반 점수 계산
- */
 
 @Service
 @RequiredArgsConstructor
@@ -34,39 +28,52 @@ public class BasicRecommendationService {
     private final UserInterestRepository userInterestRepository;
     private final RecommendationItemRepository recommendationItemRepository;
 
-    public BasicRecommendationResponse recommend(
-            final Long memberId,
-            final int limit
+    public RecommendationContext createContext(
+            final Long memberId
     ) {
-        List<UserInterest> interests =
-                userInterestRepository.findByMemberIdOrderByScoreDesc(memberId);
+        List<UserInterest> interests = userInterestRepository.findByMemberIdOrderByScoreDesc(memberId);
 
         if (interests.isEmpty()) {
-            return BasicRecommendationResponse.empty();
+            return RecommendationContext.empty();
         }
 
-        List<ProductCategory> topCategories =
-                extractTopCategories(interests);
+        List<ProductCategory> topCategories = extractTopCategories(interests);
 
-        Map<ProductCategory, Double> interestScoreMap =
-                createInterestScoreMap(interests);
-
-        List<RecommendationItem> candidates =
-                recommendationItemRepository.findCandidates(topCategories);
+        List<RecommendationItem> candidates = recommendationItemRepository.findCandidates(topCategories);
 
         if (candidates.isEmpty()) {
+            return RecommendationContext.empty();
+        }
+
+        return new RecommendationContext(
+                interests,
+                candidates
+        );
+    }
+
+    public BasicRecommendationResponse recommend(
+            final RecommendationContext context,
+            final String recommendationId,
+            final int limit
+    ) {
+        if (context.isEmpty()) {
             return BasicRecommendationResponse.empty();
         }
+
+        Map<ProductCategory, Double> interestScoreMap =
+                createInterestScoreMap(
+                        context.interests()
+                );
 
         List<RecommendationItemResponse> items =
                 rankCandidates(
-                        candidates,
+                        context.candidates(),
                         interestScoreMap,
                         limit
                 );
 
         return new BasicRecommendationResponse(
-                UUID.randomUUID().toString(),
+                recommendationId,
                 items
         );
     }
@@ -84,10 +91,12 @@ public class BasicRecommendationService {
             final List<UserInterest> interests
     ) {
         return interests.stream()
-                .collect(Collectors.toMap(
-                        UserInterest::getCategory,
-                        UserInterest::getScore
-                ));
+                .collect(
+                        Collectors.toMap(
+                                UserInterest::getCategory,
+                                UserInterest::getScore
+                        )
+                );
     }
 
     private List<RecommendationItemResponse> rankCandidates(
@@ -114,12 +123,10 @@ public class BasicRecommendationService {
                         .limit(limit)
                         .toList();
 
-        List<RecommendationItemResponse> result =
-                new ArrayList<>();
+        List<RecommendationItemResponse> result = new ArrayList<>();
 
         for (int i = 0; i < scoredItems.size(); i++) {
             ScoredItem item = scoredItems.get(i);
-
             result.add(
                     new RecommendationItemResponse(
                             item.productId(),
@@ -128,7 +135,6 @@ public class BasicRecommendationService {
                     )
             );
         }
-
         return result;
     }
 
@@ -142,8 +148,9 @@ public class BasicRecommendationService {
                         0.0
                 );
 
-        double popularityScore =
-                Math.log1p(item.getViewCount());
+        double popularityScore = Math.log1p(
+                        item.getViewCount()
+                );
 
         return categoryScore + popularityScore;
     }
