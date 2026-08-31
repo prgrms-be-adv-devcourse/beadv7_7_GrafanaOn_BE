@@ -8,6 +8,11 @@ dependencies {
     implementation project(':common:common-jpa')
     implementation project(':common:common-messaging')
 
+    // common-messaging 이 implementation 으로 선언해 감춰 둔 타입을 여기서 직접 참조한다.
+    // SettlementInboxStreamConfig 가 Environment 주입과 StreamListenerContainer 빈 등록에 쓰므로
+    // 이 줄을 빼면 컴파일이 깨진다.
+    implementation 'org.springframework.amqp:spring-rabbit-stream'
+
     // PostgreSQL
     runtimeOnly 'org.postgresql:postgresql'
 
