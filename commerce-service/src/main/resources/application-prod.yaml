@@ -5,12 +5,12 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: ${DB_DRIVER}
 
-    rabbitmq:
-      host: ${RABBITMQ_STREAM_HOST}
-      port: 5672
-      username: ${RABBITMQ_STREAM_USERNAME}
-      password: ${RABBITMQ_STREAM_PASSWORD}
-      virtual-host: ${RABBITMQ_STREAM_VIRTUAL_HOST:/}
+  rabbitmq:
+    host: ${RABBITMQ_STREAM_HOST}
+    port: 5672
+    username: ${RABBITMQ_STREAM_USERNAME}
+    password: ${RABBITMQ_STREAM_PASSWORD}
+    virtual-host: ${RABBITMQ_STREAM_VIRTUAL_HOST:/}
 
   jpa:
     hibernate:
@@ -21,14 +21,3 @@ spring:
         format_sql: true
         highlight_sql: true
         default_batch_fetch_size: 100
-
-messaging:
-  rabbitmq:
-    stream:
-      host: ${RABBITMQ_STREAM_HOST}
-      port: ${RABBITMQ_STREAM_PORT}
-      username: ${RABBITMQ_STREAM_USERNAME}
-      password: ${RABBITMQ_STREAM_PASSWORD}
-      virtual-host: ${RABBITMQ_STREAM_VIRTUAL_HOST:/}
-      consumer-restart-delay: 5s
-      consumer-restart-max-attempts: 5

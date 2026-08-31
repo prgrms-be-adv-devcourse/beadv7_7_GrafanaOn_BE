@@ -31,3 +31,12 @@ payment:
     relay:
       fixed-delay: ${PAYMENT_OUTBOX_RELAY_FIXED_DELAY:5000}
       max-retry-count: ${PAYMENT_OUTBOX_MAX_RETRY_COUNT:3}
+
+messaging:
+  rabbitmq:
+    stream:
+      host: ${RABBITMQ_STREAM_HOST}
+      port: ${RABBITMQ_STREAM_PORT:5552}
+      username: ${RABBITMQ_STREAM_USERNAME}
+      password: ${RABBITMQ_STREAM_PASSWORD}
+      virtualHost: ${RABBITMQ_STREAM_VIRTUAL_HOST:/}
