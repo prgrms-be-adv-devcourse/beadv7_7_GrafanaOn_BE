@@ -24,10 +24,9 @@ spring:
 messaging:
   rabbitmq:
     stream:
-      host: ${RABBITMQ_STREAM_HOST}
-      port: ${RABBITMQ_STREAM_PORT}
-      username: ${RABBITMQ_STREAM_USERNAME}
-      password: ${RABBITMQ_STREAM_PASSWORD}
-      virtual-host: ${RABBITMQ_STREAM_VIRTUAL_HOST:/}
+      host: ${RABBITMQ_STREAM_HOST:localhost}
+      port: ${RABBITMQ_STREAM_PORT:5552}
+      username: ${RABBITMQ_STREAM_USERNAME:dear}
+      password: ${RABBITMQ_STREAM_PASSWORD:dear}
       consumer-restart-delay: 5s
       consumer-restart-max-attempts: 5
