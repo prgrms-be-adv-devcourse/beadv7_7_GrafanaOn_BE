@@ -14,3 +14,12 @@ spring:
         format_sql: true
         highlight_sql: true
         default_batch_fetch_size: 100
+
+messaging:
+  rabbitmq:
+    stream:
+      host: ${RABBITMQ_STREAM_HOST:localhost}
+      port: ${RABBITMQ_STREAM_PORT:5552}
+      username: ${RABBITMQ_STREAM_USERNAME:dear}
+      password: ${RABBITMQ_STREAM_PASSWORD:dear}
+      virtualHost: /

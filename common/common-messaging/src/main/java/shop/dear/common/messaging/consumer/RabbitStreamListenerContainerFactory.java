@@ -5,6 +5,7 @@ import com.rabbitmq.stream.OffsetSpecification;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.rabbit.stream.listener.StreamListenerContainer;
 import org.springframework.stereotype.Component;
 import shop.dear.common.messaging.config.RabbitStreamProperties;
@@ -24,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Factory는 설정된 시간 뒤 Container를 재시작합니다.</p>
  */
 @Component
+@ConditionalOnProperty(prefix = "messaging.rabbitmq.stream", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class RabbitStreamListenerContainerFactory {
 
     private static final Logger log =

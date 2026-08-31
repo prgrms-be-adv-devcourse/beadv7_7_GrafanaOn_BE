@@ -28,7 +28,6 @@ import shop.dear.commerce.order.offer.domain.constant.OfferReleaseReason;
 import shop.dear.common.event.financial.PaymentHoldRequestedEvent;
 import shop.dear.common.event.financial.PaymentReleaseRequestedEvent;
 import shop.dear.common.event.financial.PaymentRequestedEvent;
-import shop.dear.common.event.order.FinishedOrderEvent;
 import shop.dear.common.exception.BusinessException;
 
 import java.math.BigDecimal;
@@ -128,7 +127,7 @@ class OfferServiceTest {
     class AcceptOffer {
 
         @Test
-        @DisplayName("오퍼를 수락하면 상태가 ACCEPTED로 변경되고 FinishedOrderEvent를 발행한다")
+        @DisplayName("오퍼를 수락하면 상태가 ACCEPTED로 변경되고 PaymentRequestedEvent를 발행한다")
         void acceptsOfferAndPublishesEvent() {
             // given
             final Offer offer = createPendingPaidOffer();
@@ -142,17 +141,6 @@ class OfferServiceTest {
 
             // then
             assertThat(offer.getStatus()).isEqualTo(OfferStatus.ACCEPTED);
-
-            final ArgumentCaptor<FinishedOrderEvent> captor =
-                    ArgumentCaptor.forClass(FinishedOrderEvent.class);
-            verify(offerEventPublisher).publish(captor.capture());
-
-            final FinishedOrderEvent event = captor.getValue();
-            assertThat(event.orderId()).isEqualTo(offer.getId());
-            assertThat(event.buyerId()).isEqualTo(offer.getBuyerId());
-            assertThat(event.sellerId()).isEqualTo(offer.getSellerId());
-            assertThat(event.productId()).isEqualTo(offer.getProductId());
-            assertThat(event.amount()).isEqualTo(offer.getAmount());
 
             final ArgumentCaptor<PaymentRequestedEvent> paymentCaptor =
                     ArgumentCaptor.forClass(PaymentRequestedEvent.class);

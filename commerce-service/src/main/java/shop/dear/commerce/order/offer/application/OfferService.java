@@ -22,7 +22,6 @@ import shop.dear.commerce.order.offer.domain.constant.OfferReleaseReason;
 import shop.dear.common.event.financial.PaymentHoldRequestedEvent;
 import shop.dear.common.event.financial.PaymentReleaseRequestedEvent;
 import shop.dear.common.event.financial.PaymentRequestedEvent;
-import shop.dear.common.event.order.FinishedOrderEvent;
 import shop.dear.common.type.OrderType;
 import shop.dear.common.exception.BusinessException;
 import shop.dear.common.exception.CommonErrorCode;
@@ -145,15 +144,6 @@ public class OfferService {
                 OrderType.OFFER.name(),
                 offer.getBuyerId(),
                 offer.getAmount()
-        ));
-
-        offerEventPublisher.publish(new FinishedOrderEvent(
-                offer.getId(),
-                offer.getBuyerId(),
-                offer.getSellerId(),
-                offer.getProductId(),
-                offer.getAmount(),
-                OrderType.OFFER.name()
         ));
 
         releaseOtherPendingOffers(offer);

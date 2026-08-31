@@ -32,6 +32,11 @@ recommendation:
   client:
     base-url: ${RECOMMENDATION_CLIENT_BASE_URL:http://localhost:8084}
 
+messaging:
+  rabbitmq:
+    stream:
+      enabled: false
+
 financial:
   client:
     base-url: ${FINANCIAL_CLIENT_BASE_URL:http://localhost:8083}
