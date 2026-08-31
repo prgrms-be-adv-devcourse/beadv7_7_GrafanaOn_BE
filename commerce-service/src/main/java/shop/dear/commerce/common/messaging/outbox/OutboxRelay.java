@@ -75,7 +75,6 @@ public class OutboxRelay {
     }
 
     private void moveToDlq(final OutboxMessage message) {
-        message.markDlq();
         log.error("Outbox 메시지를 DLQ로 이동합니다: eventId={}", message.getEventId());
 
         try {
@@ -85,6 +84,8 @@ public class OutboxRelay {
                     message.getEventType(),
                     message.getPayload()
             ).get(PUBLISH_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+
+            message.markDlq();
         } catch (final Exception e) {
             log.error("DLQ 발행 실패: eventId={}", message.getEventId(), e);
         }

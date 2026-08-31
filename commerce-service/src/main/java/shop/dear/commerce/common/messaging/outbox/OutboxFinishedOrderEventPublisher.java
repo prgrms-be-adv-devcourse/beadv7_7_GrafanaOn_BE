@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.common.event.FinishedOrderEventPublisher;
 import shop.dear.common.event.order.FinishedOrderEvent;
-import tools.jackson.databind.ObjectMapper;
+import shop.dear.common.messaging.serializer.JsonPayloadSerializer;
 
 @Component
 @RequiredArgsConstructor
@@ -17,7 +17,7 @@ public class OutboxFinishedOrderEventPublisher implements FinishedOrderEventPubl
     private static final String STREAM_NAME = "order.finished";
 
     private final OutboxMessageRepository outboxMessageRepository;
-    private final ObjectMapper objectMapper;
+    private final JsonPayloadSerializer jsonPayloadSerializer;
 
     @Transactional
     @Override
@@ -27,12 +27,8 @@ public class OutboxFinishedOrderEventPublisher implements FinishedOrderEventPubl
                 event.orderType(),
                 event.orderId(),
                 STREAM_NAME,
-                serialize(event)
+                jsonPayloadSerializer.serialize(event)
         );
         outboxMessageRepository.save(message);
-    }
-
-    private String serialize(final FinishedOrderEvent event) {
-        return objectMapper.writeValueAsString(event);
     }
 }
