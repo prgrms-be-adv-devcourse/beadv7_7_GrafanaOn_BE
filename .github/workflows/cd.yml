@@ -209,6 +209,11 @@ jobs:
           DB_DRIVER=${{ vars.DB_DRIVER }}
           TOSS_SECRET_KEY=${{ secrets.TOSS_SECRET_KEY }}
           TOSS_BASE_URL=${{ vars.TOSS_BASE_URL }}
+          RABBITMQ_STREAM_HOST=${{ secrets.RABBITMQ_STREAM_HOST }}
+          RABBITMQ_STREAM_PORT=${{ vars.RABBITMQ_STREAM_PORT }}
+          RABBITMQ_STREAM_USERNAME=${{ secrets.RABBITMQ_STREAM_USERNAME }}
+          RABBITMQ_STREAM_PASSWORD=${{ secrets.RABBITMQ_STREAM_PASSWORD }}
+          RABBITMQ_STREAM_VIRTUAL_HOST=${{ vars.RABBITMQ_STREAM_VIRTUAL_HOST }}
           EOF
           chmod 600 financial-service/.env
 
