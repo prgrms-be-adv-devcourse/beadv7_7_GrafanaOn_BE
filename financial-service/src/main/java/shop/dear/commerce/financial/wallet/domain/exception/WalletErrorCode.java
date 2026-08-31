@@ -15,8 +15,8 @@ public enum WalletErrorCode implements ErrorCode {
     INSUFFICIENT_HELD_BALANCE("WA-005", "hold된 금액이 부족합니다."),
     DUPLICATE_RELEASE("WA-006", "이미 처리된 release 요청입니다."),
     HOLD_NOT_FOUND("WA-007", "해당 오퍼에 대한 예치금 홀드 내역이 없습니다."),
-    RELEASE_AMOUNT_MISMATCH("WA-008", "예치금 해제 금액이 기존 내역과 일치하지 않습니다.")
-    ;
+    RELEASE_AMOUNT_MISMATCH("WA-008", "요청한 Release 금액이 기존 Hold 또는 Release 원장 금액과 일치하지 않습니다."),
+    WALLET_LOG_AMOUNT_MISMATCH("WA-009", "중복 수신된 HOLD·PAYMENT·TOPUP 요청의 금액이 기존 Wallet 원장 금액과 일치하지 않습니다.");
 
     private final String value;
     private final String message;

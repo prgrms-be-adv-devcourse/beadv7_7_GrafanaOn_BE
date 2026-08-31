@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.util.ReflectionTestUtils;
 import shop.dear.commerce.financial.wallet.application.dto.*;
-import shop.dear.commerce.financial.wallet.application.port.ReleaseValidationQueryPort;
+import shop.dear.commerce.financial.wallet.application.port.WalletLogQueryPort;
 import shop.dear.commerce.financial.wallet.domain.costant.WalletLogType;
 import shop.dear.commerce.financial.wallet.domain.exception.WalletErrorCode;
 import shop.dear.commerce.financial.wallet.domain.model.Wallet;
@@ -25,16 +25,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class WalletServiceTest {
     private FakeWalletRepository walletRepository;
     private WalletService walletService;
-    private FakeReleaseValidationQueryPort releaseValidationQueryPort;
+    private FakeWalletLogQueryPort walletLogQueryPort;
 
     @BeforeEach
     void setUp() {
         walletRepository = new FakeWalletRepository();
-        releaseValidationQueryPort = new FakeReleaseValidationQueryPort();
+        walletLogQueryPort = new FakeWalletLogQueryPort();
 
         walletService = new WalletService(
                 walletRepository,
-                releaseValidationQueryPort);
+                walletLogQueryPort);
     }
 
     @Test
@@ -88,6 +88,53 @@ public class WalletServiceTest {
     }
 
     @Test
+    void topUp_whenAlreadyProcessedWithSameAmount_doesNothing() {
+        final Wallet wallet = saveWalletWithId(100L, BigDecimal.valueOf(10_000));
+        walletLogQueryPort.put(
+                100L,
+                WalletLogType.TOPUP,
+                100L,
+                BigDecimal.valueOf(3_000)
+        );
+
+        walletService.topUp(
+                new TopUpCommand(1L, BigDecimal.valueOf(3_000), 100L)
+        );
+
+        assertEquals(
+                0,
+                BigDecimal.valueOf(10_000).compareTo(wallet.getAvailableBalance())
+        );
+        assertEquals(1, wallet.getWalletLogs().size());
+        assertEquals(0, walletRepository.getSaveCount());
+    }
+
+    @Test
+    void topUp_whenAlreadyProcessedWithDifferentAmount_throwsException() {
+        final Wallet wallet = saveWalletWithId(100L, BigDecimal.valueOf(10_000));
+        walletLogQueryPort.put(
+                100L,
+                WalletLogType.TOPUP,
+                100L,
+                BigDecimal.valueOf(3_000)
+        );
+
+        final BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> walletService.topUp(
+                        new TopUpCommand(1L, BigDecimal.valueOf(4_000), 100L)
+                )
+        );
+
+        assertEquals(WalletErrorCode.WALLET_LOG_AMOUNT_MISMATCH, exception.getErrorCode());
+        assertEquals(
+                0,
+                BigDecimal.valueOf(10_000).compareTo(wallet.getAvailableBalance())
+        );
+        assertEquals(0, walletRepository.getSaveCount());
+    }
+
+    @Test
     @DisplayName("지갑이 없을 때 홀드하면 WALLET_NOT_FOUND 예외가 발생한다.")
     void hold_whenWalletNotFound_throwsException() {
         BusinessException exception = assertThrows(
@@ -133,6 +180,54 @@ public class WalletServiceTest {
     }
 
     @Test
+    void hold_whenAlreadyProcessedWithSameAmount_doesNothing() {
+        final Wallet wallet = saveWalletWithId(100L, BigDecimal.valueOf(10_000));
+        walletLogQueryPort.put(
+                100L,
+                WalletLogType.HOLD,
+                200L,
+                BigDecimal.valueOf(6_000)
+        );
+
+        walletService.hold(
+                new HoldCommand(1L, BigDecimal.valueOf(6_000), 200L)
+        );
+
+        assertEquals(
+                0,
+                BigDecimal.valueOf(10_000).compareTo(wallet.getAvailableBalance())
+        );
+        assertEquals(BigDecimal.ZERO, wallet.getHeldBalance());
+        assertEquals(0, walletRepository.getSaveCount());
+    }
+
+    @Test
+    void hold_whenAlreadyProcessedWithDifferentAmount_throwsException() {
+        final Wallet wallet = saveWalletWithId(100L, BigDecimal.valueOf(10_000));
+        walletLogQueryPort.put(
+                100L,
+                WalletLogType.HOLD,
+                200L,
+                BigDecimal.valueOf(6_000)
+        );
+
+        final BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> walletService.hold(
+                        new HoldCommand(1L, BigDecimal.valueOf(5_000), 200L)
+                )
+        );
+
+        assertEquals(WalletErrorCode.WALLET_LOG_AMOUNT_MISMATCH, exception.getErrorCode());
+        assertEquals(
+                0,
+                BigDecimal.valueOf(10_000).compareTo(wallet.getAvailableBalance())
+        );
+        assertEquals(BigDecimal.ZERO, wallet.getHeldBalance());
+        assertEquals(0, walletRepository.getSaveCount());
+    }
+
+    @Test
     @DisplayName("기존 지갑의 Hold를 해제하면 Hold 잔액은 감소하고 사용 가능 잔액은 증가한다.")
     void release_whenWalletExists_movesHeldBalanceToAvailableBalance() {
         // given
@@ -143,7 +238,7 @@ public class WalletServiceTest {
                 200L
         );
 
-        releaseValidationQueryPort.put(
+        walletLogQueryPort.put(
                 100L,
                 WalletLogType.HOLD,
                 200L,
@@ -182,14 +277,14 @@ public class WalletServiceTest {
         wallet.release(BigDecimal.valueOf(6_000), 200L);
         walletRepository.resetSaveCount();
 
-        releaseValidationQueryPort.put(
+        walletLogQueryPort.put(
                 100L,
                 WalletLogType.HOLD,
                 200L,
                 BigDecimal.valueOf(6_000)
         );
         // 불일치 원장 데이터가 조회된 방어 시나리오
-        releaseValidationQueryPort.put(
+        walletLogQueryPort.put(
                 100L,
                 WalletLogType.RELEASE,
                 200L,
@@ -257,7 +352,7 @@ public class WalletServiceTest {
                 200L
         );
 
-        releaseValidationQueryPort.put(
+        walletLogQueryPort.put(
                 100L,
                 WalletLogType.HOLD,
                 200L,
@@ -299,13 +394,13 @@ public class WalletServiceTest {
         wallet.release(BigDecimal.valueOf(6_000), 200L);
         walletRepository.resetSaveCount();
 
-        releaseValidationQueryPort.put(
+        walletLogQueryPort.put(
                 100L,
                 WalletLogType.HOLD,
                 200L,
                 BigDecimal.valueOf(6_000)
         );
-        releaseValidationQueryPort.put(
+        walletLogQueryPort.put(
                 100L,
                 WalletLogType.RELEASE,
                 200L,
@@ -337,7 +432,7 @@ public class WalletServiceTest {
                 BigDecimal.valueOf(6_000),
                 200L
         );
-        releaseValidationQueryPort.put(
+        walletLogQueryPort.put(
                 wallet.getId(),
                 WalletLogType.HOLD,
                 200L,
@@ -381,6 +476,58 @@ public class WalletServiceTest {
     }
 
     @Test
+    void payAvailable_whenAlreadyProcessedWithSameAmount_doesNothing() {
+        final Wallet wallet = saveWalletWithId(100L, BigDecimal.valueOf(10_000));
+        wallet.payAvailable(BigDecimal.valueOf(7_000), 300L);
+        walletRepository.save(wallet);
+        walletRepository.resetSaveCount();
+        walletLogQueryPort.put(
+                100L,
+                WalletLogType.PAYMENT,
+                300L,
+                BigDecimal.valueOf(7_000)
+        );
+
+        walletService.payAvailable(
+                new PayCommand(1L, BigDecimal.valueOf(7_000), 300L)
+        );
+
+        assertEquals(
+                0,
+                BigDecimal.valueOf(3_000).compareTo(wallet.getAvailableBalance())
+        );
+        assertEquals(0, walletRepository.getSaveCount());
+    }
+
+    @Test
+    void payAvailable_whenAlreadyProcessedWithDifferentAmount_throwsException() {
+        final Wallet wallet = saveWalletWithId(100L, BigDecimal.valueOf(10_000));
+        wallet.payAvailable(BigDecimal.valueOf(7_000), 300L);
+        walletRepository.save(wallet);
+        walletRepository.resetSaveCount();
+        walletLogQueryPort.put(
+                100L,
+                WalletLogType.PAYMENT,
+                300L,
+                BigDecimal.valueOf(7_000)
+        );
+
+        final BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> walletService.payAvailable(
+                        new PayCommand(1L, BigDecimal.valueOf(6_000), 300L)
+                )
+        );
+
+        assertEquals(WalletErrorCode.WALLET_LOG_AMOUNT_MISMATCH, exception.getErrorCode());
+        assertEquals(
+                0,
+                BigDecimal.valueOf(3_000).compareTo(wallet.getAvailableBalance())
+        );
+        assertEquals(0, walletRepository.getSaveCount());
+    }
+
+    @Test
     @DisplayName("기존 지갑의 홀드 잔액으로 결제하면 홀드 잔액이 감소한다.")
     void payHeld_whenWalletExists_decreasesHeldBalance() {
         Wallet wallet = Wallet.create(1L);
@@ -401,6 +548,70 @@ public class WalletServiceTest {
         );
         assertEquals(BigDecimal.ZERO, savedWallet.getHeldBalance());
         assertEquals(1, walletRepository.getSaveCount());
+    }
+
+    @Test
+    void payHeld_whenAlreadyProcessedWithSameAmount_doesNothing() {
+        final Wallet wallet = saveWalletWithHeldAmount(
+                100L,
+                BigDecimal.valueOf(10_000),
+                BigDecimal.valueOf(6_000),
+                200L
+        );
+        wallet.payHeld(BigDecimal.valueOf(6_000), 300L);
+        walletRepository.save(wallet);
+        walletRepository.resetSaveCount();
+        walletLogQueryPort.put(
+                100L,
+                WalletLogType.PAYMENT,
+                300L,
+                BigDecimal.valueOf(6_000)
+        );
+
+        walletService.payHeld(
+                new PayCommand(1L, BigDecimal.valueOf(6_000), 300L)
+        );
+
+        assertEquals(
+                0,
+                BigDecimal.valueOf(4_000).compareTo(wallet.getAvailableBalance())
+        );
+        assertEquals(BigDecimal.ZERO, wallet.getHeldBalance());
+        assertEquals(0, walletRepository.getSaveCount());
+    }
+
+    @Test
+    void payHeld_whenAlreadyProcessedWithDifferentAmount_throwsException() {
+        final Wallet wallet = saveWalletWithHeldAmount(
+                100L,
+                BigDecimal.valueOf(10_000),
+                BigDecimal.valueOf(6_000),
+                200L
+        );
+        wallet.payHeld(BigDecimal.valueOf(6_000), 300L);
+        walletRepository.save(wallet);
+        walletRepository.resetSaveCount();
+        walletLogQueryPort.put(
+                100L,
+                WalletLogType.PAYMENT,
+                300L,
+                BigDecimal.valueOf(6_000)
+        );
+
+        final BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> walletService.payHeld(
+                        new PayCommand(1L, BigDecimal.valueOf(5_000), 300L)
+                )
+        );
+
+        assertEquals(WalletErrorCode.WALLET_LOG_AMOUNT_MISMATCH, exception.getErrorCode());
+        assertEquals(
+                0,
+                BigDecimal.valueOf(4_000).compareTo(wallet.getAvailableBalance())
+        );
+        assertEquals(BigDecimal.ZERO, wallet.getHeldBalance());
+        assertEquals(0, walletRepository.getSaveCount());
     }
 
     @Test
@@ -598,8 +809,8 @@ public class WalletServiceTest {
         assertEquals(0, walletRepository.getSaveCount());
     }
 
-    private static class FakeReleaseValidationQueryPort
-            implements ReleaseValidationQueryPort {
+    private static class FakeWalletLogQueryPort
+            implements WalletLogQueryPort {
 
         private final Map<LogKey, BigDecimal> logAmounts = new HashMap<>();
 
