@@ -4,7 +4,7 @@ import shop.dear.commerce.financial.wallet.domain.costant.WalletLogType;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-public interface ReleaseValidationQueryPort {
+public interface WalletLogQueryPort {
 
     Optional<BigDecimal> findLogAmount(
             Long walletId,

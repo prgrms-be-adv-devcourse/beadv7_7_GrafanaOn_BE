@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import shop.dear.commerce.financial.wallet.application.dto.*;
-import shop.dear.commerce.financial.wallet.application.port.ReleaseValidationQueryPort;
+import shop.dear.commerce.financial.wallet.application.port.WalletLogQueryPort;
 import shop.dear.commerce.financial.wallet.domain.costant.WalletLogType;
 import shop.dear.commerce.financial.wallet.domain.exception.WalletErrorCode;
 import shop.dear.commerce.financial.wallet.domain.model.Wallet;
@@ -23,7 +23,7 @@ import java.util.Optional;
 public class WalletService {
 
     private final WalletRepository walletRepository;
-    private final ReleaseValidationQueryPort releaseValidationQueryPort;
+    private final WalletLogQueryPort walletLogQueryPort;
 
     private Wallet findWallet(final Long memberId) {
         return walletRepository.findByMemberId(memberId)
@@ -58,6 +58,18 @@ public class WalletService {
     public void topUp(final TopUpCommand command) {
         final Wallet wallet = getOrCreateWallet(command.memberId());
 
+        // 원장 처리 전에 중복 여부를 확인
+        // 새 Wallet은 아직 ID가 없으므로 조회하지 않는다.
+        if (wallet.getId() != null
+                && isAlreadyProcessed(
+                        wallet,
+                        WalletLogType.TOPUP,
+                        command.paymentId(),
+                        command.amount()
+        )) {
+            return;
+        }
+
         wallet.topup(command.amount(), command.paymentId());
 
         walletRepository.save(wallet);
@@ -66,6 +78,16 @@ public class WalletService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void hold(final HoldCommand command) {
         final Wallet wallet = findWallet(command.memberId());
+
+        // 원장 처리 전에 중복 여부를 확인
+        if (isAlreadyProcessed(
+                wallet,
+                WalletLogType.HOLD,
+                command.offerId(),
+                command.amount()
+        )) {
+            return;
+        }
 
         wallet.hold(command.amount(), command.offerId());
 
@@ -77,7 +99,7 @@ public class WalletService {
         final Wallet wallet = findWallet(command.memberId());
 
         // release 요청 건의 heldAmount가 WalletLog에 존재하고 금액이 일치하는 지 확인
-        final BigDecimal heldAmount = releaseValidationQueryPort.findLogAmount(
+        final BigDecimal heldAmount = walletLogQueryPort.findLogAmount(
                 wallet.getId(),
                 WalletLogType.HOLD,
                 command.offerId()
@@ -89,7 +111,7 @@ public class WalletService {
         validateAmountMatches(command.amount(), heldAmount);
 
         // Release 멱등성 검증
-        final Optional<BigDecimal> releasedAmount = releaseValidationQueryPort.findLogAmount(
+        final Optional<BigDecimal> releasedAmount = walletLogQueryPort.findLogAmount(
                 wallet.getId(),
                 WalletLogType.RELEASE,
                 command.offerId()
@@ -109,6 +131,31 @@ public class WalletService {
         }
     }
 
+    private boolean isAlreadyProcessed(
+            final Wallet wallet,
+            final WalletLogType type,
+            final Long referenceId,
+            final BigDecimal requestedAmount
+    ) {
+        final Optional<BigDecimal> recordedAmount = walletLogQueryPort.findLogAmount(
+                wallet.getId(),
+                type,
+                referenceId
+        );
+
+        if (recordedAmount.isEmpty()) {
+            return false;
+        }
+
+        if (requestedAmount.compareTo(recordedAmount.get()) != 0) {
+            throw new BusinessException(
+                    WalletErrorCode.WALLET_LOG_AMOUNT_MISMATCH
+            );
+        }
+
+        return true;
+    }
+
     private void validateAmountMatches(
             final BigDecimal requestedAmount,
             final BigDecimal recordedAmount
@@ -124,6 +171,16 @@ public class WalletService {
     public void payAvailable(final PayCommand command) {
         final Wallet wallet = findWallet(command.memberId());
 
+        // 원장 처리 전에 중복 여부를 확인
+        if (isAlreadyProcessed(
+                wallet,
+                WalletLogType.PAYMENT,
+                command.paymentId(),
+                command.amount()
+        )) {
+            return;
+        }
+
         wallet.payAvailable(command.amount(), command.paymentId());
 
         walletRepository.save(wallet);
@@ -132,6 +189,16 @@ public class WalletService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void payHeld(final PayCommand command) {
         final Wallet wallet = findWallet(command.memberId());
+
+        // 원장 처리 전에 중복 여부를 확인
+        if (isAlreadyProcessed(
+                wallet,
+                WalletLogType.PAYMENT,
+                command.paymentId(),
+                command.amount()
+        )) {
+            return;
+        }
 
         wallet.payHeld(command.amount(), command.paymentId());
 
