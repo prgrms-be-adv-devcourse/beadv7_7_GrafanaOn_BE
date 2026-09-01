@@ -214,6 +214,7 @@ jobs:
           RABBITMQ_STREAM_USERNAME=${{ secrets.RABBITMQ_STREAM_USERNAME }}
           RABBITMQ_STREAM_PASSWORD=${{ secrets.RABBITMQ_STREAM_PASSWORD }}
           RABBITMQ_STREAM_VIRTUAL_HOST=${{ vars.RABBITMQ_STREAM_VIRTUAL_HOST }}
+          FINANCIAL_CLIENT_BASE_URL=${{ secrets.FINANCIAL_CLIENT_BASE_URL }}
           EOF
           chmod 600 financial-service/.env
 
