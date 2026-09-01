@@ -5,6 +5,12 @@ spring:
     password: ${DB_PASSWORD:root}
     driver-class-name: ${DB_DRIVER:org.postgresql.Driver}
 
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:dear}
+    password: ${RABBITMQ_PASSWORD:dear}
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -18,10 +24,8 @@ spring:
 messaging:
   rabbitmq:
     stream:
-      host: ${RABBITMQ_STREAM_HOST}
-      port: ${RABBITMQ_STREAM_PORT}
-      username: ${RABBITMQ_STREAM_USERNAME}
-      password: ${RABBITMQ_STREAM_PASSWORD}
-      virtual-host: ${RABBITMQ_STREAM_VIRTUAL_HOST:/}
-      consumer-restart-delay: 5s
-      consumer-restart-max-attempts: 5
+      host: ${RABBITMQ_STREAM_HOST:localhost}
+      port: ${RABBITMQ_STREAM_PORT:5552}
+      username: ${RABBITMQ_STREAM_USERNAME:dear}
+      password: ${RABBITMQ_STREAM_PASSWORD:dear}
+      virtualHost: /

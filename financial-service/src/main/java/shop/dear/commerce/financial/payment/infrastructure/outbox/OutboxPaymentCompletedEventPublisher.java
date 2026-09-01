@@ -1,19 +1,19 @@
-package shop.dear.commerce.financial.payment.infrastructure.event;
+package shop.dear.commerce.financial.payment.infrastructure.outbox;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import shop.dear.commerce.financial.payment.application.port.PaymentCompletedEventPublisher;
 import shop.dear.common.event.financial.PaymentCompletedEvent;
 
 @Component
 @RequiredArgsConstructor
-public class SpringPaymentCompletedEventPublisher implements PaymentCompletedEventPublisher {
+public class OutboxPaymentCompletedEventPublisher
+        implements PaymentCompletedEventPublisher {
 
-    private final ApplicationEventPublisher applicationEventPublisher;
+    private final PaymentOutboxAppender paymentOutboxAppender;
 
     @Override
     public void publish(final PaymentCompletedEvent event) {
-        applicationEventPublisher.publishEvent(event);
+        paymentOutboxAppender.append(event);
     }
 }
