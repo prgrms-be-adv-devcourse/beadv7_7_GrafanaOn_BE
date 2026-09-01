@@ -80,11 +80,6 @@ spring:
                     name: commerceApi
                     fallbackUri: forward:/fallback/commerce-api
 
-            - id: recommendation-api-route
-              uri: ${RECOMMENDATION_SERVICE_URI:http://recommendation-service:8084}
-              predicates:
-                - Path=/api/recommendations/**,/api/behaviors/**
-
             - id: financial-api-route
               uri: ${FINANCIAL_SERVICE_URI:http://financial-service:8083}
               predicates:
