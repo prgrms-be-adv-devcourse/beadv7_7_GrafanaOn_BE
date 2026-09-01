@@ -10,6 +10,7 @@ import shop.dear.common.response.ErrorCode;
 public enum OrderErrorCode implements ErrorCode {
     FINANCIAL_SERVICE_UNAVAILABLE("OR-001", "금융 서비스와 통신할 수 없습니다.");
 
+
     private final String value;
     private final String message;
 }
