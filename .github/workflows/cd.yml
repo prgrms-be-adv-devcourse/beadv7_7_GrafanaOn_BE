@@ -182,7 +182,6 @@ jobs:
           cat > gateway-service/.env << EOF
           SPRING_PROFILES_ACTIVE=prod
           FRONTEND_ORIGIN=${{ vars.FRONTEND_ORIGIN }}
-          FINANCIAL_SERVICE_URI=${{ vars.FINANCIAL_SERVICE_URI }}
           JWT_ISSUER=${{ vars.JWT_ISSUER }}
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           EOF
