@@ -46,6 +46,7 @@ auth:
 identity:
   client:
     commerce-base-url: http://localhost:8082
+    financial-base-url: http://localhost:8083
     auth-base-url: http://localhost:8081
   # 테스트용 Secret
   security:
