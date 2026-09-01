@@ -32,6 +32,8 @@ public class FallbackController {
         return switch(routeId) {
             case "identity-auth" -> "로그인 서비스가 일시적으로 응답하지 않습니다. 잠시 후 다시 시도해주세요.";
             case "commerce-search" -> "검색 서비스가 일시적으로 응답하지 않습니다. 잠시 후 다시 시도해주세요.";
+            case "financial-api" -> "결제 서비스가 일시적으로 응답하지 않습니다. 잠시 후 다시 시도해주세요.";
+            case "recommendation-api" -> "추천 서비스가 일시적으로 응답하지 않습니다. 잠시 후 다시 시도해주세요.";
             default -> "일시적으로 서비스를 이용할 수 없습니다. 잠시 후 다시 시도해주세요.";
         };
     }
