@@ -28,6 +28,4 @@ messaging:
       port: ${RABBITMQ_STREAM_PORT:5552}
       username: ${RABBITMQ_STREAM_USERNAME:dear}
       password: ${RABBITMQ_STREAM_PASSWORD:dear}
-      virtual-host: ${RABBITMQ_STREAM_VIRTUAL_HOST:/}
-      consumer-restart-delay: 5s
-      consumer-restart-max-attempts: 5
+      virtualHost: /
