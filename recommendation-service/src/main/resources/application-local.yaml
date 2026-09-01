@@ -32,6 +32,11 @@ spring:
       embedding:
         model: ${recommendation.embedding.model-name}
 
+messaging:
+  rabbitmq:
+    stream:
+      enabled: false
+
 recommendation:
   embedding:
     model-name: ${OLLAMA_EMBEDDING_MODEL:bge-m3}
