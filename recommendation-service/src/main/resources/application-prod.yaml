@@ -27,6 +27,11 @@ spring:
         # 실제 모델과 달라지므로 한 곳에서만 관리한다.
         model: ${recommendation.embedding.model-name}
 
+messaging:
+  rabbitmq:
+    stream:
+      enabled: false
+
 recommendation:
   embedding:
     model-name: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
